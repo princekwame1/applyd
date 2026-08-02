@@ -27,10 +27,10 @@
 /vendor
 
 # Build & public
-/public/build
-/public/hot
-/public/storage
-/bootstrap/cache
+# /public/build
+# /public/hot
+# /public/storage
+# /bootstrap/cache
 
 # Storage & keys
 /storage/*.key
