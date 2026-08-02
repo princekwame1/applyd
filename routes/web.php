@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyApplicationController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CourseController;
@@ -21,6 +22,7 @@ Route::get('/', [RegistrationController::class, 'landing'])->name('landing');
 Route::view('/about', 'about')->name('about');
 Route::get('/courses', [PageController::class, 'courses'])->name('courses');
 Route::view('/contact', 'contact')->name('contact');
+Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 
 // Job board
 Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');

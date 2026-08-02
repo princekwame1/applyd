@@ -39,7 +39,7 @@ class RegistrationController extends Controller
             'country' => ['required', 'string', 'max:120'],
             'city' => ['required', 'string', 'max:120'],
             'phone' => ['required', 'string', 'max:25', 'regex:/^\+[0-9 \-]+$/'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:registrations,email'],
             'education' => ['required', Rule::in(config('bootcamp.education_levels'))],
             'tools' => ['required', 'array', 'min:1'],
             'tools.*' => [Rule::in($allTools)],
@@ -48,6 +48,7 @@ class RegistrationController extends Controller
             'tools.required' => 'Please select at least one tool you want to learn.',
             'tools.min' => 'Please select at least one tool you want to learn.',
             'phone.regex' => 'Please include your country code, e.g. +233 24 123 4567.',
+            'email.unique' => 'You have already registered with this email address. Please use a different email or contact us if you need help.',
         ]);
 
         $phoneUtil = PhoneNumberUtil::getInstance();
@@ -66,6 +67,17 @@ class RegistrationController extends Controller
 
         $validated['phone_country_code'] = '+'.$parsedPhone->getCountryCode();
         $validated['phone'] = (string) $parsedPhone->getNationalNumber();
+
+        // Check if phone + country code already registered
+        $existingPhone = Registration::where('phone_country_code', $validated['phone_country_code'])
+            ->where('phone', $validated['phone'])
+            ->exists();
+
+        if ($existingPhone) {
+            throw ValidationException::withMessages([
+                'phone' => 'You have already registered with this phone number. Please use a different phone or contact us if you need help.',
+            ]);
+        }
 
         $validated['marketing_opt_in'] = $request->boolean('marketing_opt_in');
 

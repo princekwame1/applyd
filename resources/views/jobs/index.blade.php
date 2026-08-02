@@ -13,34 +13,82 @@
 
 <section>
     <div class="container">
+        <!-- Search and Filters -->
+        <div class="jobs-search-filters" style="margin-bottom: 40px;">
+            <form method="GET" action="{{ route('jobs') }}" class="jobs-filter-form">
+                <div class="search-box">
+                    <input type="text" name="search" placeholder="Search by job title, company, or skills..." value="{{ $search }}" class="search-input">
+                </div>
+
+                <div class="filter-group">
+                    <select name="type" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Job Types</option>
+                        @foreach ($types as $type)
+                            <option value="{{ $type }}" {{ $selectedType === $type ? 'selected' : '' }}>{{ $type }}</option>
+                        @endforeach
+                    </select>
+
+                    <select name="location" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Locations</option>
+                        @foreach ($locations as $location)
+                            <option value="{{ $location }}" {{ $selectedLocation === $location ? 'selected' : '' }}>{{ $location }}</option>
+                        @endforeach
+                    </select>
+
+                    <button type="submit" class="btn btn-brand btn-sm">Search</button>
+                    @if ($search || $selectedType || $selectedLocation)
+                        <a href="{{ route('jobs') }}" class="btn btn-outline btn-sm">Clear filters</a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         @if ($openings->isEmpty())
             <div class="card center" style="padding: 48px;">
-                <h3 style="margin-bottom: 8px;">No open positions right now</h3>
-                <p style="color: var(--ink-soft);">Check back soon — or get job-ready in the meantime with our free bootcamp.</p>
+                <h3 style="margin-bottom: 8px;">No open positions matching your search</h3>
+                <p style="color: var(--ink-soft);">Try adjusting your filters or search terms. In the meantime, get job-ready with our free bootcamp.</p>
                 <a href="{{ route('landing') }}#register" class="btn btn-brand btn-sm" style="margin-top: 16px;">Join the Free Bootcamp</a>
             </div>
         @else
             <div class="job-list">
                 @foreach ($openings as $opening)
                     <a class="card job-card" href="{{ route('jobs.show', $opening) }}">
-                        <div class="job-card-main">
-                            <h3>{{ $opening->title }}</h3>
-                            <p class="job-company">{{ $opening->company->name }}{{ $opening->location ? ' · '.$opening->location : '' }}</p>
-                            <p class="job-excerpt">{{ Str::limit(strip_tags($opening->description), 150) }}</p>
+                        <div class="job-card-header">
+                            <div class="job-card-main">
+                                <h3 class="job-title">{{ $opening->title }}</h3>
+                                <p class="job-company">{{ $opening->company->name }}</p>
+                                <div class="job-meta-tags">
+                                    @if ($opening->location)
+                                        <span class="job-meta-tag">📍 {{ $opening->location }}</span>
+                                    @endif
+                                    <span class="job-type-badge">{{ $opening->type }}</span>
+                                </div>
+                            </div>
+                            <div class="job-card-side">
+                                @if ($opening->salary_range)
+                                    <span class="job-salary">{{ $opening->salary_range }}</span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="job-card-side">
-                            <span class="tag">{{ $opening->type }}</span>
-                            @if ($opening->salary_range)
-                                <span class="job-salary">{{ $opening->salary_range }}</span>
-                            @endif
+                        <p class="job-excerpt">{{ Str::limit(strip_tags($opening->description), 150) }}</p>
+                        <div class="job-card-footer">
                             @if ($opening->deadline)
-                                <span class="job-deadline">Apply by {{ $opening->deadline->format('M j, Y') }}</span>
+                                <span class="job-deadline">Apply by {{ $opening->deadline->format('M j') }}</span>
+                            @else
+                                <span class="job-deadline">No deadline</span>
                             @endif
-                            <span class="tool-link" style="margin-top:auto;">View &amp; apply →</span>
+                            <span class="job-cta">View &amp; apply →</span>
                         </div>
                     </a>
                 @endforeach
             </div>
+
+            <!-- Pagination -->
+            @if ($openings->hasPages())
+                <div class="jobs-pagination" style="margin-top: 48px;">
+                    {{ $openings->appends(request()->query())->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </section>

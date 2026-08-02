@@ -43,6 +43,13 @@
 
     <main class="admin-content">
         <header class="admin-topbar">
+            <button id="sidebarToggle" class="sidebar-toggle" title="Toggle sidebar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <details class="profile-menu" id="profileMenu">
                 <summary>
                     <span class="side-avatar">
@@ -88,6 +95,21 @@
         document.addEventListener('click', function (e) {
             var menu = document.getElementById('profileMenu');
             if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
+        });
+
+        // Sidebar collapse toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.admin-sidebar');
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+        }
+
+        sidebarToggle.addEventListener('click', function () {
+            sidebar.classList.toggle('collapsed');
+            const collapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', collapsed);
         });
 
         // SweetAlert2 confirmation for any form with data-confirm

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Courses — Applyd Academy')
+@section('title', 'Courses at Applyd Academy')
 
 @section('content')
 {{-- Tools You'll Learn --}}
@@ -60,7 +60,7 @@
                     @forelse ($schedules as $schedule)
                         <tr><td>{{ $schedule->week_label }}</td><td>{{ $schedule->focus }}</td></tr>
                     @empty
-                        <tr><td colspan="2" style="text-align:center; color:var(--ink-soft);">Schedule coming soon — reserve your spot to be notified first.</td></tr>
+                        <tr><td colspan="2" style="text-align:center; color:var(--ink-soft);">Schedule coming soon. Reserve your spot to be notified first.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -72,7 +72,7 @@
 {{-- <section class="final-cta">
     <div class="container">
         <h2 class="section-title">No experience? No problem.</h2>
-        <p class="section-lead" style="margin-left:auto; margin-right:auto;">You dream of a better career — we're the bridge. 24 days. 24 tools. Completely free.</p>
+        <p class="section-lead" style="margin-left:auto; margin-right:auto;">You dream of a better career. We're the bridge. 24 days. 24 tools. Completely free.</p>
         <a href="{{ route('landing') }}#register" class="btn btn-primary">Reserve Your Free Spot →</a>
         <p class="micro">No cost. No experience required. Cancel anytime.</p>
     </div>

@@ -9,10 +9,38 @@ use Illuminate\Validation\Rule;
 
 class JobBoardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = JobOpening::open()->with('company');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('company', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', $request->input('location'));
+        }
+
+        $openings = $query->latest()->paginate(6);
+
         return view('jobs.index', [
-            'openings' => JobOpening::open()->with('company')->latest()->get(),
+            'openings' => $openings,
+            'types' => JobOpening::TYPES,
+            'locations' => JobOpening::open()->select('location')->distinct()->whereNotNull('location')->pluck('location'),
+            'search' => $request->input('search'),
+            'selectedType' => $request->input('type'),
+            'selectedLocation' => $request->input('location'),
         ]);
     }
 
