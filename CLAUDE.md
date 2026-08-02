@@ -1,0 +1,18 @@
+# applyd-bootcamp
+
+- For ALL UI/styling work, follow the color scheme and rules in `DESIGN.md` (red `#c73a41` + charcoal `#272827`). Do not introduce colors outside that palette.
+- The served stylesheet is `public/css/app.css` (not `resources/css/app.css`).
+
+## Stack conventions
+
+- **Data tables:** ALWAYS use `rappasoft/laravel-livewire-tables` (docs: https://rappasoft.com/docs/laravel-livewire-tables/v4/introduction) for any admin/data table — never hand-rolled Blade tables. Components live in `app/Livewire/*Table.php` (see `RegistrationsTable`, `SchedulesTable`). Installed version is v3.8 (v4 has no stable release yet; upgrade when it ships). Livewire 3 is installed.
+- **Admin UI:** `layouts/admin.blade.php` — charcoal sidebar layout (logo, nav items, user card, logout). Tailwind Play CDN is loaded on admin pages only (for the Livewire table theme); public pages use `public/css/app.css` alone.
+- **Roles & permissions:** `spatie/laravel-permission`. Roles (student/lecturer/admin/super seeded) and permissions are DB-driven, managed at `/dashboard/roles` (permission `manage roles`, super-only by default); users at `/dashboard/users` (`manage users`). Middleware aliases are spatie's: `role:admin|super` (pipe-separated) and `permission:manage users`. The `super` role always keeps all permissions and can't be renamed/deleted; the legacy `users.role` column is gone — use `$user->hasRole()` / `$user->role_label`. Gate UI with `@can` / `@canany`.
+- **Select2 everywhere:** all plain `<select>` inputs get Select2 with search (global init in both layouts). Livewire-controlled selects (inside `[wire:id]`) and anything with `data-no-select2` are excluded — don't Select2-ify those.
+- **Dashboard home:** `/dashboard` is an overview page (stat cards + link cards to each section); the registrations table lives at `/dashboard/registrations`.
+- **Public pages** extend `layouts/app.blade.php` (sticky white navbar + rich charcoal footer). Landing schedule table is DB-driven (`schedules` table, managed at `/dashboard/schedules`). Tools are DB-driven too (`tools` table, managed at `/dashboard/tools`) — the landing card grid, filter tabs, registration form picker, and validation all read from it; `config('bootcamp.tool_categories')` is only the migration seed.
+- **Confirmations:** admin uses SweetAlert2 (CDN in `layouts/admin.blade.php`) — add `data-confirm="message"` to any form instead of `onsubmit confirm()`.
+- **Exports:** every admin table gets its own "Export Excel" button (`.page-head` next to the title) backed by `maatwebsite/excel` and an export class in `app/Exports/`. No export links in the sidebar.
+- **Admin sidebar:** grouped sections via `.side-heading` (Bootcamp / Academy / General), plain text nav items — no emoji/icons. Courses CRUD lives under Academy (`/dashboard/courses`).
+- **Phone country codes** come from `giggsey/libphonenumber-for-php` via `App\Support\PhoneCountries` — don't hardcode country lists.
+- **Job board:** companies sign up at `/companies/register` (creates a user with the `company` role + a `Company` profile); company portal at `/company` (`layouts/company.blade.php`, role:company) for posting jobs and reviewing applications. Public board at `/jobs` (`JobOpening::open()` scope); applicants apply without an account, uploading CV + up to 5 supporting docs. **Application files are stored on the private `local` disk** (`storage/app/private/applications/...`), never the public disk — downloads only via authorized `company.applications.cv`/`.document` routes (owner-checked). Login redirects by role: company → `company.home`, others → `dashboard`.

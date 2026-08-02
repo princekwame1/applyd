@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Livewire;
+
+use Illuminate\Database\Eloquent\Builder;
+use Rappasoft\LaravelLivewireTables\DataTableComponent;
+use Rappasoft\LaravelLivewireTables\Views\Column;
+use Spatie\Permission\Models\Role;
+
+class RolesTable extends DataTableComponent
+{
+    protected $model = Role::class;
+
+    public function configure(): void
+    {
+        $this->setPrimaryKey('id');
+        $this->setDefaultSort('name', 'asc');
+        $this->setSearchDisabled();
+        $this->setPaginationDisabled();
+    }
+
+    public function builder(): Builder
+    {
+        return Role::query()->with('permissions')->select('roles.*');
+    }
+
+    public function columns(): array
+    {
+        return [
+            Column::make('Role', 'name')
+                ->sortable()
+                ->format(fn ($value) => '<strong>'.e(ucfirst($value)).'</strong>')
+                ->html(),
+            Column::make('Permissions')
+                ->label(function ($row) {
+                    if ($row->permissions->isEmpty()) {
+                        return '<span style="color:var(--ink-soft);font-size:.85rem;">None</span>';
+                    }
+
+                    return $row->permissions->pluck('name')
+                        ->map(fn ($p) => '<span class="tag" style="font-size:.72rem;padding:3px 10px;">'.e($p).'</span>')
+                        ->implode(' ');
+                })
+                ->html(),
+            Column::make('Users')
+                ->label(fn ($row) => $row->users()->count()),
+            Column::make('Actions')
+                ->label(fn ($row) => view('dashboard.roles.partials.actions', ['id' => $row->id, 'name' => $row->name])->render())
+                ->html(),
+        ];
+    }
+}
