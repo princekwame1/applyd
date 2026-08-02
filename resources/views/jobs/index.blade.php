@@ -6,42 +6,41 @@
 <section class="alt contact-hero">
     <div class="container center">
         <h1 class="section-title">Jobs &amp; Opportunities</h1>
-        <p class="section-lead">Openings from companies in our network. Apply with your CV — no account needed.</p>
+        <p class="section-lead">Openings from companies in our network. Apply with your CV. No account needed.</p>
         <a href="{{ route('companies.register') }}" class="btn btn-brand btn-sm">Are you hiring? Post a job</a>
     </div>
 </section>
 
 <section>
     <div class="container">
-        <!-- Search and Filters -->
-        <div class="jobs-search-filters" style="margin-bottom: 40px;">
+        <!-- Filters -->
+        <div class="jobs-filter-bar">
             <form method="GET" action="{{ route('jobs') }}" class="jobs-filter-form">
-                <div class="search-box">
-                    <input type="text" name="search" placeholder="Search by job title, company, or skills..." value="{{ $search }}" class="search-input">
-                </div>
-
-                <div class="filter-group">
+                <div class="filter-item">
+                    <label>Filter by Job Type:</label>
                     <select name="type" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Job Types</option>
                         @foreach ($types as $type)
                             <option value="{{ $type }}" {{ $selectedType === $type ? 'selected' : '' }}>{{ $type }}</option>
                         @endforeach
                     </select>
+                </div>
 
-                    <select name="location" class="filter-select" onchange="this.form.submit()">
-                        <option value="">All Locations</option>
-                        @foreach ($locations as $location)
-                            <option value="{{ $location }}" {{ $selectedLocation === $location ? 'selected' : '' }}>{{ $location }}</option>
-                        @endforeach
-                    </select>
-
-                    <button type="submit" class="btn btn-brand btn-sm">Search</button>
-                    @if ($search || $selectedType || $selectedLocation)
-                        <a href="{{ route('jobs') }}" class="btn btn-outline btn-sm">Clear filters</a>
-                    @endif
+                <div class="filter-item">
+                    <label>Job Search:</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" name="search" placeholder="Search jobs..." value="{{ $search }}" class="search-input" style="flex: 1;">
+                        <button type="submit" class="btn btn-brand btn-sm">Search</button>
+                    </div>
                 </div>
             </form>
         </div>
+
+        @if ($search || $selectedType || $selectedLocation)
+            <div style="text-align: center; margin-bottom: 24px;">
+                <a href="{{ route('jobs') }}" class="btn btn-outline btn-sm">Clear all filters</a>
+            </div>
+        @endif
 
         @if ($openings->isEmpty())
             <div class="card center" style="padding: 48px;">

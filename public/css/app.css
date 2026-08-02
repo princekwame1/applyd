@@ -96,49 +96,60 @@ a { color: var(--brand); }
 .page-hero { padding: 110px 0; }
 
 /* Job board */
-.jobs-search-filters { max-width: 1080px; margin: 0 auto; }
-.jobs-filter-form { display: flex; flex-direction: column; gap: 16px; }
-.search-box { width: 100%; }
-.search-input {
-  width: 100%;
-  padding: 14px 18px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: "Montserrat", inherit;
+.jobs-filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
-.search-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(199, 58, 65, .15); }
-.filter-group {
+.jobs-filter-form { display: contents; }
+.jobs-filter-bar .filter-item {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
 }
-.filter-select {
-  flex: 1;
-  min-width: 160px;
-  padding: 10px 14px;
+.jobs-filter-bar .filter-item label {
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--ink);
+}
+.jobs-filter-bar .filter-select,
+.jobs-filter-bar .search-input {
+  padding: 12px 14px;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
   font-size: .95rem;
   font-family: "Montserrat", inherit;
   background: #fff;
-  cursor: pointer;
 }
-.filter-select:focus { outline: none; border-color: var(--brand); }
+.jobs-filter-bar .filter-select:focus,
+.jobs-filter-bar .search-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(199, 58, 65, .15);
+}
 @media (max-width: 720px) {
-  .filter-group { flex-direction: column; width: 100%; }
-  .filter-select { width: 100%; }
+  .jobs-filter-bar { grid-template-columns: 1fr; gap: 16px; }
 }
-.job-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 1080px; margin: 0 auto; }
-@media (max-width: 900px) { .job-list { grid-template-columns: 1fr; } }
+.job-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (max-width: 1024px) { .job-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px) { .job-list { grid-template-columns: 1fr; } }
 .job-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   text-decoration: none;
   color: var(--ink);
-  padding: 28px !important;
+  padding: 24px !important;
   transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   cursor: pointer;
 }
@@ -462,33 +473,115 @@ section.alt { background: var(--bg-soft); }
   font-weight: 600;
 }
 
+/* ---------- Courses Filter & Grid ---------- */
+.courses-filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filter-item label {
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--ink);
+}
+.filter-select, .courses-filter-bar .search-input {
+  padding: 12px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: .95rem;
+  font-family: "Montserrat", inherit;
+  background: #fff;
+}
+.filter-select:focus { outline: none; border-color: var(--brand); }
+@media (max-width: 720px) {
+  .courses-filter-bar { grid-template-columns: 1fr; gap: 16px; }
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+@media (max-width: 1024px) { .courses-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px) { .courses-grid { grid-template-columns: 1fr; } }
+
 /* ---------- Course cards ---------- */
-.course-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
-.course-thumb { position: relative; height: 170px; }
-.course-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.course-thumb::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(39, 40, 39, 0) 55%, rgba(39, 40, 39, .45) 100%);
+.course-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.course-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 44px rgba(199, 58, 65, .16);
+  border-color: #eec6c8;
+}
+.course-thumb {
+  position: relative;
+  height: 200px;
+  background: #f0f0f0;
+}
+.course-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.course-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e8e6e5, #d4ccc7);
 }
 .course-badge {
   position: absolute;
   top: 12px;
   left: 12px;
-  z-index: 1;
+  z-index: 2;
   background: var(--brand);
   color: #fff;
-  font-size: .72rem;
+  font-size: .7rem;
   font-weight: 800;
   letter-spacing: .08em;
   text-transform: uppercase;
-  padding: 5px 12px;
-  border-radius: 999px;
+  padding: 6px 14px;
+  border-radius: 4px;
 }
-.course-body { padding: 22px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
-.course-body h3 { font-size: 1.08rem; }
-.course-cta { margin-top: auto; align-self: flex-start; }
+.course-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.course-body h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+.course-description {
+  color: var(--ink-soft);
+  font-size: .95rem;
+  flex: 1;
+  margin: 0;
+}
+.course-cta {
+  margin-top: auto;
+  align-self: flex-start;
+}
 
 /* ---------- Tool grid with category tabs ---------- */
 .hl { color: var(--brand); }

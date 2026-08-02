@@ -17,20 +17,37 @@
             </div>
         </div>
 
-        <div class="form-card hero-form" id="register">
-            <h2 class="form-title">Reserve Your Free Spot</h2>
-            <p class="form-sub">24 days. 24 tools. Completely free. Spots are limited per session.</p>
-
-            @if ($errors->any())
-                <div class="error-box">
-                    Please fix the highlighted fields below and try again.
+        @auth
+            <div class="form-card hero-form" id="register" style="text-align: center;">
+                <div style="padding: 20px 0;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 20px;">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                    <h3 style="margin-bottom: 4px; font-size: 1.3rem;">Welcome back, {{ auth()->user()->name }}!</h3>
+                    <p style="color: var(--ink-soft); margin-bottom: 24px;">You're already registered for the bootcamp.</p>
+                    <div style="display: flex; gap: 12px; flex-direction: column;">
+                        <a href="{{ route('dashboard') }}" class="btn btn-primary" style="text-align: center;">Go to Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="btn btn-outline" style="width: 100%;">Log Out</button>
+                        </form>
+                    </div>
                 </div>
-            @endif
+            </div>
+        @else
+            <div class="form-card hero-form" id="register">
+                <h2 class="form-title">Reserve Your Free Spot</h2>
+                <p class="form-sub">24 days. 24 tools. Completely free. Spots are limited per session.</p>
 
-            <form method="POST" action="{{ route('register.store') }}" id="regForm">
+                @if ($errors->any())
+                    <div class="error-box">
+                        Please fix the highlighted fields below and try again.
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('register.store') }}" id="regForm">
                 @csrf
 
-                <div class="step-meta">Step <span id="stepNow">1</span> of 3</div>
                 <h3 class="step-title" id="stepName">About You</h3>
                 <div class="step-bar"><span id="stepBarFill" style="width: 33.34%;"></span></div>
 
@@ -144,8 +161,9 @@
                     <button type="button" class="btn btn-brand" id="nextBtn">Next →</button>
                     <button type="submit" class="btn btn-brand" id="submitBtn" hidden>Reserve Your Free Spot →</button>
                 </div>
-            </form>
-        </div>
+                </form>
+            </div>
+        @endauth
     </div>
 
     {{-- <div class="container hero-meta">

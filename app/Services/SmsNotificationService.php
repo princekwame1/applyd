@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\SmsLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -17,11 +18,21 @@ class SmsNotificationService
         $this->senderId = config('services.mnotify.sender_id');
     }
 
-    public function send(string $phoneNumber, string $message): bool
+    public function send(string $phoneNumber, string $message, ?int $registrationId = null): bool
     {
         if (!$this->apiKey) {
             Log::warning('SMS notification skipped: MNotify API key not configured');
             return false;
+        }
+
+        $smsLog = null;
+        if ($registrationId) {
+            $smsLog = SmsLog::create([
+                'registration_id' => $registrationId,
+                'phone_number' => $phoneNumber,
+                'message' => $message,
+                'status' => 'pending',
+            ]);
         }
 
         try {
@@ -48,6 +59,13 @@ class SmsNotificationService
 
             if ($response->successful()) {
                 Log::info('SMS sent successfully', ['phone' => $phoneNumber, 'response' => $response->json()]);
+                if ($smsLog) {
+                    $smsLog->update([
+                        'status' => 'sent',
+                        'response' => json_encode($response->json()),
+                        'sent_at' => now(),
+                    ]);
+                }
                 return true;
             }
 
@@ -58,6 +76,13 @@ class SmsNotificationService
                 'json' => $response->json(),
             ]);
 
+            if ($smsLog) {
+                $smsLog->update([
+                    'status' => 'failed',
+                    'response' => json_encode($response->json()),
+                ]);
+            }
+
             return false;
         } catch (\Exception $e) {
             Log::error('SMS exception', [
@@ -65,6 +90,13 @@ class SmsNotificationService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            if ($smsLog) {
+                $smsLog->update([
+                    'status' => 'failed',
+                    'response' => $e->getMessage(),
+                ]);
+            }
 
             return false;
         }

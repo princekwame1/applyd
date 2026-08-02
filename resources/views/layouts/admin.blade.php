@@ -20,6 +20,7 @@
 
             <span class="side-heading">Bootcamp</span>
             <a href="{{ route('dashboard.registrations') }}" class="{{ request()->routeIs('dashboard.registrations') || request()->routeIs('dashboard.show') ? 'active' : '' }}">Registrations</a>
+            <a href="{{ route('dashboard.sms-logs') }}" class="{{ request()->routeIs('dashboard.sms-logs*') ? 'active' : '' }}">SMS Delivery</a>
             <a href="{{ route('dashboard.schedules') }}" class="{{ request()->routeIs('dashboard.schedules*') ? 'active' : '' }}">Schedules</a>
             <a href="{{ route('dashboard.tools') }}" class="{{ request()->routeIs('dashboard.tools*') ? 'active' : '' }}">Tools</a>
 

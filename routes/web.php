@@ -15,6 +15,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Dashboard\SmsLogsController;
 use Illuminate\Support\Facades\Route;
 
 // Public landing page + registration
@@ -67,6 +68,9 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/registrations', [DashboardController::class, 'index'])->name('dashboard.registrations');
     Route::get('/export', [DashboardController::class, 'export'])->name('dashboard.export');
     Route::get('/registrations/{registration}', [DashboardController::class, 'show'])->name('dashboard.show');
+
+    Route::get('/sms-logs', [SmsLogsController::class, 'index'])->name('dashboard.sms-logs');
+    Route::post('/sms-logs/{smsLog}/retry', [SmsLogsController::class, 'retry'])->name('dashboard.sms-logs.retry');
 
     Route::get('/schedules', [ScheduleController::class, 'index'])->name('dashboard.schedules');
     Route::post('/schedules', [ScheduleController::class, 'store'])->name('dashboard.schedules.store');
