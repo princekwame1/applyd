@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     @stack('head')
 </head>
 <body>
@@ -32,7 +33,7 @@
     @yield('content')
 
     {{-- Footer hidden on the landing page for now --}}
-    @if (!request()->routeIs('landing'))
+    {{-- @if (!request()->routeIs('landing')) --}}
     <footer>
         <div class="container footer-grid">
             <div>
@@ -72,7 +73,7 @@
             <div class="container">&copy; {{ date('Y') }} Applyd Academy — Master the Tools. Accelerate Your Future.</div>
         </div>
     </footer>
-    @endif
+    {{-- @endif --}}
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

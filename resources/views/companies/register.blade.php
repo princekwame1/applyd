@@ -6,7 +6,7 @@
 <section class="alt contact-hero">
     <div class="container center">
         <h1 class="section-title">Hire from Our Community</h1>
-        <p class="section-lead">Create a free company account, post your openings, and receive applications with CVs — all in one place.</p>
+        <p class="section-lead">Create a free company account, post your openings, and receive applications with CVs, all in one place.</p>
     </div>
 </section>
 

@@ -1,0 +1,804 @@
+{
+  "info": {
+    "name": "Applyd Academy Bootcamp API",
+    "description": "API collection for Applyd Academy Digital Tools Bootcamp",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Landing Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "About Us",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/about",
+              "host": ["{{base_url}}"],
+              "path": ["about"]
+            }
+          }
+        },
+        {
+          "name": "Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/courses",
+              "host": ["{{base_url}}"],
+              "path": ["courses"]
+            }
+          }
+        },
+        {
+          "name": "Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          }
+        },
+        {
+          "name": "Contact",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contact",
+              "host": ["{{base_url}}"],
+              "path": ["contact"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registration",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "full_name",
+                  "value": "Ama Mensah",
+                  "type": "text"
+                },
+                {
+                  "key": "gender",
+                  "value": "Female",
+                  "type": "text"
+                },
+                {
+                  "key": "age_range",
+                  "value": "25-34",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "Ghana",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Accra",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+233 24 123 4567",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "ama@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "education",
+                  "value": "Bachelor's Degree",
+                  "type": "text"
+                },
+                {
+                  "key": "tools[]",
+                  "value": "Notion",
+                  "type": "text"
+                },
+                {
+                  "key": "tools[]",
+                  "value": "Trello",
+                  "type": "text"
+                },
+                {
+                  "key": "marketing_opt_in",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            }
+          }
+        },
+        {
+          "name": "Thank You Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/thank-you",
+              "host": ["{{base_url}}"],
+              "path": ["thank-you"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "user@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "Login Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Edit Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "full_name",
+                  "value": "Updated Name",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "current_password",
+                  "value": "old_password",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "new_password",
+                  "type": "text"
+                },
+                {
+                  "key": "password_confirmation",
+                  "value": "new_password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/profile/password",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "password"]
+            }
+          }
+        },
+        {
+          "name": "Remove Avatar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/profile/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "avatar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Home",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Registrations List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/registrations",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "registrations"]
+            }
+          }
+        },
+        {
+          "name": "View Registration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/registrations/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "registrations", "1"]
+            }
+          }
+        },
+        {
+          "name": "Export Registrations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/export",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "export"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schedules (Admin)",
+      "item": [
+        {
+          "name": "List Schedules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules"]
+            }
+          }
+        },
+        {
+          "name": "Create Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "week_label",
+                  "value": "Week 1",
+                  "type": "text"
+                },
+                {
+                  "key": "focus",
+                  "value": "Project Management",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules"]
+            }
+          }
+        },
+        {
+          "name": "Edit Schedule",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules/1/edit",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules", "1", "edit"]
+            }
+          }
+        },
+        {
+          "name": "Update Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "week_label",
+                  "value": "Week 1",
+                  "type": "text"
+                },
+                {
+                  "key": "focus",
+                  "value": "Updated Focus",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Schedule",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules", "1"]
+            }
+          }
+        },
+        {
+          "name": "Export Schedules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/schedules/export",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "schedules", "export"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tools (Admin)",
+      "item": [
+        {
+          "name": "List Tools",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools"]
+            }
+          }
+        },
+        {
+          "name": "Create Tool",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Notion",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "Productivity",
+                  "type": "text"
+                },
+                {
+                  "key": "blurb",
+                  "value": "All-in-one workspace for notes and collaboration",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools"]
+            }
+          }
+        },
+        {
+          "name": "Edit Tool",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools/1/edit",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools", "1", "edit"]
+            }
+          }
+        },
+        {
+          "name": "Update Tool",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Notion",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "Productivity",
+                  "type": "text"
+                },
+                {
+                  "key": "blurb",
+                  "value": "Updated description",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Tool",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools", "1"]
+            }
+          }
+        },
+        {
+          "name": "Export Tools",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/tools/export",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "tools", "export"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses (Admin)",
+      "item": [
+        {
+          "name": "List Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Digital Tools Bootcamp 2026",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Learn 24 digital tools in 24 days",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Edit Course",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses/1/edit",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses", "1", "edit"]
+            }
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Digital Tools Bootcamp 2026",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses/1",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Export Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dashboard/courses/export",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "courses", "export"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs (Public)",
+      "item": [
+        {
+          "name": "List Job Openings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          }
+        },
+        {
+          "name": "View Job Opening",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/jobs/1",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Apply for Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "full_name",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "john@example.com",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs/1/apply",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "1", "apply"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}

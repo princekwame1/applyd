@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Registration;
 use App\Models\Schedule;
 use App\Models\Tool;
+use App\Services\SmsNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -70,9 +71,14 @@ class RegistrationController extends Controller
 
         $registration = Registration::create($validated);
 
+        $firstName = explode(' ', trim($registration->full_name))[0];
+        $fullPhone = $validated['phone_country_code'].$validated['phone'];
+
+        app(SmsNotificationService::class)->sendRegistrationConfirmation($fullPhone, $firstName);
+
         return redirect()
             ->route('register.thanks')
-            ->with('registered_name', explode(' ', trim($registration->full_name))[0]);
+            ->with('registered_name', $firstName);
     }
 
     public function thanks()

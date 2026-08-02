@@ -32,7 +32,14 @@
                 <a href="https://maps.google.com/?q=Trade+Fair,+25+Giffard+Rd,+Accra" target="_blank" rel="noopener" class="contact-link">Get directions →</a>
             </div>
         </div>
-
+{{-- <div class="form-card mt-5" >
+    <form action="" method="post">
+<input type="text" name="name" id="name" placeholder="Your Name">
+<input type="email" name="email" id="email" placeholder="Your Email">
+<textarea name="message" id="message" rows="5" placeholder="Your Message"></textarea>
+<button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+</div> --}}
      
     </div>
        <div class="map-wrap">

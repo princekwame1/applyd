@@ -1,8 +1,14 @@
 *.log
 .DS_Store
+
+# Environment files
 .env
 .env.backup
+.env.local
 .env.production
+.env.*.local
+
+# IDE
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -11,14 +17,54 @@
 /.phpunit.cache
 /.vscode
 /.zed
+
+# Auth & credentials
 /auth.json
+.claude/settings.local.json
+
+# Dependencies
 /node_modules
+/vendor
+
+# Build & public
 /public/build
 /public/hot
 /public/storage
+/bootstrap/cache
+
+# Storage & keys
 /storage/*.key
 /storage/pail
-/vendor
+/storage/logs
+/storage/app/private/*
+!/storage/app/private/.gitkeep
+
+# Testing
+.phpunit.result.cache
+.pest.result.cache
+
+# Composer lock (optional - recommend tracking this)
+# composer.lock
+
+# Vagrant & Docker
 Homestead.json
 Homestead.yaml
+Dockerfile
+.dockerignore
+
+# OS
 Thumbs.db
+._.DS_Store
+*.swp
+*.swo
+*~
+
+# IDE temp files
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Database files (if using SQLite)
+*.sqlite
+*.db
+database/*.sqlite

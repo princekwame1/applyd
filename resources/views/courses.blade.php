@@ -8,16 +8,23 @@
     $shortNames = config('bootcamp.category_short_names');
     $toolCount = $tools->count();
 @endphp
+
+<section class="alt contact-hero">
+    <div class="container center">
+        <h1 class="section-title">Job Opportunities</h1>
+        <p class="section-lead">Explore the latest job openings in our community.</p>
+    </div>
+</section>
 <section id="courses">
     <div class="container">
         <div class="center">
-            <h2 class="section-title">Your next skill set starts in <span class="hl">24 days</span></h2>
-            <p class="section-lead">Pick your tools. Learn the skills that matter. Apply them the same day — with real humans guiding you every step of the way.</p>
-            <div class="journey-pills">
+            {{-- <h2>Your Career Journey Starts Here</h2> --}}
+            <p class="section-lead">Discover the perfect role for you in our community of professionals.</p>
+            {{-- <div class="journey-pills">
                 <span class="jp"><i>1</i> Choose your tools</span>
                 <span class="jp"><i>2</i> Learn with experts</span>
                 <span class="jp"><i>3</i> Apply your skills</span>
-            </div>
+            </div> --}}
             <div class="filter-tabs" id="toolTabs">
                 <button type="button" class="tab active" data-cat="all">All <em>{{ $toolCount }}</em></button>
                 @foreach ($toolCategories as $category => $categoryTools)
@@ -43,7 +50,7 @@
 </section>
 
 {{-- Schedule --}}
-<section id="schedule" class="alt">
+{{-- <section id="schedule" class="alt">
     <div class="container">
         <h2 class="section-title">Your 24-Day Journey</h2>
         <div class="table-wrap">
@@ -59,17 +66,17 @@
             </table>
         </div>
     </div>
-</section>
+</section> --}}
 
 {{-- Final CTA --}}
-<section class="final-cta">
+{{-- <section class="final-cta">
     <div class="container">
         <h2 class="section-title">No experience? No problem.</h2>
         <p class="section-lead" style="margin-left:auto; margin-right:auto;">You dream of a better career — we're the bridge. 24 days. 24 tools. Completely free.</p>
         <a href="{{ route('landing') }}#register" class="btn btn-primary">Reserve Your Free Spot →</a>
         <p class="micro">No cost. No experience required. Cancel anytime.</p>
     </div>
-</section>
+</section> --}}
 @endsection
 
 @push('scripts')

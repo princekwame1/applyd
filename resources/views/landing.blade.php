@@ -148,7 +148,7 @@
         </div>
     </div>
 
-    <div class="container hero-meta">
+    {{-- <div class="container hero-meta">
         <div>
             <span class="meta-label">Format</span>
             <strong>100% Online</strong>
@@ -170,7 +170,7 @@
             <small>No hidden fees, no upsells</small>
         </div>
         <a href="#register" class="btn btn-primary">Apply Now</a>
-    </div>
+    </div> --}}
 </header>
 
 {{-- Tool marquee --}}
@@ -185,7 +185,7 @@
 </div>
 
 {{-- Hidden for now: everything from the About section downwards --}}
-@if (false)
+{{-- @if (false) --}}
 {{-- About / Problem–Solution --}}
 <section id="about">
     <div class="container">
@@ -212,11 +212,11 @@
         <h2 class="section-title">What Makes This Different</h2>
         <p class="section-lead">This isn't another webinar series.</p>
         <div class="grid grid-3">
-            <div class="card"><span class="icon">🛠️</span><h3>Practical, not theoretical</h3><p>Every session is built around live demos and real practice, not slides.</p></div>
-            <div class="card"><span class="icon">🌍</span><h3>Genuinely global</h3><p>Facilitators from 3 countries bring different industries, tools, and perspectives.</p></div>
-            <div class="card"><span class="icon">💼</span><h3>Built for the real world</h3><p>Every session ends with a business or career use case — how professionals actually use the tool.</p></div>
-            <div class="card"><span class="icon">🤝</span><h3>A network, not just a class</h3><p>Join a cross-border community of learners, facilitators, and professionals.</p></div>
-            <div class="card"><span class="icon">🎁</span><h3>Zero cost, zero catch</h3><p>Completely free. No hidden fees, no upsells.</p></div>
+            <div class="card"><h3>Practical, not theoretical</h3><p>Every session is built around live demos and real practice, not slides.</p></div>
+            <div class="card"><h3>Genuinely global</h3><p>Facilitators from 3 countries bring different industries, tools, and perspectives.</p></div>
+            <div class="card"><h3>Built for the real world</h3><p>Every session ends with a business or career use case — how professionals actually use the tool.</p></div>
+            <div class="card"><h3>A network, not just a class</h3><p>Join a cross-border community of learners, facilitators, and professionals.</p></div>
+            <div class="card"><h3>Zero cost, zero catch</h3><p>Completely free. No hidden fees, no upsells.</p></div>
         </div>
     </div>
 </section>
@@ -355,7 +355,7 @@
             <h2 class="section-title">See What Our Learners Say</h2>
             <p class="section-lead">Real people, real progress — hear from learners across our community.</p>
         </div>
-        <div class="grid grid-3">
+        <div class="grid grid-2">
             <div class="card t-card">
                 <div class="t-stars">★★★★★</div>
                 <span class="t-chip">Promoted at work</span>
@@ -425,7 +425,7 @@
     <a href="#register" class="btn btn-primary btn-sm">Reserve Your Free Spot</a>
     <button type="button" class="promo-close" id="promoClose" aria-label="Dismiss">×</button>
 </div>
-@endif
+{{-- @endif --}}
 
 @push('head')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24/build/css/intlTelInput.css">
