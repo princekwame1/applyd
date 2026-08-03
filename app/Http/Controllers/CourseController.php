@@ -68,7 +68,7 @@ class CourseController extends Controller
 
     private function validated(Request $request, ?Course $course = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:150', Rule::unique('courses', 'title')->ignore($course?->id)],
             'level' => ['nullable', 'string', Rule::in(Course::LEVELS)],
             'duration' => ['nullable', 'string', 'max:100'],
@@ -76,5 +76,9 @@ class CourseController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        $data['sort_order'] = $data['sort_order'] ?? 0;
+
+        return $data;
     }
 }

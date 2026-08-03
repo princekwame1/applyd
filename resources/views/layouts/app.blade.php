@@ -27,7 +27,32 @@
                 <li><a href="{{ route('courses') }}" class="{{ request()->routeIs('courses') ? 'active' : '' }}">Courses</a></li>
                 <li><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Contact Us</a></li>
             </ul>
-            <a href="{{ route('login') }}" class="btn btn-brand btn-sm">Login</a>
+            @auth
+                <details class="profile-menu" id="navProfileMenu">
+                    <summary style="list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span class="side-avatar" style="flex: 0 0 36px; height: 36px; font-size: .9rem;">
+                            @if (auth()->user()->avatar_url)
+                                <img src="{{ auth()->user()->avatar_url }}" alt="">
+                            @else
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            @endif
+                        </span>
+                        <span style="font-weight: 600; font-size: .9rem; color: var(--ink);">{{ auth()->user()->name }}</span>
+                    </summary>
+                    <div class="pm-dropdown" style="right: 0; left: auto;">
+                        <a href="{{ route('profile.edit') }}">Profile Settings</a>
+                        @if (auth()->user()->hasRole('admin|super'))
+                            <a href="{{ route('dashboard') }}">Dashboard</a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Log Out</button>
+                        </form>
+                    </div>
+                </details>
+            @else
+                <a href="{{ route('login') }}" class="btn btn-brand btn-sm">Login</a>
+            @endauth
         </div>
     </nav>
 
@@ -79,6 +104,12 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener('click', function (e) {
+            var menu = document.getElementById('navProfileMenu');
+            if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
+        });
+    </script>
     @stack('scripts')
 </body>
 </html>
