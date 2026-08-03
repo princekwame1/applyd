@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('registrations', function (Blueprint $table) {
             $table->unique('email');
-            $table->unique('phone_country_code', 'phone'); // composite unique on country code + phone number
+            $table->unique(['phone_country_code', 'phone']); // composite unique on country code + phone number
         });
     }
 
