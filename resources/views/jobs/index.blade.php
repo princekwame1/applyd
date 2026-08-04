@@ -68,19 +68,19 @@
                                 <p class="job-company">{{ $opening->company->name }}</p>
                                 <div class="job-meta-tags">
                                     @if ($opening->location)
-                                        <span class="job-meta-tag">📍 {{ $opening->location }}</span>
+                                        <span class="job-meta-tag">{{ $opening->location }}</span>
                                     @endif
                                     @if ($opening->sector)
-                                        <span class="job-meta-tag">🏷️ {{ $opening->sector }}</span>
+                                        <span class="job-meta-tag">{{ $opening->sector }}</span>
                                     @endif
                                     <span class="job-type-badge">{{ $opening->type }}</span>
                                 </div>
                             </div>
-                            <div class="job-card-side">
-                                @if ($opening->salary_range)
+                            @if ($opening->salary_range)
+                                <div class="job-card-side">
                                     <span class="job-salary">{{ $opening->salary_range }}</span>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         </div>
                         <p class="job-excerpt">{{ Str::limit(strip_tags($opening->description), 150) }}</p>
                         <div class="job-card-footer">
