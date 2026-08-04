@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [RegistrationController::class, 'landing'])->name('landing');
 Route::view('/about', 'about')->name('about');
 Route::get('/courses', [PageController::class, 'courses'])->name('courses');
+Route::get('/courses/{course}', [PageController::class, 'showCourse'])->name('courses.show');
 Route::view('/contact', 'contact')->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 

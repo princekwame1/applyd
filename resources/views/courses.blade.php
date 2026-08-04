@@ -33,21 +33,27 @@
         <!-- Courses Grid -->
         <div class="courses-grid">
             @forelse ($courses as $course)
-                <div class="card course-card" data-level="{{ $course->level }}" data-title="{{ strtolower($course->title) }}">
+                <a class="card course-card" href="{{ route('courses.show', $course) }}" data-level="{{ $course->level }}" data-title="{{ strtolower($course->title) }}">
                     <div class="course-thumb">
                         @if ($course->image_url)
                             <img src="{{ $course->image_url }}" alt="{{ $course->title }}" loading="lazy">
                         @else
                             <div class="course-thumb-placeholder"></div>
                         @endif
-                        <span class="course-badge">{{ $course->level }}</span>
+                        @if ($course->level)<span class="course-badge">{{ $course->level }}</span>@endif
                     </div>
                     <div class="course-body">
                         <h3>{{ $course->title }}</h3>
-                        <p class="course-description">{{ Str::limit($course->description, 120) }}</p>
-                        <a href="#" class="btn btn-brand btn-sm course-cta">View Course</a>
+                        <p class="course-description">{{ Str::limit(strip_tags($course->description), 110) }}</p>
+                        <div class="course-meta">
+                            @if ($course->duration)
+                                <span class="course-meta-item"><i class="fa-regular fa-clock"></i> {{ $course->duration }}</span>
+                            @endif
+                            <span class="course-price">{{ $course->price_label }}</span>
+                        </div>
+                        <span class="btn btn-brand btn-sm course-cta">View Course</span>
                     </div>
-                </div>
+                </a>
             @empty
                 <div style="grid-column: 1 / -1; text-align: center; padding: 48px 24px;">
                     <h3 style="margin-bottom: 8px;">No courses found</h3>

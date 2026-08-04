@@ -37,6 +37,16 @@
                 @error('type') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <div>
+                <label class="field-label" for="sector">Sector</label>
+                <select id="sector" name="sector">
+                    <option value="">Select a sector…</option>
+                    @foreach (\App\Models\JobOpening::SECTORS as $sector)
+                        <option value="{{ $sector }}" @selected(old('sector') === $sector)>{{ $sector }}</option>
+                    @endforeach
+                </select>
+                @error('sector') <div class="field-error">{{ $message }}</div> @enderror
+            </div>
+            <div>
                 <label class="field-label" for="location">Location</label>
                 <input type="text" id="location" name="location" placeholder="e.g. Accra / Remote" value="{{ old('location') }}">
                 @error('location') <div class="field-error">{{ $message }}</div> @enderror
@@ -92,13 +102,13 @@
                         </td>
                         <td><a href="{{ route('company.applications', $opening) }}">{{ $opening->applications_count }} {{ Str::plural('application', $opening->applications_count) }}</a></td>
                         <td>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <a href="{{ route('jobs.show', $opening) }}" target="_blank">View</a>
-                                <a href="{{ route('company.jobs.edit', $opening) }}">Edit</a>
+                            <div class="row-actions">
+                                <a href="{{ route('jobs.show', $opening) }}" target="_blank" title="View" aria-label="View"><i class="fa-solid fa-eye"></i></a>
+                                <a href="{{ route('company.jobs.edit', $opening) }}" title="Edit" aria-label="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form method="POST" action="{{ route('company.jobs.destroy', $opening) }}" data-confirm="Delete this job and all its applications?">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link-danger">Delete</button>
+                                    <button type="submit" class="link-danger" title="Delete" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
                         </td>

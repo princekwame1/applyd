@@ -27,11 +27,18 @@ class RoleController extends Controller
         $role = Role::create(['name' => strtolower($data['name'])]);
         $role->syncPermissions($data['permissions'] ?? []);
 
-        return redirect()->route('dashboard.roles')->with('status', 'Role created.');
+        return $this->modalOk($request, 'dashboard.roles', 'Role created.');
     }
 
-    public function edit(Role $role)
+    public function edit(Request $request, Role $role)
     {
+        if ($request->ajax()) {
+            return view('dashboard.roles.partials.form', [
+                'model' => $role,
+                'permissions' => Permission::orderBy('name')->get(),
+            ]);
+        }
+
         return view('dashboard.roles.edit', [
             'role' => $role,
             'permissions' => Permission::orderBy('name')->get(),
@@ -47,7 +54,7 @@ class RoleController extends Controller
         ]);
 
         if ($role->name === 'super' && strtolower($data['name']) !== 'super') {
-            return back()->with('error', 'The super role cannot be renamed.');
+            return $this->modalError($request, 'dashboard.roles', 'The super role cannot be renamed.');
         }
 
         $role->update(['name' => strtolower($data['name'])]);
@@ -55,7 +62,7 @@ class RoleController extends Controller
         // super always keeps every permission
         $role->syncPermissions($role->name === 'super' ? Permission::all() : ($data['permissions'] ?? []));
 
-        return redirect()->route('dashboard.roles')->with('status', 'Role updated.');
+        return $this->modalOk($request, 'dashboard.roles', 'Role updated.');
     }
 
     public function destroy(Role $role)
@@ -84,7 +91,7 @@ class RoleController extends Controller
         // super automatically gets any new permission
         Role::findByName('super')->givePermissionTo(strtolower($data['name']));
 
-        return redirect()->route('dashboard.roles')->with('status', 'Permission created.');
+        return $this->modalOk($request, 'dashboard.roles', 'Permission created.');
     }
 
     public function destroyPermission(Permission $permission)

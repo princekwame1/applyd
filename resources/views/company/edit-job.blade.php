@@ -25,6 +25,16 @@
                 @error('type') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <div>
+                <label class="field-label" for="sector">Sector</label>
+                <select id="sector" name="sector">
+                    <option value="">Select a sector…</option>
+                    @foreach (\App\Models\JobOpening::SECTORS as $sector)
+                        <option value="{{ $sector }}" @selected(old('sector', $opening->sector) === $sector)>{{ $sector }}</option>
+                    @endforeach
+                </select>
+                @error('sector') <div class="field-error">{{ $message }}</div> @enderror
+            </div>
+            <div>
                 <label class="field-label" for="location">Location</label>
                 <input type="text" id="location" name="location" value="{{ old('location', $opening->location) }}">
                 @error('location') <div class="field-error">{{ $message }}</div> @enderror

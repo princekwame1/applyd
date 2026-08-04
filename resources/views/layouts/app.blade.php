@@ -7,9 +7,10 @@
     <meta name="description" content="A free, hands-on learning experience: 24 digital tools, 24 expert facilitators, 3 countries, 24 days. 100% online and completely free.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     @stack('head')
@@ -20,7 +21,7 @@
             <a href="{{ route('landing') }}" class="site-logo">
                 <img src="{{ asset('img/logo.png') }}" alt="Applyd Academy">
             </a>
-            <ul class="nav-links">
+            <ul class="nav-links" id="primaryNav">
                 <li><a href="{{ route('landing') }}" class="{{ request()->routeIs('landing') ? 'active' : '' }}">Home</a></li>
                 <li><a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About Us</a></li>
                 <li><a href="{{ route('jobs') }}" class="{{ request()->routeIs('jobs') ? 'active' : '' }}">Jobs</a></li>
@@ -53,6 +54,9 @@
             @else
                 <a href="{{ route('login') }}" class="btn btn-brand btn-sm">Login</a>
             @endauth
+            <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="primaryNav">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
@@ -109,6 +113,26 @@
             var menu = document.getElementById('navProfileMenu');
             if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
         });
+
+        (function () {
+            var toggle = document.getElementById('navToggle');
+            var nav = document.getElementById('primaryNav');
+            if (!toggle || !nav) return;
+            function setOpen(open) {
+                nav.classList.toggle('open', open);
+                toggle.classList.toggle('is-open', open);
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            toggle.addEventListener('click', function () {
+                setOpen(!nav.classList.contains('open'));
+            });
+            nav.addEventListener('click', function (e) {
+                if (e.target.closest('a')) setOpen(false);
+            });
+            document.addEventListener('click', function (e) {
+                if (nav.classList.contains('open') && !nav.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
+            });
+        })();
     </script>
     @stack('scripts')
 </body>

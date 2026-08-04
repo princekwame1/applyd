@@ -10,11 +10,7 @@ class SmsLogsController extends Controller
 {
     public function index()
     {
-        $smsLogs = SmsLog::with('registration')
-            ->latest()
-            ->paginate(15);
-
-        return view('dashboard.sms-logs', compact('smsLogs'));
+        return view('dashboard.sms-logs');
     }
 
     public function retry(SmsLog $smsLog)

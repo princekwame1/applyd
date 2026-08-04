@@ -10,6 +10,7 @@
         <p class="section-lead" style="margin-bottom: 14px;">{{ $opening->company->name }}{{ $opening->location ? ' · '.$opening->location : '' }}</p>
         <div class="job-meta-row">
             <span class="tag">{{ $opening->type }}</span>
+            @if ($opening->sector)<span class="tag">{{ $opening->sector }}</span>@endif
             @if ($opening->salary_range)<span class="tag">{{ $opening->salary_range }}</span>@endif
             @if ($opening->deadline)<span class="tag">Apply by {{ $opening->deadline->format('M j, Y') }}</span>@endif
             @unless ($opening->is_accepting)<span class="tag" style="background:#fef2f2;color:var(--danger);">Closed</span>@endunless

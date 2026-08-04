@@ -5,7 +5,9 @@
 @section('content')
 @php($user = auth()->user())
 
-<h1 class="section-title" style="margin-bottom: 24px;">Profile Settings</h1>
+<div class="page-head">
+    <h1 class="section-title">Profile Settings</h1>
+</div>
 
 @if (session('status_profile'))
     <div class="success-box" style="max-width: 980px;">{{ session('status_profile') }}</div>
@@ -40,27 +42,44 @@
 <div class="profile-grid">
     {{-- Profile information --}}
     <div class="card">
-        <h3 style="margin-bottom: 4px;">Profile Information</h3>
-        <p style="color: var(--ink-soft); font-size: .92rem; margin-bottom: 18px;">Update your photo, name, and email address.</p>
+        <div class="card-head">
+            <span class="card-ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <div>
+                <h3>Profile Information</h3>
+                <p>Update your photo, name, and email address.</p>
+            </div>
+        </div>
 
         <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" style="display: grid; gap: 18px;">
             @csrf
             @method('PUT')
 
-            <div class="avatar-upload">
-                <div class="avatar-preview" id="avatarPreview">
-                    @if ($user->avatar_url)
-                        <img src="{{ $user->avatar_url }}" alt="">
-                    @else
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    @endif
+            <div>
+                <div class="avatar-upload">
+                    <label for="avatar" class="avatar-preview" id="avatarPreview" title="Change photo">
+                        @if ($user->avatar_url)
+                            <img src="{{ $user->avatar_url }}" alt="">
+                        @else
+                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        @endif
+                        <span class="avatar-cam" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </span>
+                    </label>
+                    <label for="avatar" class="avatar-drop" id="avatarDrop">
+                        <span class="avatar-drop-ic" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </span>
+                        <span class="avatar-drop-text">
+                            <span class="avatar-drop-main"><strong>Click to upload</strong> or drag &amp; drop</span>
+                            <span class="upload-hint" id="uploadHint">JPG, PNG or WebP · max 2 MB</span>
+                        </span>
+                    </label>
                 </div>
-                <div>
-                    <label for="avatar" class="btn btn-outline btn-sm" style="cursor: pointer;">Choose Photo</label>
-                    <input type="file" id="avatar" name="avatar" accept="image/png,image/jpeg,image/webp" hidden>
-                    <div class="upload-hint" id="uploadHint">JPG, PNG or WebP · max 2 MB</div>
-                    @error('avatar') <div class="field-error">{{ $message }}</div> @enderror
-                </div>
+                <input type="file" id="avatar" name="avatar" accept="image/png,image/jpeg,image/webp" hidden>
+                @error('avatar') <div class="field-error" style="margin-top: 8px;">{{ $message }}</div> @enderror
             </div>
 
             <div>
@@ -81,8 +100,15 @@
 
     {{-- Password --}}
     <div class="card">
-        <h3 style="margin-bottom: 4px;">Update Password</h3>
-        <p style="color: var(--ink-soft); font-size: .92rem; margin-bottom: 18px;">Use a long, random password to keep your account secure.</p>
+        <div class="card-head">
+            <span class="card-ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <div>
+                <h3>Update Password</h3>
+                <p>Use a long, random password to keep your account secure.</p>
+            </div>
+        </div>
 
         @if (session('status_password'))
             <div class="success-box">{{ session('status_password') }}</div>
@@ -113,14 +139,66 @@
 </div>
 
 <script>
-    document.getElementById('avatar').addEventListener('change', function () {
-        var file = this.files[0];
-        if (!file) return;
-        var url = URL.createObjectURL(file);
-        ['avatarPreview', 'avatarXl'].forEach(function (id) {
-            document.getElementById(id).innerHTML = '<img src="' + url + '" alt="">';
+    (function () {
+        var input = document.getElementById('avatar');
+        var drop = document.getElementById('avatarDrop');
+        var preview = document.getElementById('avatarPreview');
+        var xl = document.getElementById('avatarXl');
+        var hint = document.getElementById('uploadHint');
+        var MAX = 2 * 1024 * 1024;
+
+        function setImage(el, url) {
+            var img = el.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                img.alt = '';
+                el.insertBefore(img, el.firstChild);
+            }
+            // remove any initial text node
+            Array.prototype.slice.call(el.childNodes).forEach(function (n) {
+                if (n.nodeType === 3) el.removeChild(n);
+            });
+            img.src = url;
+        }
+
+        function handle(file) {
+            if (!file) return;
+            if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) {
+                hint.textContent = 'Unsupported file type — use JPG, PNG or WebP';
+                drop.classList.add('is-error');
+                return;
+            }
+            if (file.size > MAX) {
+                hint.textContent = 'File is too large — max 2 MB';
+                drop.classList.add('is-error');
+                return;
+            }
+            drop.classList.remove('is-error');
+            var url = URL.createObjectURL(file);
+            setImage(preview, url);
+            if (xl) setImage(xl, url);
+            hint.textContent = file.name;
+        }
+
+        input.addEventListener('change', function () { handle(this.files[0]); });
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('is-drag'); });
         });
-        document.getElementById('uploadHint').textContent = file.name;
-    });
+        ['dragleave', 'dragend', 'drop'].forEach(function (ev) {
+            drop.addEventListener(ev, function () { drop.classList.remove('is-drag'); });
+        });
+        drop.addEventListener('drop', function (e) {
+            e.preventDefault();
+            var file = e.dataTransfer.files[0];
+            if (!file) return;
+            try {
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+            } catch (err) { /* older browsers: input.files may stay empty */ }
+            handle(file);
+        });
+    })();
 </script>
 @endsection

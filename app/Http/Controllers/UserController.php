@@ -40,11 +40,18 @@ class UserController extends Controller
 
         $user->syncRoles([$data['role']]);
 
-        return redirect()->route('dashboard.users')->with('status', 'User created.');
+        return $this->modalOk($request, 'dashboard.users', 'User created.');
     }
 
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
+        if ($request->ajax()) {
+            return view('dashboard.users.partials.form', [
+                'model' => $user,
+                'roles' => Role::orderBy('name')->get(),
+            ]);
+        }
+
         return view('dashboard.users.edit', [
             'user' => $user,
             'roles' => Role::orderBy('name')->get(),
@@ -68,7 +75,7 @@ class UserController extends Controller
 
         $user->syncRoles([$data['role']]);
 
-        return redirect()->route('dashboard.users')->with('status', 'User updated.');
+        return $this->modalOk($request, 'dashboard.users', 'User updated.');
     }
 
     public function destroy(Request $request, User $user)

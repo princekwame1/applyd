@@ -19,11 +19,13 @@ class DashboardController extends Controller
             'counts' => [
                 'registrations' => Registration::count(),
                 'today' => Registration::whereDate('created_at', now()->toDateString())->count(),
+                'week' => Registration::where('created_at', '>=', now()->startOfWeek())->count(),
                 'tools' => Tool::count(),
                 'courses' => Course::count(),
                 'schedules' => Schedule::count(),
                 'users' => User::count(),
             ],
+            'recent' => Registration::latest()->take(6)->get(),
         ]);
     }
 

@@ -16,6 +16,15 @@ class ToolsTable extends DataTableComponent
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
+        $this->setDefaultReorderSort('sort_order', 'asc');
+        $this->setReorderEnabled();
+    }
+
+    public function reorder($rows): void
+    {
+        foreach ($rows as $row) {
+            Tool::where('id', $row['id'])->update(['sort_order' => (int) $row['sort_order']]);
+        }
     }
 
     public function columns(): array
@@ -24,8 +33,6 @@ class ToolsTable extends DataTableComponent
             Column::make('Image', 'image')
                 ->format(fn ($value, $row) => '<img src="'.$row->image_url.'" alt="" style="width:52px;height:36px;object-fit:cover;border-radius:6px;">')
                 ->html(),
-            Column::make('Order', 'sort_order')
-                ->sortable(),
             Column::make('Name', 'name')
                 ->sortable()
                 ->searchable(),

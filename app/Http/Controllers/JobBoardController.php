@@ -28,6 +28,10 @@ class JobBoardController extends Controller
             $query->where('type', $request->input('type'));
         }
 
+        if ($request->filled('sector')) {
+            $query->where('sector', $request->input('sector'));
+        }
+
         if ($request->filled('location')) {
             $query->where('location', $request->input('location'));
         }
@@ -37,9 +41,11 @@ class JobBoardController extends Controller
         return view('jobs.index', [
             'openings' => $openings,
             'types' => JobOpening::TYPES,
+            'sectors' => JobOpening::open()->select('sector')->distinct()->whereNotNull('sector')->orderBy('sector')->pluck('sector'),
             'locations' => JobOpening::open()->select('location')->distinct()->whereNotNull('location')->pluck('location'),
             'search' => $request->input('search'),
             'selectedType' => $request->input('type'),
+            'selectedSector' => $request->input('sector'),
             'selectedLocation' => $request->input('location'),
         ]);
     }

@@ -21,13 +21,20 @@ class ScheduleController extends Controller
 
     public function store(Request $request)
     {
-        Schedule::create($this->validated($request));
+        $data = $this->validated($request);
+        $data['sort_order'] = (Schedule::max('sort_order') ?? 0) + 1;
 
-        return redirect()->route('dashboard.schedules')->with('status', 'Schedule entry added.');
+        Schedule::create($data);
+
+        return $this->modalOk($request, 'dashboard.schedules', 'Schedule entry added.');
     }
 
-    public function edit(Schedule $schedule)
+    public function edit(Request $request, Schedule $schedule)
     {
+        if ($request->ajax()) {
+            return view('dashboard.schedules.partials.form', ['model' => $schedule]);
+        }
+
         return view('dashboard.schedules.edit', compact('schedule'));
     }
 
@@ -35,7 +42,7 @@ class ScheduleController extends Controller
     {
         $schedule->update($this->validated($request));
 
-        return redirect()->route('dashboard.schedules')->with('status', 'Schedule entry updated.');
+        return $this->modalOk($request, 'dashboard.schedules', 'Schedule entry updated.');
     }
 
     public function destroy(Schedule $schedule)
@@ -50,7 +57,6 @@ class ScheduleController extends Controller
         return $request->validate([
             'week_label' => ['required', 'string', 'max:100'],
             'focus' => ['required', 'string', 'max:255'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
     }
 }

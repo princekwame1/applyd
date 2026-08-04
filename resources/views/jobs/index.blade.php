@@ -27,16 +27,26 @@
                 </div>
 
                 <div class="filter-item">
+                    <label>Filter by Sector:</label>
+                    <select name="sector" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Sectors</option>
+                        @foreach ($sectors as $sector)
+                            <option value="{{ $sector }}" {{ $selectedSector === $sector ? 'selected' : '' }}>{{ $sector }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="filter-item">
                     <label>Job Search:</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" name="search" placeholder="Search jobs..." value="{{ $search }}" class="search-input" style="flex: 1;">
+                    <div class="jobs-search-row">
+                        <input type="text" name="search" placeholder="Search jobs..." value="{{ $search }}" class="search-input">
                         <button type="submit" class="btn btn-brand btn-sm">Search</button>
                     </div>
                 </div>
             </form>
         </div>
 
-        @if ($search || $selectedType || $selectedLocation)
+        @if ($search || $selectedType || $selectedSector || $selectedLocation)
             <div style="text-align: center; margin-bottom: 24px;">
                 <a href="{{ route('jobs') }}" class="btn btn-outline btn-sm">Clear all filters</a>
             </div>
@@ -59,6 +69,9 @@
                                 <div class="job-meta-tags">
                                     @if ($opening->location)
                                         <span class="job-meta-tag">📍 {{ $opening->location }}</span>
+                                    @endif
+                                    @if ($opening->sector)
+                                        <span class="job-meta-tag">🏷️ {{ $opening->sector }}</span>
                                     @endif
                                     <span class="job-type-badge">{{ $opening->type }}</span>
                                 </div>

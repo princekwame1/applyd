@@ -60,6 +60,7 @@ class CompanyController extends Controller
             'description' => ['required', 'string', 'max:10000'],
             'location' => ['nullable', 'string', 'max:150'],
             'type' => ['required', Rule::in(JobOpening::TYPES)],
+            'sector' => ['nullable', Rule::in(JobOpening::SECTORS)],
             'salary_range' => ['nullable', 'string', 'max:100'],
             'deadline' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
