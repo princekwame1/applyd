@@ -8,10 +8,13 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class SchedulesTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Schedule::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('sort_order', 'asc');
         $this->setSearchDisabled();

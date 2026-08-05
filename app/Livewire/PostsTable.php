@@ -12,10 +12,13 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class PostsTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Post::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('published_at', 'desc');
         $this->setPerPageAccepted([10, 25, 50]);

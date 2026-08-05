@@ -9,10 +9,13 @@ use Spatie\Permission\Models\Role;
 
 class RolesTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Role::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('name', 'asc');
         $this->setSearchDisabled();

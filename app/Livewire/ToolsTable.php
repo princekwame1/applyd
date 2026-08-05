@@ -8,10 +8,13 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class ToolsTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Tool::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);

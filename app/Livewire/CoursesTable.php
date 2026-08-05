@@ -11,10 +11,13 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class CoursesTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Course::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);
@@ -82,9 +85,6 @@ class CoursesTable extends DataTableComponent
             Column::make('Level', 'level')
                 ->sortable(),
             Column::make('Duration', 'duration'),
-            Column::make('Price', 'price')
-                ->sortable()
-                ->format(fn ($value, $row) => e($row->price_label)),
             Column::make('Actions', 'id')
                 ->format(fn ($value) => view('dashboard.courses.partials.actions', ['id' => $value]))
                 ->html(),

@@ -1,4 +1,4 @@
-@php($isEdit = isset($model) && $model)
+@php $isEdit = isset($model) && $model; @endphp
 <form method="POST"
       action="{{ $isEdit ? route('dashboard.courses.update', $model) : route('dashboard.courses.store') }}"
       enctype="multipart/form-data" data-modal-form autocomplete="off">
@@ -37,25 +37,34 @@
             <div class="field-error" data-error="form_price"></div>
         </div>
         <div class="span-2">
-            <label class="field-label">Attendance Type &amp; Tuition (GHS)</label>
-            <p style="color:var(--ink-soft); font-size:.82rem; margin:-2px 0 8px;">Set a price for each mode you offer. Leave a mode blank to not offer it.</p>
-            <div class="attendance-price-grid">
-                <div>
-                    <label class="field-label" for="c_price_in_person" style="font-weight:600;">In-Person</label>
-                    <input type="number" id="c_price_in_person" name="price_in_person" min="0" step="0.01" value="{{ old('price_in_person', $model?->price_in_person) }}" placeholder="e.g. 800">
-                    <div class="field-error" data-error="price_in_person"></div>
-                </div>
-                <div>
-                    <label class="field-label" for="c_price_online" style="font-weight:600;">Online</label>
-                    <input type="number" id="c_price_online" name="price_online" min="0" step="0.01" value="{{ old('price_online', $model?->price_online) }}" placeholder="e.g. 500">
-                    <div class="field-error" data-error="price_online"></div>
-                </div>
-                <div>
-                    <label class="field-label" for="c_price_hybrid" style="font-weight:600;">Hybrid</label>
-                    <input type="number" id="c_price_hybrid" name="price_hybrid" min="0" step="0.01" value="{{ old('price_hybrid', $model?->price_hybrid) }}" placeholder="e.g. 650">
-                    <div class="field-error" data-error="price_hybrid"></div>
-                </div>
+            <label class="field-label">Attendance Types &amp; Tuition (GHS)</label>
+            <p style="color:var(--ink-soft); font-size:.82rem; margin:-2px 0 8px;">Add each mode you offer (e.g. In-Person, Online, Hybrid) with its tuition price. Add as many as you need.</p>
+            @php
+                $attRows = [];
+                if (old('attendance_label') !== null) {
+                    foreach ((array) old('attendance_label') as $i => $l) {
+                        $attRows[] = ['label' => $l, 'price' => old('attendance_price.'.$i, '')];
+                    }
+                } elseif ($isEdit) {
+                    foreach ($model->attendanceOptions() as $o) {
+                        $attRows[] = ['label' => $o['label'], 'price' => $o['price']];
+                    }
+                }
+                if (empty($attRows)) {
+                    $attRows = [['label' => '', 'price' => '']];
+                }
+            @endphp
+            <div class="attendance-repeater" data-attendance-repeater>
+                @foreach ($attRows as $row)
+                    <div class="attendance-row" data-attendance-row>
+                        <input type="text" name="attendance_label[]" value="{{ $row['label'] }}" placeholder="Attendance type (e.g. In-Person)">
+                        <input type="number" name="attendance_price[]" min="0" step="0.01" value="{{ $row['price'] }}" placeholder="Price">
+                        <button type="button" class="attendance-remove" data-attendance-remove aria-label="Remove">&times;</button>
+                    </div>
+                @endforeach
             </div>
+            <button type="button" class="btn btn-outline btn-sm" data-attendance-add><i class="fa-solid fa-plus"></i> Add attendance type</button>
+            <div class="field-error" data-error="attendance_label"></div>
         </div>
         <div>
             <label class="field-label" for="c_image">Image</label>

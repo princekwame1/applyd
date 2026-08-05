@@ -78,15 +78,30 @@ class CourseController extends Controller
             'level' => ['nullable', 'string', Rule::in(Course::LEVELS)],
             'duration' => ['nullable', 'string', 'max:100'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'price_in_person' => ['nullable', 'numeric', 'min:0'],
-            'price_online' => ['nullable', 'numeric', 'min:0'],
-            'price_hybrid' => ['nullable', 'numeric', 'min:0'],
+            'attendance_label' => ['nullable', 'array'],
+            'attendance_label.*' => ['nullable', 'string', 'max:60'],
+            'attendance_price' => ['nullable', 'array'],
+            'attendance_price.*' => ['nullable', 'numeric', 'min:0'],
             'form_price' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string', 'max:20000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $data['description'] = \App\Support\Html::clean($data['description'] ?? null);
+
+        // Build the dynamic attendance list from the paired label/price inputs.
+        $labels = $request->input('attendance_label', []);
+        $prices = $request->input('attendance_price', []);
+        $attendance = [];
+        foreach ($labels as $i => $label) {
+            $label = trim((string) $label);
+            if ($label === '') {
+                continue;
+            }
+            $attendance[] = ['label' => $label, 'price' => (float) ($prices[$i] ?? 0)];
+        }
+        $data['attendance'] = $attendance;
+        unset($data['attendance_label'], $data['attendance_price']);
 
         return $data;
     }

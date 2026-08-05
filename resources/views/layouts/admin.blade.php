@@ -160,6 +160,36 @@
             }
         });
 
+        // Dynamic attendance-type repeater (works inside AJAX-loaded modal forms)
+        document.addEventListener('click', function (e) {
+            var addBtn = e.target.closest('[data-attendance-add]');
+            if (addBtn) {
+                e.preventDefault();
+                var scope = addBtn.closest('.span-2') || addBtn.parentNode;
+                var rep = scope.querySelector('[data-attendance-repeater]');
+                if (!rep) return;
+                var rows = rep.querySelectorAll('[data-attendance-row]');
+                var clone = rows[rows.length - 1].cloneNode(true);
+                clone.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                rep.appendChild(clone);
+                var first = clone.querySelector('input');
+                if (first) first.focus();
+                return;
+            }
+            var rmBtn = e.target.closest('[data-attendance-remove]');
+            if (rmBtn) {
+                e.preventDefault();
+                var row = rmBtn.closest('[data-attendance-row]');
+                var repeater = row && row.closest('[data-attendance-repeater]');
+                if (!repeater) return;
+                if (repeater.querySelectorAll('[data-attendance-row]').length > 1) {
+                    row.remove();
+                } else {
+                    row.querySelectorAll('input').forEach(function (i) { i.value = ''; });
+                }
+            }
+        });
+
         // Click an image preview to zoom it in a lightbox
         var lightbox = document.createElement('div');
         lightbox.className = 'img-lightbox';

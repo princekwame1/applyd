@@ -8,10 +8,13 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class RegistrationsTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = Registration::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('created_at', 'desc');
         $this->setPerPageAccepted([15, 25, 50, 100]);

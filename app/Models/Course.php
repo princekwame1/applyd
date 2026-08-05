@@ -11,20 +11,12 @@ class Course extends Model
 
     public const DEFAULT_FORM_FEE = 50;
 
-    public const ATTENDANCE = [
-        'in_person' => 'In-Person',
-        'online' => 'Online',
-        'hybrid' => 'Hybrid',
-    ];
-
     protected $fillable = [
         'title',
         'level',
         'duration',
         'price',
-        'price_in_person',
-        'price_online',
-        'price_hybrid',
+        'attendance',
         'form_price',
         'description',
         'image',
@@ -33,9 +25,7 @@ class Course extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
-        'price_in_person' => 'decimal:2',
-        'price_online' => 'decimal:2',
-        'price_hybrid' => 'decimal:2',
+        'attendance' => 'array',
         'form_price' => 'decimal:2',
     ];
 
@@ -67,11 +57,16 @@ class Course extends Model
     {
         $options = [];
 
-        foreach (self::ATTENDANCE as $key => $label) {
-            $price = $this->{'price_'.$key};
-            if ($price !== null) {
-                $options[] = ['key' => $key, 'label' => $label, 'price' => (float) $price];
+        foreach ((array) $this->attendance as $row) {
+            $label = trim((string) ($row['label'] ?? ''));
+            if ($label === '') {
+                continue;
             }
+            $options[] = [
+                'key' => \Illuminate\Support\Str::slug($label) ?: 'option-'.count($options),
+                'label' => $label,
+                'price' => (float) ($row['price'] ?? 0),
+            ];
         }
 
         if (empty($options) && (float) $this->price > 0) {
@@ -110,9 +105,19 @@ class Course extends Model
         return count($this->attendanceOptions()) > 1;
     }
 
-    public static function attendanceLabel(?string $key): string
+    public function attendanceLabel(?string $key): string
     {
-        return self::ATTENDANCE[$key] ?? ($key === 'standard' ? 'Standard' : '—');
+        if (! $key) {
+            return '—';
+        }
+
+        foreach ($this->attendanceOptions() as $option) {
+            if ($option['key'] === $key) {
+                return $option['label'];
+            }
+        }
+
+        return (string) \Illuminate\Support\Str::of($key)->replace('-', ' ')->title();
     }
 
     public static function money(float $amount): string

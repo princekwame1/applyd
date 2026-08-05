@@ -85,7 +85,13 @@ class CourseEnrollment extends Model
 
     public function getAttendanceLabelAttribute(): string
     {
-        return $this->attendance_type ? Course::attendanceLabel($this->attendance_type) : '—';
+        if (! $this->attendance_type) {
+            return '—';
+        }
+
+        return $this->course
+            ? $this->course->attendanceLabel($this->attendance_type)
+            : (string) \Illuminate\Support\Str::of($this->attendance_type)->replace('-', ' ')->title();
     }
 
     public function getTuitionStatusLabelAttribute(): string

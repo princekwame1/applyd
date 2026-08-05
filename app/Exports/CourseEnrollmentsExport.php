@@ -29,7 +29,7 @@ class CourseEnrollmentsExport implements FromCollection, WithHeadings, WithMappi
             $e->email,
             $e->phone,
             $e->course?->title,
-            $e->attendance_type ? \App\Models\Course::attendanceLabel($e->attendance_type) : null,
+            $e->attendance_type ? $e->attendance_label : null,
             number_format((float) $e->amount, 2),
             ucfirst($e->status),
             $e->serial_no,

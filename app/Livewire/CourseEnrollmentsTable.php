@@ -10,10 +10,13 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class CourseEnrollmentsTable extends DataTableComponent
 {
+    use \App\Livewire\Concerns\WithSkeletonLoader;
+
     protected $model = CourseEnrollment::class;
 
     public function configure(): void
     {
+        $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
         $this->setDefaultSort('created_at', 'desc');
         $this->setPerPageAccepted([10, 25, 50]);
@@ -46,7 +49,7 @@ class CourseEnrollmentsTable extends DataTableComponent
             Column::make('Course', 'course_id')
                 ->format(fn ($value, $row) => e($row->course?->title ?? '—')),
             Column::make('Attendance', 'attendance_type')
-                ->format(fn ($value) => e($value ? \App\Models\Course::attendanceLabel($value) : '—')),
+                ->format(fn ($value, $row) => e($row->attendance_label)),
             Column::make('Amount', 'amount')
                 ->sortable()
                 ->format(fn ($value, $row) => e($row->amount_label)),
