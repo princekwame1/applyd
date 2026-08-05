@@ -301,10 +301,15 @@
                         }
                         if (res.status === 200 && res.data.ok) {
                             close();
-                            if (window.Livewire && Livewire.all) {
-                                Livewire.all().forEach(function (c) { c.call('$refresh'); });
-                            }
                             Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, icon: 'success', title: res.data.message || 'Saved' });
+                            // Refresh any Livewire tables — never let this break the success flow.
+                            try {
+                                if (window.Livewire && typeof Livewire.all === 'function') {
+                                    Livewire.all().forEach(function (c) {
+                                        try { (c.$wire && c.$wire.$refresh) ? c.$wire.$refresh() : (c.call && c.call('$refresh')); } catch (e) {}
+                                    });
+                                }
+                            } catch (e) {}
                         } else if (res.status === 422 && res.data.errors) {
                             Object.keys(res.data.errors).forEach(function (key) {
                                 var base = key.split('.')[0];

@@ -57,7 +57,7 @@ class CourseEnrollment extends Model
     public static function generateSerial(): string
     {
         do {
-            $serial = 'UG'.random_int(1000000, 9999999);
+            $serial = 'APPLYD'.random_int(1000000, 9999999);
         } while (static::where('serial_no', $serial)->exists());
 
         return $serial;
