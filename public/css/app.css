@@ -505,6 +505,18 @@ a { color: var(--brand); }
   padding: 6px 14px; border-radius: 999px;
 }
 
+/* Course detail hero */
+.course-hero { padding: 40px 0 44px; }
+.course-hero-back { display: inline-block; color: rgba(255,255,255,.7); font-weight: 600; font-size: .9rem; text-decoration: none; }
+.course-hero-back:hover { color: #fff; }
+.course-hero-back i { margin-right: 6px; }
+.course-hero-inner { max-width: 780px; margin-top: 16px; }
+.course-hero .section-title { color: #fff; margin: 8px 0 14px; }
+.course-hero-meta { display: flex; flex-wrap: wrap; gap: 20px; color: rgba(255,255,255,.8); font-size: .92rem; }
+.course-hero-meta span { display: inline-flex; align-items: center; gap: 7px; }
+.course-hero-meta i { color: var(--accent); }
+.course-detail { padding-top: 40px; }
+
 /* ============ Blog ============ */
 .blog-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 40px; }
 .blog-tab {

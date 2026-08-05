@@ -3,25 +3,27 @@
 @section('title', $course->title.' — Applyd Academy')
 
 @section('content')
+<section class="page-hero course-hero">
+    <div class="container">
+        <a href="{{ route('courses') }}" class="course-hero-back"><i class="fa-solid fa-arrow-left"></i> All courses</a>
+        <div class="course-hero-inner">
+            @if ($course->level)<span class="page-eyebrow">{{ $course->level }}</span>@endif
+            <h1 class="section-title">{{ $course->title }}</h1>
+            <div class="course-hero-meta">
+                @if ($course->duration)<span><i class="fa-regular fa-clock"></i> {{ $course->duration }}</span>@endif
+                @if ($course->level)<span><i class="fa-solid fa-signal"></i> {{ $course->level }}</span>@endif
+                @if (count($course->attendanceOptions()))
+                    <span><i class="fa-solid fa-tag"></i> Tuition from {{ \App\Models\Course::money($course->tuition_full) }}</span>
+                @endif
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="course-detail">
     <div class="container">
-        <a href="{{ route('courses') }}" class="course-back"><i class="fa-solid fa-arrow-left"></i> All courses</a>
-
         <div class="course-detail-grid">
             <div class="course-detail-main">
-                @if ($course->level)<span class="course-badge course-badge-static">{{ $course->level }}</span>@endif
-                <h1 class="course-detail-title">{{ $course->title }}</h1>
-
-                <div class="course-detail-meta">
-                    @if ($course->duration)
-                        <span class="course-meta-item"><i class="fa-regular fa-clock"></i> {{ $course->duration }}</span>
-                    @endif
-                    @if ($course->level)
-                        <span class="course-meta-item"><i class="fa-solid fa-signal"></i> {{ $course->level }}</span>
-                    @endif
-                    <span class="course-meta-item"><i class="fa-solid fa-tag"></i> {{ $course->price_label }}</span>
-                </div>
-
                 @if ($course->image_url)
                     <img src="{{ $course->image_url }}" alt="{{ $course->title }}" class="course-detail-image">
                 @endif
