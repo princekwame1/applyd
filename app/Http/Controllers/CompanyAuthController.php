@@ -28,11 +28,13 @@ class CompanyAuthController extends Controller
             'company_name' => ['required', 'string', 'max:150', Rule::unique('companies', 'name')],
             'website' => ['nullable', 'url', 'max:255'],
             'location' => ['nullable', 'string', 'max:150'],
-            'description' => ['nullable', 'string', 'max:2000'],
+            'description' => ['nullable', 'string', 'max:20000'],
             'contact_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
+
+        $data['description'] = \App\Support\Html::clean($data['description'] ?? null);
 
         $user = DB::transaction(function () use ($data) {
             $user = User::create([

@@ -3,8 +3,9 @@
 @section('title', 'Post a Job — Applyd Academy')
 
 @section('content')
-<section class="alt contact-hero">
+<section class="page-hero">
     <div class="container center">
+        <span class="page-eyebrow">For Employers</span>
         <h1 class="section-title">Hire from Our Community</h1>
         <p class="section-lead">Create a free company account, post your openings, and receive applications with CVs, all in one place.</p>
     </div>
@@ -41,7 +42,7 @@
                 </div>
                 <div>
                     <label class="field-label" for="description">About the Company</label>
-                    <textarea id="description" name="description" rows="3" style="width:100%; padding:10px 14px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:1rem; font-family:inherit;">{{ old('description') }}</textarea>
+                    <textarea id="description" name="description" rows="3" data-rich style="width:100%; padding:10px 14px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:1rem; font-family:inherit;">{{ old('description') }}</textarea>
                     @error('description') <div class="field-error">{{ $message }}</div> @enderror
                 </div>
                 <div>
@@ -70,4 +71,5 @@
         </div>
     </div>
 </section>
+@include('partials.quill')
 @endsection

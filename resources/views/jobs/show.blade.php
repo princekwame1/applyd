@@ -27,7 +27,13 @@
         <div class="job-detail-grid">
             <div class="job-detail-main">
                 <h2 class="job-block-title">About the role</h2>
-                <div class="job-description">{!! nl2br(e($opening->description)) !!}</div>
+                <div class="job-description">
+                    @if (str_contains($opening->description, '<'))
+                        {!! $opening->description !!}
+                    @else
+                        {!! nl2br(e($opening->description)) !!}
+                    @endif
+                </div>
 
                 @if ($opening->company->description || $opening->company->website)
                     <div class="company-card">
@@ -35,7 +41,13 @@
                             <h3>About {{ $opening->company->name }}</h3>
                         </div>
                         @if ($opening->company->description)
-                            <p>{{ $opening->company->description }}</p>
+                            <div class="job-description">
+                                @if (str_contains($opening->company->description, '<'))
+                                    {!! $opening->company->description !!}
+                                @else
+                                    {!! nl2br(e($opening->company->description)) !!}
+                                @endif
+                            </div>
                         @endif
                         @if ($opening->company->website)
                             <a class="tool-link" href="{{ $opening->company->website }}" target="_blank" rel="noopener">Visit website →</a>

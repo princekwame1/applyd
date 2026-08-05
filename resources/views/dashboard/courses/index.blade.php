@@ -22,4 +22,5 @@
 <template id="courseCreateTpl">
     @include('dashboard.courses.partials.form', ['model' => null])
 </template>
+@include('partials.quill')
 @endsection

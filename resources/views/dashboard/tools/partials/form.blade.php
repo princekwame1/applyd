@@ -36,7 +36,7 @@
                     @endif
                 </span>
                 <label class="file-btn" for="t_image"><i class="fa-solid fa-upload"></i> Choose image</label>
-                <input type="file" id="t_image" name="image" accept="image/png,image/jpeg,image/webp" data-preview="t_image" hidden>
+                <input type="file" id="t_image" name="image" accept="image/jpeg,image/png,image/webp" data-preview="t_image" data-max-kb="2048" hidden>
                 <span class="file-name" data-filename-for="t_image"></span>
             </div>
             @if ($isEdit)<div class="upload-hint">Leave empty to keep the current image{{ $model->image ? '' : ' (category default)' }}.</div>@endif

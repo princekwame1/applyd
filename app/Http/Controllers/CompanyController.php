@@ -55,15 +55,19 @@ class CompanyController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:150'],
-            'description' => ['required', 'string', 'max:10000'],
+            'description' => ['required', 'string', 'max:20000'],
             'location' => ['nullable', 'string', 'max:150'],
             'type' => ['required', Rule::in(JobOpening::TYPES)],
             'sector' => ['nullable', Rule::in(JobOpening::SECTORS)],
             'salary_range' => ['nullable', 'string', 'max:100'],
             'deadline' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
+
+        $data['description'] = \App\Support\Html::clean($data['description']);
+
+        return $data;
     }
 
     private function authorizeOpening(Request $request, JobOpening $opening): void

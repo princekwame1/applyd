@@ -3,8 +3,9 @@
 @section('title', 'Courses at Applyd Academy')
 
 @section('content')
-<section class="alt contact-hero">
+<section class="page-hero">
     <div class="container center">
+        <span class="page-eyebrow">Applyd Academy</span>
         <h1 class="section-title">Our Courses</h1>
         <p class="section-lead">Learn from industry experts and advance your career.</p>
     </div>

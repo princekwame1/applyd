@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+    @stack('head')
 </head>
 <body class="admin-body">
     <aside class="admin-sidebar">
@@ -31,6 +32,8 @@
 
             <span class="side-heading">Academy</span>
             <a href="{{ route('dashboard.courses') }}" class="{{ request()->routeIs('dashboard.courses*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg> Courses</a>
+            <a href="{{ route('dashboard.blog') }}" class="{{ request()->routeIs('dashboard.blog*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11a2 2 0 0 1 2 2v14l-4-2-4 2-4-2V6a2 2 0 0 1 2-2z"/><line x1="8" y1="8" x2="13" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg> Blog</a>
+            <a href="{{ route('dashboard.course-registrations') }}" class="{{ request()->routeIs('dashboard.course-registrations') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg> Course Registrations</a>
 
             @canany(['manage users', 'manage roles'])
                 <span class="side-heading">Administration</span>
@@ -122,7 +125,7 @@
             localStorage.setItem('sidebarCollapsed', collapsed);
         });
 
-        // Styled file input: live image preview + filename
+        // Styled file input: validate size + type, then live image preview + filename
         document.addEventListener('change', function (e) {
             var input = e.target.closest('input[type=file][data-preview]');
             if (!input) return;
@@ -130,9 +133,29 @@
             var id = input.getAttribute('data-preview');
             var preview = scope.querySelector('[data-preview-for="' + id + '"]');
             var nameEl = scope.querySelector('[data-filename-for="' + id + '"]');
+            var errEl = scope.querySelector('[data-error="' + input.name + '"]');
             var file = input.files && input.files[0];
+
+            if (errEl) errEl.textContent = '';
+
+            if (file) {
+                var maxKb = parseInt(input.getAttribute('data-max-kb') || '2048', 10);
+                var accept = (input.getAttribute('accept') || '').split(',')
+                    .map(function (s) { return s.trim(); }).filter(Boolean);
+                var typeOk = !accept.length || accept.indexOf(file.type) !== -1;
+
+                if (!typeOk) {
+                    if (errEl) errEl.textContent = 'Unsupported file type. Use JPG, PNG or WebP.';
+                    input.value = ''; file = null;
+                } else if (file.size > maxKb * 1024) {
+                    var mb = (maxKb / 1024).toFixed(maxKb % 1024 ? 1 : 0);
+                    if (errEl) errEl.textContent = 'File is too large (' + (file.size / 1048576).toFixed(1) + ' MB). Max ' + mb + ' MB.';
+                    input.value = ''; file = null;
+                }
+            }
+
             if (nameEl) nameEl.textContent = file ? file.name : '';
-            if (preview && file && file.type.indexOf('image/') === 0) {
+            if (file && preview && file.type.indexOf('image/') === 0) {
                 preview.innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="">';
             }
         });
@@ -259,8 +282,23 @@
                     body: new FormData(form),
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                 })
-                    .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+                    .then(function (r) {
+                        return r.text().then(function (t) {
+                            var d = null;
+                            try { d = t ? JSON.parse(t) : {}; } catch (err) { d = null; }
+                            return { status: r.status, data: d };
+                        });
+                    })
                     .then(function (res) {
+                        if (res.data === null) {
+                            var msg = res.status === 413
+                                ? 'The image is too large to upload. Please use a file under 2 MB.'
+                                : res.status === 419
+                                    ? 'Upload exceeded the server limit or your session expired. Use an image under 2 MB, or refresh and try again.'
+                                    : 'The server returned an unexpected response. Please try again.';
+                            Swal.fire({ icon: 'error', title: 'Upload failed', text: msg });
+                            return;
+                        }
                         if (res.status === 200 && res.data.ok) {
                             close();
                             if (window.Livewire && Livewire.all) {
@@ -284,5 +322,6 @@
             });
         })();
     </script>
+    @stack('scripts')
 </body>
 </html>

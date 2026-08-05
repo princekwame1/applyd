@@ -1,14 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\CompanyApplicationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CourseEnrollmentController;
 use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RoleController;
@@ -22,7 +25,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [RegistrationController::class, 'landing'])->name('landing');
 Route::view('/about', 'about')->name('about');
 Route::get('/courses', [PageController::class, 'courses'])->name('courses');
+Route::get('/enroll/callback', [CourseEnrollmentController::class, 'callback'])->name('courses.enroll.callback');
+Route::post('/courses/{course}/register', [CourseEnrollmentController::class, 'store'])->name('courses.enroll.store');
+
+// Applicant portal (login with Serial No + PIN, then complete the application)
+Route::get('/application/login', [CourseEnrollmentController::class, 'loginForm'])->name('application.login');
+Route::post('/application/login', [CourseEnrollmentController::class, 'login'])->name('application.login.attempt');
+Route::post('/application/logout', [CourseEnrollmentController::class, 'logout'])->name('application.logout');
+Route::get('/application', [CourseEnrollmentController::class, 'complete'])->name('application.complete');
+Route::post('/application', [CourseEnrollmentController::class, 'submit'])->name('application.submit');
 Route::get('/courses/{course}', [PageController::class, 'showCourse'])->name('courses.show');
+Route::get('/blog', [PageController::class, 'blog'])->name('blog');
+Route::get('/blog/{post:slug}', [PageController::class, 'showPost'])->name('blog.show');
 Route::view('/contact', 'contact')->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
 
@@ -94,6 +108,18 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('dashboard.courses.edit');
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('dashboard.courses.destroy');
+
+    Route::get('/course-registrations', [CourseEnrollmentController::class, 'adminIndex'])->name('dashboard.course-registrations');
+    Route::get('/course-registrations/export', [CourseEnrollmentController::class, 'export'])->name('dashboard.course-registrations.export');
+
+    Route::get('/blog', [PostController::class, 'index'])->name('dashboard.blog');
+    Route::post('/blog', [PostController::class, 'store'])->name('dashboard.blog.store');
+    Route::get('/blog/export', [PostController::class, 'export'])->name('dashboard.blog.export');
+    Route::get('/blog/{post}/edit', [PostController::class, 'edit'])->name('dashboard.blog.edit');
+    Route::put('/blog/{post}', [PostController::class, 'update'])->name('dashboard.blog.update');
+    Route::delete('/blog/{post}', [PostController::class, 'destroy'])->name('dashboard.blog.destroy');
+    Route::post('/blog-categories', [BlogCategoryController::class, 'store'])->name('dashboard.blog.categories.store');
+    Route::delete('/blog-categories/{category}', [BlogCategoryController::class, 'destroy'])->name('dashboard.blog.categories.destroy');
 
     Route::middleware('permission:manage users')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('dashboard.users');

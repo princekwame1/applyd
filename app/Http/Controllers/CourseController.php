@@ -73,13 +73,18 @@ class CourseController extends Controller
 
     private function validated(Request $request, ?Course $course = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:150', Rule::unique('courses', 'title')->ignore($course?->id)],
             'level' => ['nullable', 'string', Rule::in(Course::LEVELS)],
             'duration' => ['nullable', 'string', 'max:100'],
             'price' => ['nullable', 'numeric', 'min:0'],
-            'description' => ['nullable', 'string', 'max:2000'],
+            'form_price' => ['nullable', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string', 'max:20000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        $data['description'] = \App\Support\Html::clean($data['description'] ?? null);
+
+        return $data;
     }
 }

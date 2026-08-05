@@ -3,8 +3,9 @@
 @section('title', 'Contact Applyd Academy')
 
 @section('content')
-<section class="contact-hero">
+<section class="page-hero">
     <div class="container center">
+        <span class="page-eyebrow">Get in Touch</span>
         <h1 class="section-title">Contact Us</h1>
         <p class="section-lead">Questions about the bootcamp, partnerships, or anything else? We'd love to hear from you.</p>
     </div>

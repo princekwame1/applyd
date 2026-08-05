@@ -35,6 +35,12 @@ return [
         ],
     ],
 
+    'paystack' => [
+        'secret' => env('PAYSTACK_SECRET_KEY'),
+        'public' => env('PAYSTACK_PUBLIC_KEY'),
+        'currency' => env('PAYSTACK_CURRENCY', 'GHS'),
+    ],
+
     'mnotify' => [
         'api_key' => env('MNOTIFY_API_KEY'),
         'sender_id' => env('MNOTIFY_SENDER_ID', 'Applyd'),

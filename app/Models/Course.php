@@ -9,11 +9,14 @@ class Course extends Model
 {
     public const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'All levels'];
 
+    public const DEFAULT_FORM_FEE = 50;
+
     protected $fillable = [
         'title',
         'level',
         'duration',
         'price',
+        'form_price',
         'description',
         'image',
         'sort_order',
@@ -21,7 +24,25 @@ class Course extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'form_price' => 'decimal:2',
     ];
+
+    public function enrollments()
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
+    public function getFormFeeAttribute(): float
+    {
+        return (float) ($this->form_price ?? self::DEFAULT_FORM_FEE);
+    }
+
+    public function getFormFeeLabelAttribute(): string
+    {
+        $fee = $this->form_fee;
+
+        return 'GHS '.number_format($fee, ($fee == (int) $fee) ? 0 : 2);
+    }
 
     public function scopeOrdered(Builder $query): Builder
     {

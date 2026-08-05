@@ -211,11 +211,31 @@
         <h2 class="section-title">What Makes This Different</h2>
         <p class="section-lead">This isn't another webinar series.</p>
         <div class="grid grid-3">
-            <div class="card"><h3>Practical, not theoretical</h3><p>Every session is built around live demos and real practice, not slides.</p></div>
-            <div class="card"><h3>Genuinely global</h3><p>Facilitators from 3 countries bring different industries, tools, and perspectives.</p></div>
-            <div class="card"><h3>Built for the real world</h3><p>Every session ends with a real business or career use case. You'll see how professionals actually use these tools, not just how they work in theory.</p></div>
-            <div class="card"><h3>A network, not just a class</h3><p>Join a cross-border community of learners, facilitators, and professionals.</p></div>
-            <div class="card"><h3>Zero cost, zero catch</h3><p>Completely free. No hidden fees, no upsells.</p></div>
+            <div class="card about-card">
+                <span class="about-ic">@include('partials.icon', ['d' => 'tool'])</span>
+                <h3>Practical, not theoretical</h3>
+                <p>Every session is built around live demos and real practice, not slides.</p>
+            </div>
+            <div class="card about-card">
+                <span class="about-ic">@include('partials.icon', ['d' => 'globe'])</span>
+                <h3>Genuinely global</h3>
+                <p>Facilitators from 3 countries bring different industries, tools, and perspectives.</p>
+            </div>
+            <div class="card about-card">
+                <span class="about-ic">@include('partials.icon', ['d' => 'briefcase'])</span>
+                <h3>Built for the real world</h3>
+                <p>Every session ends with a real business or career use case. You'll see how professionals actually use these tools, not just how they work in theory.</p>
+            </div>
+            <div class="card about-card">
+                <span class="about-ic">@include('partials.icon', ['d' => 'users'])</span>
+                <h3>A network, not just a class</h3>
+                <p>Join a cross-border community of learners, facilitators, and professionals.</p>
+            </div>
+            <div class="card about-card">
+                <span class="about-ic">@include('partials.icon', ['d' => 'gift'])</span>
+                <h3>Zero cost, zero catch</h3>
+                <p>Completely free. No hidden fees, no upsells.</p>
+            </div>
         </div>
     </div>
 </section>

@@ -52,7 +52,7 @@
         </div>
         <div>
             <label class="field-label" for="description">Description <span class="req">*</span></label>
-            <textarea id="description" name="description" rows="6" style="width:100%; padding:10px 14px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:1rem; font-family:inherit;" required>{{ old('description', $opening->description) }}</textarea>
+            <textarea id="description" name="description" rows="6" data-rich style="width:100%; padding:10px 14px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:1rem; font-family:inherit;" required>{{ old('description', $opening->description) }}</textarea>
             @error('description') <div class="field-error">{{ $message }}</div> @enderror
         </div>
         <div>
@@ -67,4 +67,5 @@
         </div>
     </form>
 </div>
+@include('partials.quill')
 @endsection

@@ -8,4 +8,5 @@
 <div class="card" style="max-width: 720px;">
     @include('dashboard.courses.partials.form', ['model' => $course])
 </div>
+@include('partials.quill')
 @endsection
