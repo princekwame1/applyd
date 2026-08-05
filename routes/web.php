@@ -34,6 +34,8 @@ Route::post('/application/login', [CourseEnrollmentController::class, 'login'])-
 Route::post('/application/logout', [CourseEnrollmentController::class, 'logout'])->name('application.logout');
 Route::get('/application', [CourseEnrollmentController::class, 'complete'])->name('application.complete');
 Route::post('/application', [CourseEnrollmentController::class, 'submit'])->name('application.submit');
+Route::post('/application/tuition', [CourseEnrollmentController::class, 'tuitionInit'])->name('application.tuition');
+Route::get('/application/tuition/callback', [CourseEnrollmentController::class, 'tuitionCallback'])->name('application.tuition.callback');
 Route::get('/courses/{course}', [PageController::class, 'showCourse'])->name('courses.show');
 Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'showPost'])->name('blog.show');

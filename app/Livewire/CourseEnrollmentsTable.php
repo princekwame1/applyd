@@ -63,6 +63,14 @@ class CourseEnrollmentsTable extends DataTableComponent
             Column::make('PIN', 'pin')
                 ->format(fn ($value) => $value ? e($value) : '<span style="color:var(--ink-soft);">—</span>')
                 ->html(),
+            Column::make('Tuition', 'tuition_status')
+                ->format(fn ($value, $row) => match ($value) {
+                    'paid' => '<span class="badge badge-yes">Paid</span>',
+                    'partial' => '<span class="badge" style="background:#fef3c7;color:#92400e;">50% ('.\App\Models\Course::money((float) $row->tuition_amount).')</span>',
+                    'pending' => '<span class="badge badge-no">Pending</span>',
+                    default => '<span class="badge badge-no">Unpaid</span>',
+                })
+                ->html(),
             Column::make('Application', 'completed_at')
                 ->format(fn ($value) => $value
                     ? '<span class="badge badge-yes">Completed</span>'

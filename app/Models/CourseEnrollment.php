@@ -25,6 +25,11 @@ class CourseEnrollment extends Model
         'education_level',
         'goals',
         'completed_at',
+        'tuition_option',
+        'tuition_amount',
+        'tuition_status',
+        'tuition_reference',
+        'tuition_paid_at',
     ];
 
     protected $casts = [
@@ -32,6 +37,8 @@ class CourseEnrollment extends Model
         'paid_at' => 'datetime',
         'date_of_birth' => 'date',
         'completed_at' => 'datetime',
+        'tuition_amount' => 'decimal:2',
+        'tuition_paid_at' => 'datetime',
     ];
 
     public function course(): BelongsTo
@@ -52,6 +59,33 @@ class CourseEnrollment extends Model
     public function getIsCompletedAttribute(): bool
     {
         return $this->completed_at !== null;
+    }
+
+    public function hasDetails(): bool
+    {
+        return $this->date_of_birth !== null && $this->gender !== null && $this->education_level !== null;
+    }
+
+    public function getTuitionPaidAttribute(): float
+    {
+        return (float) $this->tuition_amount;
+    }
+
+    public function tuitionBalance(): float
+    {
+        $full = $this->course?->tuition_full ?? 0;
+
+        return max(0, round($full - $this->tuition_paid, 2));
+    }
+
+    public function getTuitionStatusLabelAttribute(): string
+    {
+        return match ($this->tuition_status) {
+            'paid' => 'Paid in full',
+            'partial' => 'Part payment (50%)',
+            'pending' => 'Payment pending',
+            default => 'Unpaid',
+        };
     }
 
     public static function generateSerial(): string

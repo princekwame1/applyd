@@ -44,6 +44,26 @@ class Course extends Model
         return 'GHS '.number_format($fee, ($fee == (int) $fee) ? 0 : 2);
     }
 
+    public function getTuitionFullAttribute(): float
+    {
+        return (float) ($this->price ?? 0);
+    }
+
+    public function getTuitionHalfAttribute(): float
+    {
+        return round($this->tuition_full / 2, 2);
+    }
+
+    public function requiresTuition(): bool
+    {
+        return $this->tuition_full > 0;
+    }
+
+    public static function money(float $amount): string
+    {
+        return 'GHS '.number_format($amount, ($amount == (int) $amount) ? 0 : 2);
+    }
+
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('id');

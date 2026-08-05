@@ -18,12 +18,16 @@
         <div class="lbl">Total Registrations</div>
     </div>
     <div class="stat-card">
-        <div class="num">{{ number_format($stats['paid']) }}</div>
-        <div class="lbl">Paid</div>
+        <div class="num">{{ number_format($stats['completed']) }}</div>
+        <div class="lbl">Completed</div>
     </div>
     <div class="stat-card">
-        <div class="num">GHS {{ number_format((float) $stats['revenue'], 2) }}</div>
+        <div class="num">GHS {{ number_format((float) $stats['form_revenue'], 2) }}</div>
         <div class="lbl">Form-fee Revenue</div>
+    </div>
+    <div class="stat-card">
+        <div class="num">GHS {{ number_format((float) $stats['tuition_revenue'], 2) }}</div>
+        <div class="lbl">Tuition Collected</div>
     </div>
 </div>
 

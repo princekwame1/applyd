@@ -8,6 +8,7 @@ use App\Models\CourseEnrollment;
 use App\Support\Paystack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CourseEnrollmentController extends Controller
@@ -17,8 +18,9 @@ class CourseEnrollmentController extends Controller
         return view('dashboard.course-registrations', [
             'stats' => [
                 'total' => CourseEnrollment::count(),
-                'paid' => CourseEnrollment::where('status', 'paid')->count(),
-                'revenue' => CourseEnrollment::where('status', 'paid')->sum('amount'),
+                'completed' => CourseEnrollment::whereNotNull('completed_at')->count(),
+                'form_revenue' => CourseEnrollment::where('status', 'paid')->sum('amount'),
+                'tuition_revenue' => CourseEnrollment::sum('tuition_amount'),
             ],
         ]);
     }
@@ -199,10 +201,135 @@ class CourseEnrollmentController extends Controller
             'goals' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $data['completed_at'] = now();
         $enrollment->update($data);
+        $enrollment = $enrollment->fresh('course');
 
-        return redirect()->route('application.complete')->with('status', 'Your application has been submitted. Thank you!');
+        // Free course (no tuition) — registration completes right away.
+        if (! ($enrollment->course && $enrollment->course->requiresTuition())) {
+            if ($enrollment->completed_at === null) {
+                $enrollment->update(['completed_at' => now(), 'tuition_status' => 'paid']);
+                $this->sendRegistrationCompleteSms($enrollment);
+            }
+
+            return redirect()->route('application.complete')->with('status', 'Your registration is complete!');
+        }
+
+        return redirect()->route('application.complete')->with('status', 'Details saved. Complete your tuition payment to finish your registration.');
+    }
+
+    /**
+     * Start a tuition payment (full, 50%, or the outstanding balance) via Paystack.
+     */
+    public function tuitionInit(Request $request)
+    {
+        $enrollment = $this->currentApplicant($request);
+        $course = $enrollment->course;
+
+        if (! $course || ! $course->requiresTuition()) {
+            return redirect()->route('application.complete');
+        }
+        if (! $enrollment->hasDetails()) {
+            return redirect()->route('application.complete')->with('enroll_error', 'Please complete your application details first.');
+        }
+
+        $validated = $request->validate([
+            'option' => ['required', Rule::in(['full', 'half', 'balance'])],
+        ]);
+
+        if (! Paystack::configured()) {
+            return redirect()->route('application.complete')->with('enroll_error', 'Online payment is not available right now. Please try again later.');
+        }
+
+        $full = $course->tuition_full;
+        $amount = match ($validated['option']) {
+            'full' => $full,
+            'half' => round($full / 2, 2),
+            'balance' => $enrollment->tuitionBalance(),
+        };
+
+        if ($amount <= 0) {
+            return redirect()->route('application.complete');
+        }
+
+        $reference = 'TUI-'.$enrollment->id.'-'.strtoupper(Str::random(8));
+
+        $enrollment->update([
+            'tuition_option' => $validated['option'],
+            'tuition_reference' => $reference,
+            'tuition_status' => 'pending',
+        ]);
+
+        $init = Paystack::initialize([
+            'email' => $enrollment->email,
+            'amount' => (int) round($amount * 100),
+            'currency' => config('services.paystack.currency', 'GHS'),
+            'reference' => $reference,
+            'callback_url' => route('application.tuition.callback'),
+            'metadata' => [
+                'type' => 'tuition',
+                'enrollment_id' => $enrollment->id,
+                'course_title' => $course->title,
+                'option' => $validated['option'],
+            ],
+        ]);
+
+        if (empty($init['status']) || empty($init['data']['authorization_url'])) {
+            $enrollment->update(['tuition_status' => $enrollment->tuition_amount > 0 ? 'partial' : 'unpaid']);
+
+            return redirect()->route('application.complete')->with('enroll_error', 'We could not start the payment. Please try again.');
+        }
+
+        return redirect()->away($init['data']['authorization_url']);
+    }
+
+    public function tuitionCallback(Request $request)
+    {
+        $reference = $request->query('reference', $request->query('trxref'));
+        $enrollment = CourseEnrollment::with('course')->where('tuition_reference', $reference)->first();
+
+        abort_unless($enrollment, 404);
+
+        $verify = Paystack::configured() ? Paystack::verify($reference) : ['status' => false];
+        $success = ! empty($verify['status']) && ($verify['data']['status'] ?? null) === 'success';
+
+        if ($success) {
+            $paidNow = (float) (($verify['data']['amount'] ?? 0) / 100);
+            $newTotal = round($enrollment->tuition_amount + $paidNow, 2);
+            $full = $enrollment->course?->tuition_full ?? 0;
+            $status = ($newTotal + 0.01) >= $full ? 'paid' : 'partial';
+            $firstCompletion = $enrollment->completed_at === null;
+
+            $enrollment->update([
+                'tuition_amount' => $newTotal,
+                'tuition_status' => $status,
+                'tuition_paid_at' => now(),
+                'completed_at' => $enrollment->completed_at ?? now(),
+            ]);
+
+            if ($firstCompletion) {
+                $this->sendRegistrationCompleteSms($enrollment->fresh('course'));
+            }
+        } else {
+            $enrollment->update(['tuition_status' => $enrollment->tuition_amount > 0 ? 'partial' : 'unpaid']);
+        }
+
+        return redirect()->route('application.complete')->with(
+            $success ? 'status' : 'enroll_error',
+            $success ? 'Payment received. Thank you!' : 'We could not confirm your tuition payment. Please try again.'
+        );
+    }
+
+    protected function sendRegistrationCompleteSms(CourseEnrollment $enrollment): void
+    {
+        $course = $enrollment->course?->title ?? 'course';
+
+        $message = "Dear {$enrollment->first_name}, your registration for {$course} has been completed successfully. Further communication regarding the next steps will be sent to you. Thank you for choosing Applyd Academy.";
+
+        try {
+            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     protected function currentApplicant(Request $request): CourseEnrollment

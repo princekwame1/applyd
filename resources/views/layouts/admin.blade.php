@@ -301,15 +301,23 @@
                         }
                         if (res.status === 200 && res.data.ok) {
                             close();
-                            Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, icon: 'success', title: res.data.message || 'Saved' });
-                            // Refresh any Livewire tables — never let this break the success flow.
-                            try {
-                                if (window.Livewire && typeof Livewire.all === 'function') {
-                                    Livewire.all().forEach(function (c) {
-                                        try { (c.$wire && c.$wire.$refresh) ? c.$wire.$refresh() : (c.call && c.call('$refresh')); } catch (e) {}
-                                    });
+                            // Show the success toast on the next frame so the modal close doesn't swallow it.
+                            var okMsg = res.data.message || 'Saved';
+                            setTimeout(function () {
+                                if (window.Swal) {
+                                    Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2800, timerProgressBar: true, icon: 'success', title: okMsg });
                                 }
-                            } catch (e) {}
+                            }, 60);
+                            // Refresh any Livewire tables a moment later — never let this break the success flow.
+                            setTimeout(function () {
+                                try {
+                                    if (window.Livewire && typeof Livewire.all === 'function') {
+                                        Livewire.all().forEach(function (c) {
+                                            try { (c.$wire && c.$wire.$refresh) ? c.$wire.$refresh() : (c.call && c.call('$refresh')); } catch (e) {}
+                                        });
+                                    }
+                                } catch (e) {}
+                            }, 400);
                         } else if (res.status === 422 && res.data.errors) {
                             Object.keys(res.data.errors).forEach(function (key) {
                                 var base = key.split('.')[0];

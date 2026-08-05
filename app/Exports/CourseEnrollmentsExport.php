@@ -17,7 +17,7 @@ class CourseEnrollmentsExport implements FromCollection, WithHeadings, WithMappi
 
     public function headings(): array
     {
-        return ['ID', 'Date', 'Name', 'Email', 'Phone', 'Course', 'Amount (GHS)', 'Status', 'Serial No', 'PIN', 'Application', 'Reference', 'Paid At'];
+        return ['ID', 'Date', 'Name', 'Email', 'Phone', 'Course', 'Form Fee', 'Form Status', 'Serial No', 'PIN', 'Tuition Status', 'Tuition Paid', 'Application', 'Reference', 'Paid At'];
     }
 
     public function map($e): array
@@ -33,6 +33,8 @@ class CourseEnrollmentsExport implements FromCollection, WithHeadings, WithMappi
             ucfirst($e->status),
             $e->serial_no,
             $e->pin,
+            ucfirst($e->tuition_status),
+            number_format((float) $e->tuition_amount, 2),
             $e->completed_at ? 'Completed' : 'Incomplete',
             $e->reference,
             $e->paid_at?->format('Y-m-d H:i'),
