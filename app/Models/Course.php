@@ -11,11 +11,20 @@ class Course extends Model
 
     public const DEFAULT_FORM_FEE = 50;
 
+    public const ATTENDANCE = [
+        'in_person' => 'In-Person',
+        'online' => 'Online',
+        'hybrid' => 'Hybrid',
+    ];
+
     protected $fillable = [
         'title',
         'level',
         'duration',
         'price',
+        'price_in_person',
+        'price_online',
+        'price_hybrid',
         'form_price',
         'description',
         'image',
@@ -24,6 +33,9 @@ class Course extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'price_in_person' => 'decimal:2',
+        'price_online' => 'decimal:2',
+        'price_hybrid' => 'decimal:2',
         'form_price' => 'decimal:2',
     ];
 
@@ -44,19 +56,63 @@ class Course extends Model
         return 'GHS '.number_format($fee, ($fee == (int) $fee) ? 0 : 2);
     }
 
-    public function getTuitionFullAttribute(): float
+    /**
+     * The attendance modes offered for this course, with their prices.
+     * A mode is offered if it has a price set. Falls back to a single
+     * "Standard" option using the base price for legacy courses.
+     *
+     * @return array<int, array{key:string,label:string,price:float}>
+     */
+    public function attendanceOptions(): array
     {
+        $options = [];
+
+        foreach (self::ATTENDANCE as $key => $label) {
+            $price = $this->{'price_'.$key};
+            if ($price !== null) {
+                $options[] = ['key' => $key, 'label' => $label, 'price' => (float) $price];
+            }
+        }
+
+        if (empty($options) && (float) $this->price > 0) {
+            $options[] = ['key' => 'standard', 'label' => 'Standard', 'price' => (float) $this->price];
+        }
+
+        return $options;
+    }
+
+    public function priceForAttendance(?string $key): float
+    {
+        foreach ($this->attendanceOptions() as $option) {
+            if ($option['key'] === $key) {
+                return $option['price'];
+            }
+        }
+
         return (float) ($this->price ?? 0);
     }
 
-    public function getTuitionHalfAttribute(): float
+    /** Lowest available attendance price — used for "from GHS x" displays. */
+    public function getTuitionFullAttribute(): float
     {
-        return round($this->tuition_full / 2, 2);
+        $prices = array_column($this->attendanceOptions(), 'price');
+
+        return $prices ? (float) min($prices) : (float) ($this->price ?? 0);
     }
 
     public function requiresTuition(): bool
     {
         return $this->tuition_full > 0;
+    }
+
+    public function hasMultipleAttendance(): bool
+    {
+        return count($this->attendanceOptions()) > 1;
+    }
+
+    public static function attendanceLabel(?string $key): string
+    {
+        return self::ATTENDANCE[$key] ?? ($key === 'standard' ? 'Standard' : '—');
     }
 
     public static function money(float $amount): string

@@ -5,11 +5,10 @@
 @php
     use App\Models\Course;
     $course = $enrollment->course;
+    $options = $course ? $course->attendanceOptions() : [];
     $requiresTuition = $course && $course->requiresTuition();
     $hasDetails = $enrollment->hasDetails();
     $completed = $enrollment->is_completed;
-    $full = $course?->tuition_full ?? 0;
-    $half = $course?->tuition_half ?? 0;
     $balance = $enrollment->tuitionBalance();
     $step = ! $hasDetails ? 1 : (($requiresTuition && ! $completed) ? 2 : 3);
 @endphp
@@ -54,14 +53,19 @@
                     <tr><th>Course</th><td>{{ $course?->title ?? '—' }}</td></tr>
                     <tr><th>Form fee</th><td>{{ $enrollment->amount_label }} <span class="badge badge-yes">Paid</span></td></tr>
                     @if ($requiresTuition)
-                        <tr><th>Tuition</th><td>{{ Course::money($full) }}</td></tr>
+                        @if ($enrollment->attendance_type)
+                            <tr><th>Attendance</th><td>{{ $enrollment->attendance_label }}</td></tr>
+                            <tr><th>Tuition</th><td>{{ Course::money($enrollment->tuitionFull()) }}</td></tr>
+                        @else
+                            <tr><th>Tuition</th><td>from {{ Course::money($course->tuition_full) }}</td></tr>
+                        @endif
                         <tr><th>Tuition status</th><td>
                             <span class="badge {{ $enrollment->tuition_status === 'paid' ? 'badge-yes' : 'badge-no' }}">{{ $enrollment->tuition_status_label }}</span>
                         </td></tr>
                         @if ($enrollment->tuition_paid > 0)
                             <tr><th>Paid</th><td>{{ Course::money($enrollment->tuition_paid) }}</td></tr>
                         @endif
-                        @if ($balance > 0)
+                        @if ($balance > 0 && $enrollment->attendance_type)
                             <tr><th>Balance</th><td>{{ Course::money($balance) }}</td></tr>
                         @endif
                     @endif
@@ -127,31 +131,67 @@
                         <button type="submit" class="btn btn-brand" style="margin-top:18px;">Save &amp; continue →</button>
                     </form>
 
-                {{-- STEP 2: Tuition payment --}}
+                {{-- STEP 2: Attendance + tuition payment --}}
                 @elseif ($step === 2)
-                    <h2 class="section-title" style="font-size:1.4rem;">Pay your tuition to complete registration</h2>
-                    <p class="section-lead">Choose to pay in full or make a 50% part payment now. Your registration is confirmed once payment is received.</p>
+                    <h2 class="section-title" style="font-size:1.4rem;">Choose attendance &amp; pay tuition</h2>
+                    <p class="section-lead">Select how you'll attend, then pay in full or make a 50% part payment. Registration confirms once payment is received.</p>
 
-                    <div class="pay-options">
-                        <form method="POST" action="{{ route('application.tuition') }}" class="pay-option">
-                            @csrf
-                            <input type="hidden" name="option" value="full">
-                            <span class="pay-option-tag">Pay in full</span>
-                            <span class="pay-option-amt">{{ Course::money($full) }}</span>
-                            <span class="pay-option-note">Settle your tuition in one payment.</span>
-                            <button type="submit" class="btn btn-brand" style="width:100%;">Pay {{ Course::money($full) }}</button>
-                        </form>
+                    <form method="POST" action="{{ route('application.tuition') }}" class="tuition-form" id="tuitionForm">
+                        @csrf
+                        <div class="attend-choose">
+                            <span class="tuition-label">Attendance type</span>
+                            <div class="attend-radios">
+                                @foreach ($options as $i => $opt)
+                                    <label class="attend-radio">
+                                        <input type="radio" name="attendance_type" value="{{ $opt['key'] }}" data-price="{{ $opt['price'] }}" {{ $i === 0 ? 'checked' : '' }} required>
+                                        <span class="attend-radio-body">
+                                            <strong>{{ $opt['label'] }}</strong>
+                                            <span class="attend-price">{{ Course::money($opt['price']) }}</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
 
-                        <form method="POST" action="{{ route('application.tuition') }}" class="pay-option pay-option--alt">
-                            @csrf
-                            <input type="hidden" name="option" value="half">
-                            <span class="pay-option-tag">Part payment (50%)</span>
-                            <span class="pay-option-amt">{{ Course::money($half) }}</span>
-                            <span class="pay-option-note">Pay half now, the balance of {{ Course::money($full - $half) }} later.</span>
-                            <button type="submit" class="btn btn-outline" style="width:100%;">Pay {{ Course::money($half) }}</button>
-                        </form>
-                    </div>
-                    <p class="enroll-secure" style="margin-top:18px;"><i class="fa-solid fa-lock"></i> Secure payment via Paystack</p>
+                        <div class="attend-choose">
+                            <span class="tuition-label">Payment</span>
+                            <div class="attend-radios">
+                                <label class="attend-radio">
+                                    <input type="radio" name="option" value="full" data-factor="1" checked>
+                                    <span class="attend-radio-body"><strong>Pay in full</strong><span class="attend-price" data-amt="full">—</span></span>
+                                </label>
+                                <label class="attend-radio">
+                                    <input type="radio" name="option" value="half" data-factor="0.5">
+                                    <span class="attend-radio-body"><strong>Part payment (50%)</strong><span class="attend-price" data-amt="half">—</span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tuition-total">
+                            <span>You'll pay now</span>
+                            <strong id="tuitionTotal">—</strong>
+                        </div>
+                        <button type="submit" class="btn btn-brand" style="width:100%; margin-top:6px;">Proceed to secure payment</button>
+                        <p class="enroll-secure" style="margin-top:12px;"><i class="fa-solid fa-lock"></i> Secure payment via Paystack</p>
+                    </form>
+
+                    <script>
+                    (function () {
+                        var form = document.getElementById('tuitionForm');
+                        if (!form) return;
+                        function money(n) { return 'GHS ' + Number(n).toFixed(2).replace(/\.00$/, ''); }
+                        function price() { var r = form.querySelector('input[name=attendance_type]:checked'); return r ? parseFloat(r.dataset.price) : 0; }
+                        function factor() { var r = form.querySelector('input[name=option]:checked'); return r ? parseFloat(r.dataset.factor) : 1; }
+                        function update() {
+                            var p = price();
+                            var f = form.querySelector('[data-amt=full]'); if (f) f.textContent = money(p);
+                            var h = form.querySelector('[data-amt=half]'); if (h) h.textContent = money(p * 0.5);
+                            document.getElementById('tuitionTotal').textContent = money(p * factor());
+                        }
+                        form.addEventListener('change', update);
+                        update();
+                    })();
+                    </script>
 
                 {{-- STEP 3: Done --}}
                 @else
@@ -159,7 +199,7 @@
                         <span class="enroll-result-ic"><i class="fa-solid fa-circle-check"></i></span>
                     </div>
                     <h2 class="section-title" style="font-size:1.5rem; text-align:center;">Registration complete 🎉</h2>
-                    <p class="section-lead center" style="margin:0 auto;">Thank you, {{ $enrollment->first_name }}. Your registration for {{ $course?->title }} is confirmed. Further communication about the next steps will be sent to you.</p>
+                    <p class="section-lead center" style="margin:0 auto;">Thank you, {{ $enrollment->first_name }}. Your registration for {{ $course?->title }}{{ $enrollment->attendance_type ? ' ('.$enrollment->attendance_label.')' : '' }} is confirmed. Further communication about the next steps will be sent to you.</p>
 
                     @if ($requiresTuition && $balance > 0)
                         <div class="pay-balance">

@@ -642,6 +642,42 @@ a { color: var(--brand); }
 .pay-option-amt { font-size: 2rem; font-weight: 900; color: var(--ink); line-height: 1; }
 .pay-option-note { color: var(--ink-soft); font-size: .85rem; line-height: 1.5; flex: 1; margin-bottom: 8px; }
 
+/* Admin: attendance price inputs */
+.attendance-price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 560px) { .attendance-price-grid { grid-template-columns: 1fr; } }
+
+/* Public course card: attendance pricing list */
+.attend-pricing { display: grid; gap: 8px; margin-bottom: 14px; }
+.attend-pricing-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 8px; background: var(--bg-soft);
+}
+.attend-pricing-row span { color: var(--ink-soft); font-size: .9rem; }
+.attend-pricing-row strong { color: var(--brand); font-size: 1.05rem; }
+
+/* Applicant: attendance + payment radios */
+.tuition-form { margin-top: 18px; }
+.attend-choose { margin-bottom: 20px; }
+.tuition-label { display: block; font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); margin-bottom: 10px; }
+.attend-radios { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.attend-radio { position: relative; cursor: pointer; }
+.attend-radio input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.attend-radio-body {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px; border: 1.5px solid #e6e0df; border-radius: 12px; background: #fff;
+  transition: border-color .15s ease, background .15s ease;
+}
+.attend-radio-body strong { font-size: .95rem; }
+.attend-radio-body .attend-price { font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+.attend-radio input:checked + .attend-radio-body { border-color: var(--brand); background: var(--red-tint, #faeaeb); }
+.attend-radio input:checked + .attend-radio-body .attend-price { color: var(--brand); }
+.attend-radio input:focus-visible + .attend-radio-body { box-shadow: 0 0 0 3px rgba(199, 58, 65, .18); }
+.tuition-total {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-radius: 10px; background: var(--ink); color: #fff; margin-bottom: 4px;
+}
+.tuition-total strong { font-size: 1.3rem; }
+
 .pay-balance {
   display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
   margin-top: 24px; padding: 18px 20px; border-radius: 12px;

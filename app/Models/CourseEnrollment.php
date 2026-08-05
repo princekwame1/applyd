@@ -9,6 +9,7 @@ class CourseEnrollment extends Model
 {
     protected $fillable = [
         'course_id',
+        'attendance_type',
         'name',
         'email',
         'phone',
@@ -71,11 +72,20 @@ class CourseEnrollment extends Model
         return (float) $this->tuition_amount;
     }
 
+    /** Full tuition for this enrollment's chosen attendance mode. */
+    public function tuitionFull(): float
+    {
+        return $this->course ? $this->course->priceForAttendance($this->attendance_type) : 0;
+    }
+
     public function tuitionBalance(): float
     {
-        $full = $this->course?->tuition_full ?? 0;
+        return max(0, round($this->tuitionFull() - $this->tuition_paid, 2));
+    }
 
-        return max(0, round($full - $this->tuition_paid, 2));
+    public function getAttendanceLabelAttribute(): string
+    {
+        return $this->attendance_type ? Course::attendanceLabel($this->attendance_type) : '—';
     }
 
     public function getTuitionStatusLabelAttribute(): string

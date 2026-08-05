@@ -36,6 +36,27 @@
             <input type="number" id="c_form_price" name="form_price" min="0" step="0.01" value="{{ old('form_price', $model?->form_price) }}" placeholder="Default: 50">
             <div class="field-error" data-error="form_price"></div>
         </div>
+        <div class="span-2">
+            <label class="field-label">Attendance Type &amp; Tuition (GHS)</label>
+            <p style="color:var(--ink-soft); font-size:.82rem; margin:-2px 0 8px;">Set a price for each mode you offer. Leave a mode blank to not offer it.</p>
+            <div class="attendance-price-grid">
+                <div>
+                    <label class="field-label" for="c_price_in_person" style="font-weight:600;">In-Person</label>
+                    <input type="number" id="c_price_in_person" name="price_in_person" min="0" step="0.01" value="{{ old('price_in_person', $model?->price_in_person) }}" placeholder="e.g. 800">
+                    <div class="field-error" data-error="price_in_person"></div>
+                </div>
+                <div>
+                    <label class="field-label" for="c_price_online" style="font-weight:600;">Online</label>
+                    <input type="number" id="c_price_online" name="price_online" min="0" step="0.01" value="{{ old('price_online', $model?->price_online) }}" placeholder="e.g. 500">
+                    <div class="field-error" data-error="price_online"></div>
+                </div>
+                <div>
+                    <label class="field-label" for="c_price_hybrid" style="font-weight:600;">Hybrid</label>
+                    <input type="number" id="c_price_hybrid" name="price_hybrid" min="0" step="0.01" value="{{ old('price_hybrid', $model?->price_hybrid) }}" placeholder="e.g. 650">
+                    <div class="field-error" data-error="price_hybrid"></div>
+                </div>
+            </div>
+        </div>
         <div>
             <label class="field-label" for="c_image">Image</label>
             <div class="file-field">

@@ -232,15 +232,26 @@ class CourseEnrollmentController extends Controller
             return redirect()->route('application.complete')->with('enroll_error', 'Please complete your application details first.');
         }
 
-        $validated = $request->validate([
-            'option' => ['required', Rule::in(['full', 'half', 'balance'])],
-        ]);
+        $option = $request->input('option');
+        $offeredKeys = array_column($course->attendanceOptions(), 'key');
+
+        $rules = ['option' => ['required', Rule::in(['full', 'half', 'balance'])]];
+        if ($option !== 'balance') {
+            $rules['attendance_type'] = ['required', Rule::in($offeredKeys)];
+        }
+        $validated = $request->validate($rules);
 
         if (! Paystack::configured()) {
             return redirect()->route('application.complete')->with('enroll_error', 'Online payment is not available right now. Please try again later.');
         }
 
-        $full = $course->tuition_full;
+        // Lock in the chosen attendance mode (drives the price).
+        if ($option !== 'balance') {
+            $enrollment->update(['attendance_type' => $validated['attendance_type']]);
+            $enrollment = $enrollment->fresh('course');
+        }
+
+        $full = $enrollment->tuitionFull();
         $amount = match ($validated['option']) {
             'full' => $full,
             'half' => round($full / 2, 2),

@@ -45,6 +45,8 @@ class CourseEnrollmentsTable extends DataTableComponent
             Column::make('Phone', 'phone')->searchable(),
             Column::make('Course', 'course_id')
                 ->format(fn ($value, $row) => e($row->course?->title ?? '—')),
+            Column::make('Attendance', 'attendance_type')
+                ->format(fn ($value) => e($value ? \App\Models\Course::attendanceLabel($value) : '—')),
             Column::make('Amount', 'amount')
                 ->sortable()
                 ->format(fn ($value, $row) => e($row->amount_label)),

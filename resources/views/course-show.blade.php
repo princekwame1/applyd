@@ -41,8 +41,21 @@
 
             <aside class="course-detail-side">
                 <div class="card course-enroll-card">
-                    <div class="course-enroll-label">Course fee</div>
-                    <div class="course-enroll-price">{{ $course->price_label }}</div>
+                    @php $attendance = $course->attendanceOptions(); @endphp
+                    @if (count($attendance))
+                        <div class="course-enroll-label">Tuition by attendance</div>
+                        <div class="attend-pricing">
+                            @foreach ($attendance as $opt)
+                                <div class="attend-pricing-row">
+                                    <span>{{ $opt['label'] }}</span>
+                                    <strong>{{ \App\Models\Course::money($opt['price']) }}</strong>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="course-enroll-label">Course fee</div>
+                        <div class="course-enroll-price">{{ $course->price_label }}</div>
+                    @endif
                     @if ($course->duration)<div class="course-enroll-row"><i class="fa-regular fa-clock"></i> {{ $course->duration }}</div>@endif
                     @if ($course->level)<div class="course-enroll-row"><i class="fa-solid fa-signal"></i> {{ $course->level }}</div>@endif
 
