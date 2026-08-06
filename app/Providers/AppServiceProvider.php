@@ -11,7 +11,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Ensure CMS helper functions are always available, even if the
+        // Composer autoload files list hasn't been reloaded by a long-running server.
+        require_once app_path('helpers.php');
     }
 
     /**
