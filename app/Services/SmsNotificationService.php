@@ -18,21 +18,21 @@ class SmsNotificationService
         $this->senderId = config('services.mnotify.sender_id');
     }
 
-    public function send(string $phoneNumber, string $message, ?int $registrationId = null): bool
+    public function send(string $phoneNumber, string $message, ?int $registrationId = null, ?string $name = null): bool
     {
+        // Every SMS is logged, whether or not it is tied to a bootcamp registration.
+        $smsLog = SmsLog::create([
+            'registration_id' => $registrationId,
+            'name' => $name,
+            'phone_number' => $phoneNumber,
+            'message' => $message,
+            'status' => 'pending',
+        ]);
+
         if (!$this->apiKey) {
             Log::warning('SMS notification skipped: MNotify API key not configured');
+            $smsLog->update(['status' => 'failed', 'response' => 'MNotify API key not configured']);
             return false;
-        }
-
-        $smsLog = null;
-        if ($registrationId) {
-            $smsLog = SmsLog::create([
-                'registration_id' => $registrationId,
-                'phone_number' => $phoneNumber,
-                'message' => $message,
-                'status' => 'pending',
-            ]);
         }
 
         try {
@@ -102,11 +102,11 @@ class SmsNotificationService
         }
     }
 
-    public function sendRegistrationConfirmation(string $phoneNumber, string $firstName): bool
+    public function sendRegistrationConfirmation(string $phoneNumber, string $firstName, ?int $registrationId = null): bool
     {
         $message = "Hi {$firstName}! Welcome to Applyd Academy. You're all set for the Digital Tools Bootcamp. Check your email for session details. Let's grow together.";
 
-        return $this->send($phoneNumber, $message);
+        return $this->send($phoneNumber, $message, $registrationId, $firstName);
     }
 
     protected function normalizePhoneNumber(string $phoneNumber): string

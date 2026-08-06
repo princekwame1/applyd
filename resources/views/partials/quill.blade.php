@@ -3,7 +3,7 @@
         <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
         <style>
             .rich-editor-holder { background: #fff; }
-            .rich-editor-holder .ql-editor { min-height: 150px; font-size: .95rem; font-family: inherit; line-height: 1.7; }
+            .rich-editor-holder .ql-editor { min-height: 120px; max-height: 260px; overflow-y: auto; font-size: .95rem; font-family: inherit; line-height: 1.7; }
             .rich-editor-holder .ql-editor.ql-blank::before { font-style: normal; color: #9a9a9a; }
             .ql-toolbar.ql-snow, .ql-container.ql-snow { border-color: #d8d2d2; }
             .ql-toolbar.ql-snow { border-top-left-radius: 8px; border-top-right-radius: 8px; }

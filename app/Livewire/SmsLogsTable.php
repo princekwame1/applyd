@@ -36,11 +36,9 @@ class SmsLogsTable extends DataTableComponent
             Column::make('Date', 'created_at')
                 ->sortable()
                 ->format(fn ($value) => $value->format('M d, Y H:i')),
-            Column::make('Name', 'registration.full_name')
+            Column::make('Name', 'name')
                 ->searchable()
-                ->format(fn ($value, $row) => $row->registration?->full_name
-                    ?? '<span style="color: var(--ink-soft);">—</span>')
-                ->html(),
+                ->format(fn ($value, $row) => e($row->name ?? $row->registration?->full_name ?? '—')),
             Column::make('Phone', 'phone_number')
                 ->searchable(),
             Column::make('Message', 'message')

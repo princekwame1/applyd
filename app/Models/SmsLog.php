@@ -9,6 +9,7 @@ class SmsLog extends Model
 {
     protected $fillable = [
         'registration_id',
+        'name',
         'phone_number',
         'message',
         'status',

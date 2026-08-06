@@ -5,9 +5,9 @@
 @section('content')
 <section class="page-hero">
     <div class="container center">
-        <span class="page-eyebrow">Get in Touch</span>
-        <h1 class="section-title">Contact Us</h1>
-        <p class="section-lead">Questions about the bootcamp, partnerships, or anything else? We'd love to hear from you.</p>
+        <span class="page-eyebrow">{{ cms('contact', 'hero_eyebrow') }}</span>
+        <h1 class="section-title">{{ cms('contact', 'hero_title') }}</h1>
+        <p class="section-lead">{{ cms('contact', 'hero_sub') }}</p>
     </div>
 </section>
 
@@ -15,22 +15,19 @@
     <div class="container">
         <div class="grid grid-3 contact-grid">
             <div class="card contact-card">
-                {{-- <span class="icon">📧</span> --}}
                 <h3>General Enquiries</h3>
-                <p>For programme info, partnerships, and media.</p>
-                <a href="mailto:info@applydacademy.com" class="contact-link">info@applydacademy.com</a>
+                <p>{{ cms('contact', 'gen_text') }}</p>
+                <a href="mailto:{{ cms('contact', 'gen_email') }}" class="contact-link">{{ cms('contact', 'gen_email') }}</a>
             </div>
             <div class="card contact-card">
-                {{-- <span class="icon">🛟</span> --}}
                 <h3>Support</h3>
-                <p>Registration issues, session access, or technical help.</p>
-                <a href="mailto:support@applydacademy.com" class="contact-link">support@applydacademy.com</a>
+                <p>{{ cms('contact', 'sup_text') }}</p>
+                <a href="mailto:{{ cms('contact', 'sup_email') }}" class="contact-link">{{ cms('contact', 'sup_email') }}</a>
             </div>
             <div class="card contact-card">
-                {{-- <span class="icon">📍</span> --}}
                 <h3>Visit Us</h3>
-                <p>Trade Fair, 25 Giffard Rd,<br>Accra, Ghana</p>
-                <a href="https://maps.google.com/?q=Trade+Fair,+25+Giffard+Rd,+Accra" target="_blank" rel="noopener" class="contact-link">Get directions →</a>
+                <p>{!! cms_html('contact', 'visit_address') !!}</p>
+                <a href="https://maps.google.com/?q={{ urlencode(cms('contact', 'visit_address')) }}" target="_blank" rel="noopener" class="contact-link">Get directions →</a>
             </div>
         </div>
 
@@ -40,7 +37,7 @@
 <section class="alt">
     <div class="container">
         <div class="form-card contact-form-wrap">
-            <h2 class="section-title" style="text-align: center; margin-bottom: 30px;">Send us a Message</h2>
+            <h2 class="section-title" style="text-align: center; margin-bottom: 30px;">{{ cms('contact', 'form_heading') }}</h2>
             @if (session('contact_success'))
                 <div class="success-box" style="margin-bottom: 20px;">
                     Thanks for reaching out! We'll get back to you soon.

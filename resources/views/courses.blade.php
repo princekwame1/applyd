@@ -5,9 +5,9 @@
 @section('content')
 <section class="page-hero">
     <div class="container center">
-        <span class="page-eyebrow">Applyd Academy</span>
-        <h1 class="section-title">Our Courses</h1>
-        <p class="section-lead">Learn from industry experts and advance your career.</p>
+        <span class="page-eyebrow">{{ cms('courses', 'hero_eyebrow') }}</span>
+        <h1 class="section-title">{{ cms('courses', 'hero_title') }}</h1>
+        <p class="section-lead">{{ cms('courses', 'hero_sub') }}</p>
     </div>
 </section>
 

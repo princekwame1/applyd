@@ -8,18 +8,18 @@
     <div class="blob blob-2" aria-hidden="true"></div>
     <div class="container hero-grid">
         <div class="hero-copy">
-            <span class="eyebrow">Applyd Academy Presents</span>
-            <h1>Master the Tools.<br><span class="grad-text">Accelerate Your Future.</span></h1>
-            <p class="sub">A free, hands-on learning experience. In just 24 days, you'll learn 24 digital tools from expert facilitators across 3 countries.</p>
+            <span class="eyebrow">{{ cms('landing', 'hero_eyebrow') }}</span>
+            <h1>{{ cms('landing', 'hero_title_1') }}<br><span class="grad-text">{{ cms('landing', 'hero_title_2') }}</span></h1>
+            <p class="sub">{!! cms_html('landing', 'hero_sub') !!}</p>
             <div class="feature-chips">
-                <span class="feature-chip"><i>✓</i> Learn through live, practical sessions</span>
-                <span class="feature-chip"><i>✓</i> 24 expert facilitators, 3 countries</span>
+                <span class="feature-chip"><i>✓</i> {{ cms('landing', 'hero_chip_1') }}</span>
+                <span class="feature-chip"><i>✓</i> {{ cms('landing', 'hero_chip_2') }}</span>
             </div>
         </div>
 
         <div class="form-card hero-form" id="register">
-            <h2 class="form-title">Reserve Your Free Spot</h2>
-            <p class="form-sub">24 days. 24 tools. Completely free. Spots are limited per session.</p>
+            <h2 class="form-title">{{ cms('landing', 'form_title') }}</h2>
+            <p class="form-sub">{{ cms('landing', 'form_sub') }}</p>
 
             @if ($errors->any())
                 <div class="error-box">
@@ -139,9 +139,9 @@
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-outline" id="backBtn" hidden>← Back</button>
-                    <button type="button" class="btn btn-brand" id="nextBtn">Next →</button>
-                    <button type="submit" class="btn btn-brand" id="submitBtn" hidden>Reserve Your Free Spot →</button>
+                    <button type="button" class="btn btn-outline" id="backBtn" hidden>{{ cms('landing', 'form_back') }}</button>
+                    <button type="button" class="btn btn-brand" id="nextBtn">{{ cms('landing', 'form_next') }}</button>
+                    <button type="submit" class="btn btn-brand" id="submitBtn" hidden>{{ cms('landing', 'form_submit') }}</button>
                 </div>
             </form>
         </div>
@@ -190,16 +190,16 @@
     <div class="container">
         <div class="split">
             <div>
-                <h2 class="section-title">Technology moved fast. Most of us are still catching up.</h2>
-                <p class=”section-lead”>Look at any job posting. Every one expects it. Every business runs on these tools now. Trello, Notion, ChatGPT, Figma, Buffer, Zapier. What used to be optional is now table stakes. You won't get hired, get promoted, or grow your business without them.</p>
-                <p class=”section-lead”>But here's the thing. These tools aren't hard to learn. The real problem is nobody ever shows you. You're left watching YouTube tutorials or figuring it out yourself. That's where we come in. <strong>We're here to actually show you how.</strong></p>
-                <p class=”section-lead”>Over 24 days, real professionals will walk you through this. Not lectures. Not slides you'll forget by next week. Live sessions where you practice, ask questions, and leave with skills you can use that same day.</p>
+                <h2 class="section-title">{{ cms('landing', 'prob_heading') }}</h2>
+                <p class="section-lead">{!! cms_html('landing', 'prob_p1') !!}</p>
+                <p class="section-lead">{!! cms_html('landing', 'prob_p2') !!}</p>
+                <p class="section-lead">{!! cms_html('landing', 'prob_p3') !!}</p>
             </div>
             <div class="split-media">
                 <div class="img-frame">
-                    <img src="{{ asset('img/learn-together.jpg') }}" alt="Learners collaborating over laptops" loading="lazy">
+                    <img src="{{ cms_image('landing', 'prob_image') }}" alt="Learners collaborating over laptops" loading="lazy">
                 </div>
-                <span class="mini-card" aria-hidden="true">📅 24 Days &nbsp;·&nbsp; 🛠️ 24 Tools</span>
+                <span class="mini-card" aria-hidden="true">{{ cms('landing', 'prob_badge') }}</span>
             </div>
         </div>
     </div>
@@ -208,8 +208,8 @@
 {{-- What Makes This Different --}}
 <section class="alt">
     <div class="container">
-        <h2 class="section-title">What Makes This Different</h2>
-        <p class="section-lead">This isn't another webinar series.</p>
+        <h2 class="section-title">{{ cms('landing', 'diff_title') }}</h2>
+        <p class="section-lead">{{ cms('landing', 'diff_lead') }}</p>
         <div class="grid grid-3">
             <div class="card about-card">
                 <span class="about-ic">@include('partials.icon', ['d' => 'tool'])</span>
@@ -285,13 +285,13 @@
         <div class="split flip">
             <div class="split-media">
                 <div class="img-frame">
-                    <img src="{{ asset('img/laptop-work.jpg') }}" alt="Two people working through a task on a laptop" loading="lazy">
+                    <img src="{{ cms_image('landing', 'attend_image') }}" alt="Two people working through a task on a laptop" loading="lazy">
                 </div>
-                <span class="mini-card" aria-hidden="true">🌍 Learners from 3 countries</span>
+                <span class="mini-card" aria-hidden="true">{{ cms('landing', 'attend_badge') }}</span>
             </div>
             <div>
-                <h2 class="section-title">Who Should Attend</h2>
-                <p class="section-lead">Built for anyone ready to work smarter.</p>
+                <h2 class="section-title">{{ cms('landing', 'attend_heading') }}</h2>
+                <p class="section-lead">{{ cms('landing', 'attend_lead') }}</p>
                 <ul class="check-list">
                     <li><strong>Students & Fresh Graduates</strong> Want to start your career with the right foundation. Master the tools that show up in every job posting.</li>
                     <li><strong>Working Professionals</strong> Ready to work smarter, not harder. Stand out in your role and unlock the next opportunity.</li>
@@ -309,8 +309,8 @@
     <div class="container">
         <div class="split">
             <div>
-                <h2 class="section-title">What You'll Walk Away With</h2>
-                <p class="section-lead">By day 24, you'll have real skills you can use. Not just notes. Not just certificates. Real experience.</p>
+                <h2 class="section-title">{{ cms('landing', 'walk_heading') }}</h2>
+                <p class="section-lead">{{ cms('landing', 'walk_lead') }}</p>
                 <ul class="check-list">
                     <li>Hands-on experience with industry-standard tools</li>
                     <li>Increased workplace productivity</li>
@@ -324,9 +324,9 @@
             </div>
             <div class="split-media">
                 <div class="img-frame">
-                    <img src="{{ asset('img/workshop.jpg') }}" alt="Facilitator leading a hands-on workshop" loading="lazy">
+                    <img src="{{ cms_image('landing', 'walk_image') }}" alt="Facilitator leading a hands-on workshop" loading="lazy">
                 </div>
-                <span class="mini-card" aria-hidden="true">🎓 Live, hands-on sessions</span>
+                <span class="mini-card" aria-hidden="true">{{ cms('landing', 'walk_badge') }}</span>
             </div>
         </div>
     </div>
@@ -378,7 +378,7 @@
             <div class="card t-card">
                 <div class="t-stars">★★★★★</div>
                 <span class="t-chip">Promoted at work</span>
-                <p class=”t-quote”>”I set up our whole team on Trello and Notion right after the sessions. My manager noticed, and my next review reflected it. The promotion came through two months later.”</p>
+                <p class="t-quote">”I set up our whole team on Trello and Notion right after the sessions. My manager noticed, and my next review reflected it. The promotion came through two months later.”</p>
                 <div class="t-person">
                     <span class="t-avatar">AK</span>
                     <div><strong>Ama K.</strong><br><small>Productivity track · Accra, Ghana</small></div>
@@ -409,10 +409,10 @@
 {{-- Stats band --}}
 <section class="stats-band">
     <div class="container stats-row">
-        <div><span class="num">24</span><span class="lbl">Digital tools taught</span></div>
-        <div><span class="num">24</span><span class="lbl">Expert facilitators</span></div>
-        <div><span class="num">3</span><span class="lbl">Countries represented</span></div>
-        <div><span class="num">100%</span><span class="lbl">Free. No catch.</span></div>
+        <div><span class="num">{{ cms('landing', 'stat1_num') }}</span><span class="lbl">{{ cms('landing', 'stat1_lbl') }}</span></div>
+        <div><span class="num">{{ cms('landing', 'stat2_num') }}</span><span class="lbl">{{ cms('landing', 'stat2_lbl') }}</span></div>
+        <div><span class="num">{{ cms('landing', 'stat3_num') }}</span><span class="lbl">{{ cms('landing', 'stat3_lbl') }}</span></div>
+        <div><span class="num">{{ cms('landing', 'stat4_num') }}</span><span class="lbl">{{ cms('landing', 'stat4_lbl') }}</span></div>
     </div>
 </section>
 
@@ -431,9 +431,9 @@
 {{-- Final CTA --}}
 <section class="final-cta">
     <div class="container">
-        <h2 class="section-title">No experience? No problem.</h2>
-        <p class="section-lead" style="margin-left:auto; margin-right:auto;">You dream of a better career. We're the bridge. 24 days. 24 tools. Completely free.</p>
-        <a href="#register" class="btn btn-primary">Reserve Your Free Spot →</a>
+        <h2 class="section-title">{{ cms('landing', 'cta_title') }}</h2>
+        <p class="section-lead" style="margin-left:auto; margin-right:auto;">{!! cms_html('landing', 'cta_sub') !!}</p>
+        <a href="#register" class="btn btn-primary">{{ cms('landing', 'cta_button') }}</a>
         <p class="micro">No cost. No experience required. Cancel anytime.</p>
     </div>
 </section>

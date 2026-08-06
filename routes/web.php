@@ -5,6 +5,7 @@ use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\CompanyApplicationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CompanyAuthController;
+use App\Http\Controllers\CmsController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseEnrollmentController;
@@ -110,6 +111,10 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('dashboard.courses.edit');
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('dashboard.courses.destroy');
+
+    Route::get('/cms', [CmsController::class, 'index'])->name('dashboard.cms');
+    Route::get('/cms/{page}', [CmsController::class, 'edit'])->name('dashboard.cms.edit');
+    Route::put('/cms/{page}', [CmsController::class, 'update'])->name('dashboard.cms.update');
 
     Route::get('/course-registrations', [CourseEnrollmentController::class, 'adminIndex'])->name('dashboard.course-registrations');
     Route::get('/course-registrations/export', [CourseEnrollmentController::class, 'export'])->name('dashboard.course-registrations.export');

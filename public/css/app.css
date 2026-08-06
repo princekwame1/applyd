@@ -654,6 +654,24 @@ a { color: var(--brand); }
 .pay-option-amt { font-size: 2rem; font-weight: 900; color: var(--ink); line-height: 1; }
 .pay-option-note { color: var(--ink-soft); font-size: .85rem; line-height: 1.5; flex: 1; margin-bottom: 8px; }
 
+/* CMS admin */
+.cms-page-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.cms-page-card { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink); }
+.cms-page-ic {
+  flex: 0 0 44px; width: 44px; height: 44px; border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-soft); color: var(--ink); border: 1px solid #ece7e6;
+}
+.cms-page-ic svg { width: 22px; height: 22px; }
+.cms-page-body { flex: 1; min-width: 0; }
+.cms-page-body h3 { font-size: 1.02rem; font-weight: 800; }
+.cms-page-body p { color: var(--ink-soft); font-size: .82rem; }
+.cms-page-edit { color: var(--brand); font-weight: 700; font-size: .85rem; white-space: nowrap; }
+.cms-section { margin-bottom: 18px; }
+.cms-fields { display: flex; flex-direction: column; gap: 18px; }
+.cms-field { min-width: 0; }
+.cms-field .rich-editor-holder { position: relative; width: 100%; }
+
 /* Livewire table skeleton loader */
 .tbl-skeleton { display: grid; gap: 14px; padding: 8px 2px; }
 .tbl-skeleton-row { display: flex; gap: 16px; align-items: center; }

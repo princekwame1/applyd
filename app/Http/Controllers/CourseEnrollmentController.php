@@ -120,7 +120,7 @@ class CourseEnrollmentController extends Controller
         $message = "Dear {$enrollment->first_name}, You have started your {$course} application with SNo:{$enrollment->serial_no} and PIN:{$enrollment->pin}. Ensure you complete all stages of the application. Continue: {$link}";
 
         try {
-            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message);
+            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
         } catch (\Throwable $e) {
             report($e);
         }
@@ -337,7 +337,7 @@ class CourseEnrollmentController extends Controller
         $message = "Dear {$enrollment->first_name}, your registration for {$course} has been completed successfully. Further communication regarding the next steps will be sent to you. Thank you for choosing Applyd Academy.";
 
         try {
-            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message);
+            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
         } catch (\Throwable $e) {
             report($e);
         }

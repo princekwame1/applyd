@@ -5,10 +5,10 @@
 @section('content')
 <section class="page-hero">
     <div class="container center">
-        <span class="page-eyebrow">Careers</span>
-        <h1 class="section-title">Jobs &amp; Opportunities</h1>
-        <p class="section-lead">Openings from companies in our network. Apply with your CV. No account needed.</p>
-        <a href="{{ route('companies.register') }}" class="btn btn-brand btn-sm" style="margin-top:22px;">Are you hiring? Post a job</a>
+        <span class="page-eyebrow">{{ cms('jobs', 'hero_eyebrow') }}</span>
+        <h1 class="section-title">{{ cms('jobs', 'hero_title') }}</h1>
+        <p class="section-lead">{{ cms('jobs', 'hero_sub') }}</p>
+        <a href="{{ route('companies.register') }}" class="btn btn-brand btn-sm" style="margin-top:22px;">{{ cms('jobs', 'hero_cta') }}</a>
     </div>
 </section>
 

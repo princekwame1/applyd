@@ -86,7 +86,7 @@ class RegistrationController extends Controller
         $firstName = explode(' ', trim($registration->full_name))[0];
         $fullPhone = $validated['phone_country_code'].$validated['phone'];
 
-        app(SmsNotificationService::class)->sendRegistrationConfirmation($fullPhone, $firstName);
+        app(SmsNotificationService::class)->sendRegistrationConfirmation($fullPhone, $firstName, $registration->id);
 
         return redirect()
             ->route('register.thanks')

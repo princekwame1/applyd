@@ -6,9 +6,9 @@
 {{-- Hero --}}
 <section class="page-hero">
     <div class="container center">
-        <span class="page-eyebrow">About Applyd Academy</span>
-        <h1 class="section-title">We're closing Africa's marketing skills gap</h1>
-        <p class="section-lead">One practical, employable marketer at a time.</p>
+        <span class="page-eyebrow">{{ cms('about', 'hero_eyebrow') }}</span>
+        <h1 class="section-title">{{ cms('about', 'hero_title') }}</h1>
+        <p class="section-lead">{{ cms('about', 'hero_sub') }}</p>
     </div>
 </section>
 
@@ -17,15 +17,15 @@
     <div class="container">
         <div class="split">
             <div>
-                <h2 class="section-title">Certificates on paper. Silence in the room.</h2>
-                <p class="section-lead">Every year, thousands of graduates leave school with certificates but no clue how to run a real campaign, pitch a real client, or use the tools a marketing job actually demands.</p>
-                <p class="section-lead">Every year, companies interview candidate after candidate who looks qualified on paper and falls short in the room.</p>
-                <p class="about-emphasis">That gap is what Applyd Academy exists to close.</p>
+                <h2 class="section-title">{{ cms('about', 'gap_heading') }}</h2>
+                <p class="section-lead">{!! cms_html('about', 'gap_p1') !!}</p>
+                <p class="section-lead">{!! cms_html('about', 'gap_p2') !!}</p>
+                <p class="about-emphasis">{{ cms('about', 'gap_emphasis') }}</p>
                 <p class="section-lead">We are Africa's next-generation marketing institution, a practical, industry-led training and talent development ecosystem built for people who want to <span class="hl">do the work</span>, not just describe it in an interview.</p>
             </div>
             <div class="split-media">
                 <div class="img-frame">
-                    <img src="{{ asset('img/learn-together.jpg') }}" alt="Learners collaborating over laptops" loading="lazy">
+                    <img src="{{ cms_image('about', 'gap_image') }}" alt="Learners collaborating over laptops" loading="lazy">
                 </div>
                 <span class="mini-card" aria-hidden="true">Skills, not stamps</span>
             </div>
@@ -37,8 +37,8 @@
 <section class="alt">
     <div class="container">
         <div class="center">
-            <h2 class="section-title">What We Do</h2>
-            <p class="section-lead" style="margin-left:auto;margin-right:auto;">Applyd Academy is more than a school. We're the digital headquarters for a full marketing ecosystem, education, recruitment, research, consulting, media, and community, where each part strengthens the others to produce marketers who are ready from day one.</p>
+            <h2 class="section-title">{{ cms('about', 'wwd_heading') }}</h2>
+            <p class="section-lead" style="margin-left:auto;margin-right:auto;">{!! cms_html('about', 'wwd_lead') !!}</p>
         </div>
 
         <div class="model-split">
@@ -54,7 +54,7 @@
         </div>
 
         <div class="pull-quote">
-            <p>We don't hand out certificates. <span class="hl">We build capability.</span></p>
+            <p>We don't hand out certificates. <span class="hl">{{ cms('about', 'pullquote') }}</span></p>
             <small>Already certified but can't yet do the job? We're the ones who get you there, you shouldn't lose an opportunity for lacking a practical skill a piece of paper can't teach.</small>
         </div>
 
@@ -93,8 +93,8 @@
 <section>
     <div class="container">
         <div class="center">
-            <h2 class="section-title">Who We Serve</h2>
-            <p class="section-lead" style="margin-left:auto;margin-right:auto;">We work with two audiences, side by side.</p>
+            <h2 class="section-title">{{ cms('about', 'serve_heading') }}</h2>
+            <p class="section-lead" style="margin-left:auto;margin-right:auto;">{{ cms('about', 'serve_lead') }}</p>
         </div>
         <div class="grid grid-2 serve-grid">
             <div class="card serve-card">
@@ -116,7 +116,7 @@
 <section class="alt">
     <div class="container">
         <div class="center">
-            <h2 class="section-title">What Makes Us Different</h2>
+            <h2 class="section-title">{{ cms('about', 'diff_heading') }}</h2>
             <p class="section-lead" style="margin-left:auto;margin-right:auto;">Most providers compete on more certificates, more credentials, more letters after your name. We made a different bet, we replaced certification with <span class="hl">proof of work</span>. Less paperwork, more portfolio.</p>
         </div>
 
@@ -147,7 +147,7 @@
 
         <div class="stamp-banner">
             <span class="stamp-sub">Our value proposition is simple</span>
-            <span class="stamp-title">Skills, Not Stamps.</span>
+            <span class="stamp-title">{{ cms('about', 'stamp') }}</span>
         </div>
     </div>
 </section>
@@ -158,12 +158,12 @@
         <div class="split flip">
             <div class="split-media">
                 <div class="img-frame">
-                    <img src="{{ asset('img/workshop.jpg') }}" alt="A hands-on Applyd Academy workshop" loading="lazy">
+                    <img src="{{ cms_image('about', 'story_image') }}" alt="A hands-on Applyd Academy workshop" loading="lazy">
                 </div>
                 <span class="mini-card" aria-hidden="true">From a gap to a movement</span>
             </div>
             <div>
-                <h2 class="section-title">Our Story</h2>
+                <h2 class="section-title">{{ cms('about', 'story_heading') }}</h2>
                 <p class="section-lead">Applyd Academy began with an uncomfortable observation: the gap between what marketing schools teach and what employers actually need has never been wider.</p>
                 <p class="section-lead">Rather than build another lecture-heavy curriculum to add to the pile, we built something different, a model rooted in live projects, simulation labs, real AI tools, and career support that doesn't stop at graduation.</p>
                 <p class="section-lead">What started as a response to a gap has grown into a movement. Today, Applyd Academy sits at the heart of <strong>The Ansongs</strong>, a connected network spanning consulting, research, media, recruitment, and a foundation, all working together as a self-reinforcing ecosystem for marketing excellence across Africa.</p>
@@ -178,11 +178,11 @@
         <div class="grid grid-2 mv-grid">
             <div class="card mv-card">
                 <span class="mv-tag">Our Mission</span>
-                <p>To build Africa's most practical, employable, and future-ready marketing talent.</p>
+                <p>{!! cms_html('about', 'mission') !!}</p>
             </div>
             <div class="card mv-card mv-card--brand">
                 <span class="mv-tag">Our Vision</span>
-                <p>To become the continent's leading marketing ecosystem by <strong>2030</strong>.</p>
+                <p>{!! cms_html('about', 'vision') !!}</p>
             </div>
         </div>
     </div>
@@ -192,7 +192,7 @@
 <section>
     <div class="container">
         <div class="center">
-            <h2 class="section-title">Our Values</h2>
+            <h2 class="section-title">{{ cms('about', 'values_heading') }}</h2>
         </div>
         <div class="grid grid-3 values-grid">
             <div class="card about-card">
@@ -227,8 +227,8 @@
 {{-- Final CTA --}}
 <section class="final-cta">
     <div class="container">
-        <h2 class="section-title">Ready to Begin?</h2>
-        <p class="section-lead" style="margin-left:auto;margin-right:auto;">Join the movement closing Africa's marketing skills gap, one practical, employable, future-ready marketer at a time.</p>
+        <h2 class="section-title">{{ cms('about', 'cta_heading') }}</h2>
+        <p class="section-lead" style="margin-left:auto;margin-right:auto;">{{ cms('about', 'cta_sub') }}</p>
         <a href="{{ route('landing') }}#register" class="btn btn-primary">Start Learning →</a>
     </div>
 </section>
