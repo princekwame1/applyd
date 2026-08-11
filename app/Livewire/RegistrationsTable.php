@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Http\Controllers\Dashboard\BulkEmailController;
 use App\Models\Registration;
 use App\Services\EmailNotificationService;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
@@ -61,8 +62,29 @@ class RegistrationsTable extends DataTableComponent
     public function bulkActions(): array
     {
         return [
+            'composeSelected' => 'Send email to selected…',
             'resendSelected' => 'Resend confirmation email',
         ];
+    }
+
+    /**
+     * Hand the ticked registrants to the compose screen, where the admin
+     * writes a one-off message instead of re-sending a stored template.
+     */
+    public function composeSelected()
+    {
+        $ids = array_map('intval', $this->getSelected());
+
+        if (! $ids) {
+            $this->toast(false, 'Tick at least one registrant first');
+
+            return null;
+        }
+
+        session()->put(BulkEmailController::SESSION_KEY, $ids);
+        $this->clearSelected();
+
+        return $this->redirect(route('dashboard.registrations.bulk-email'), navigate: false);
     }
 
     /**

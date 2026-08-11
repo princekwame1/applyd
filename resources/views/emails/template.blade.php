@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ $heading ?: config('app.name') }}</title></head>
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ $heading ?: config('app.name') }}</title>
+    <style>
+        /* Images come from the editor without sizing, so keep them inside the
+           560px shell instead of stretching the layout on phones. */
+        .email-body img { max-width: 100% !important; height: auto !important; display: block; margin: 16px auto; border-radius: 8px; }
+    </style>
+</head>
 <body style="margin:0;padding:0;background:#f7f6f5;font-family:Arial,Helvetica,sans-serif;color:#272827;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f6f5;padding:24px 0;">
         <tr><td align="center">

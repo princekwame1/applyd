@@ -29,7 +29,7 @@
 # Build & public
 # /public/build
 # /public/hot
-# /public/storage
+/public/storage
 # /bootstrap/cache
 
 # Storage & keys

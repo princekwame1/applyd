@@ -19,6 +19,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Dashboard\BulkEmailController;
+use App\Http\Controllers\Dashboard\EditorImageController;
 use App\Http\Controllers\Dashboard\EmailLogsController;
 use App\Http\Controllers\Dashboard\EmailTemplatesController;
 use App\Http\Controllers\Dashboard\SmsLogsController;
@@ -80,6 +82,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
+
+    // Shared by every Quill editor (admin dashboard + company portal), so it
+    // sits here rather than inside the admin-only group.
+    Route::post('/editor/image', [EditorImageController::class, 'store'])->name('editor.image');
 });
 
 // Admin dashboard (admins and supers only)
@@ -87,6 +93,8 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/', [DashboardController::class, 'home'])->name('dashboard');
     Route::get('/registrations', [DashboardController::class, 'index'])->name('dashboard.registrations');
     Route::get('/export', [DashboardController::class, 'export'])->name('dashboard.export');
+    Route::get('/registrations/bulk-email', [BulkEmailController::class, 'create'])->name('dashboard.registrations.bulk-email');
+    Route::post('/registrations/bulk-email', [BulkEmailController::class, 'send'])->name('dashboard.registrations.bulk-email.send');
     Route::get('/registrations/{registration}', [DashboardController::class, 'show'])->name('dashboard.show');
     Route::post('/registrations/{registration}/resend-email', [DashboardController::class, 'resendEmail'])->name('dashboard.registrations.resend-email');
 
