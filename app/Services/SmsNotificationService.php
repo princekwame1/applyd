@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class SmsNotificationService
 {
-    protected string $apiKey;
-    protected string $senderId;
+    protected ?string $apiKey;
+    protected ?string $senderId;
     protected string $apiUrl = 'https://api.mnotify.com/api/sms/quick';
 
     public function __construct()
     {
+        // Nullable: the service degrades to a logged failure when MNotify is
+        // not configured, so a missing key must not blow up the constructor.
         $this->apiKey = config('services.mnotify.api_key');
         $this->senderId = config('services.mnotify.sender_id');
     }

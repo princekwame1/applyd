@@ -65,11 +65,13 @@
                 </div>
             </div>
 
-            <div class="side-group {{ request()->routeIs('dashboard.sms-logs*', 'dashboard.blog*') ? 'open' : '' }}" data-side-group>
+            <div class="side-group {{ request()->routeIs('dashboard.sms-logs*', 'dashboard.blog*', 'dashboard.email-templates*', 'dashboard.email-logs*') ? 'open' : '' }}" data-side-group>
                 <button type="button" class="side-group-toggle" data-side-toggle><span>General</span>{!! $caret !!}</button>
                 <div class="side-group-items">
                     <a href="{{ route('dashboard.blog') }}" class="{{ request()->routeIs('dashboard.blog*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11a2 2 0 0 1 2 2v14l-4-2-4 2-4-2V6a2 2 0 0 1 2-2z"/><line x1="8" y1="8" x2="13" y2="8"/><line x1="8" y1="12" x2="13" y2="12"/></svg> Blog</a>
                     <a href="{{ route('dashboard.sms-logs') }}" class="{{ request()->routeIs('dashboard.sms-logs*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> SMS Delivery</a>
+                    <a href="{{ route('dashboard.email-templates') }}" class="{{ request()->routeIs('dashboard.email-templates*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg> Email Templates</a>
+                    <a href="{{ route('dashboard.email-logs') }}" class="{{ request()->routeIs('dashboard.email-logs*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v9a2 2 0 0 1-2 2H9l-5 4z"/><polyline points="8 8 12 11 16 8"/></svg> Email Delivery</a>
                     <a href="{{ route('landing') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> View Landing Page</a>
                 </div>
             </div>

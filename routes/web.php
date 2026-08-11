@@ -19,6 +19,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Dashboard\EmailLogsController;
+use App\Http\Controllers\Dashboard\EmailTemplatesController;
 use App\Http\Controllers\Dashboard\SmsLogsController;
 use Illuminate\Support\Facades\Route;
 
@@ -86,9 +88,22 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/registrations', [DashboardController::class, 'index'])->name('dashboard.registrations');
     Route::get('/export', [DashboardController::class, 'export'])->name('dashboard.export');
     Route::get('/registrations/{registration}', [DashboardController::class, 'show'])->name('dashboard.show');
+    Route::post('/registrations/{registration}/resend-email', [DashboardController::class, 'resendEmail'])->name('dashboard.registrations.resend-email');
 
     Route::get('/sms-logs', [SmsLogsController::class, 'index'])->name('dashboard.sms-logs');
     Route::post('/sms-logs/{smsLog}/retry', [SmsLogsController::class, 'retry'])->name('dashboard.sms-logs.retry');
+
+    Route::get('/email-templates', [EmailTemplatesController::class, 'index'])->name('dashboard.email-templates');
+    Route::get('/email-templates/{key}/edit', [EmailTemplatesController::class, 'edit'])->name('dashboard.email-templates.edit');
+    Route::get('/email-templates/{key}/preview', [EmailTemplatesController::class, 'preview'])->name('dashboard.email-templates.preview');
+    Route::put('/email-templates/{key}', [EmailTemplatesController::class, 'update'])->name('dashboard.email-templates.update');
+    Route::delete('/email-templates/{key}', [EmailTemplatesController::class, 'reset'])->name('dashboard.email-templates.reset');
+    Route::post('/email-templates/{key}/test', [EmailTemplatesController::class, 'test'])->name('dashboard.email-templates.test');
+
+    Route::get('/email-logs', [EmailLogsController::class, 'index'])->name('dashboard.email-logs');
+    Route::get('/email-logs/export', [EmailLogsController::class, 'export'])->name('dashboard.email-logs.export');
+    Route::get('/email-logs/{emailLog}', [EmailLogsController::class, 'show'])->name('dashboard.email-logs.show');
+    Route::post('/email-logs/{emailLog}/resend', [EmailLogsController::class, 'resend'])->name('dashboard.email-logs.resend');
 
     Route::get('/schedules', [ScheduleController::class, 'index'])->name('dashboard.schedules');
     Route::post('/schedules', [ScheduleController::class, 'store'])->name('dashboard.schedules.store');

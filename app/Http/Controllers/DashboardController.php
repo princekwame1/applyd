@@ -8,6 +8,7 @@ use App\Models\Registration;
 use App\Models\Schedule;
 use App\Models\Tool;
 use App\Models\User;
+use App\Services\EmailNotificationService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -49,7 +50,26 @@ class DashboardController extends Controller
 
     public function show(Registration $registration)
     {
-        return view('dashboard.show', compact('registration'));
+        return view('dashboard.show', [
+            'registration' => $registration,
+            'emailLogs' => $registration->emailLogs()->latest()->get(),
+        ]);
+    }
+
+    /**
+     * Re-send the registration confirmation email, re-rendered from the
+     * current template so the registrant gets the latest wording.
+     */
+    public function resendEmail(Registration $registration, EmailNotificationService $emails)
+    {
+        $success = $emails->sendRegistrationConfirmation($registration);
+
+        return back()->with(
+            $success ? 'success' : 'error',
+            $success
+                ? 'Confirmation email resent to '.$registration->email.'.'
+                : 'Could not send the email — check Email Delivery for the error.'
+        );
     }
 
     public function export()

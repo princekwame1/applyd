@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Registration;
+use App\Services\EmailNotificationService;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -52,8 +53,68 @@ class RegistrationsTable extends DataTableComponent
                 ->sortable()
                 ->format(fn ($value) => $value->format('M j, Y g:ia')),
             Column::make('Actions', 'id')
-                ->format(fn ($value) => '<a href="'.route('dashboard.show', $value).'">View</a>')
+                ->format(fn ($value) => view('dashboard.registrations.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return [
+            'resendSelected' => 'Resend confirmation email',
+        ];
+    }
+
+    /**
+     * Re-send the confirmation email to one registrant, re-rendered from the
+     * current template so they always get the latest wording.
+     */
+    public function resendEmail(int $id): void
+    {
+        $registration = Registration::find($id);
+
+        if (! $registration) {
+            return;
+        }
+
+        $success = app(EmailNotificationService::class)->sendRegistrationConfirmation($registration);
+
+        $this->toast(
+            $success,
+            $success ? 'Email sent to '.$registration->email : 'Failed to send email — see Email Delivery'
+        );
+    }
+
+    public function resendSelected(): void
+    {
+        $registrations = Registration::whereIn('id', $this->getSelected())->get();
+        $this->clearSelected();
+
+        $emails = app(EmailNotificationService::class);
+        $sent = 0;
+
+        foreach ($registrations as $registration) {
+            if ($emails->sendRegistrationConfirmation($registration)) {
+                $sent++;
+            }
+        }
+
+        $failed = $registrations->count() - $sent;
+
+        $this->toast(
+            $failed === 0 && $sent > 0,
+            $failed === 0
+                ? $sent.' email'.($sent === 1 ? '' : 's').' sent'
+                : $sent.' sent, '.$failed.' failed — see Email Delivery'
+        );
+    }
+
+    protected function toast(bool $success, string $message): void
+    {
+        $this->js(sprintf(
+            "Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:3500,timerProgressBar:true,icon:'%s',title:'%s'})",
+            $success ? 'success' : 'error',
+            addslashes($message)
+        ));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Registration;
 use App\Models\Schedule;
 use App\Models\Tool;
+use App\Services\EmailNotificationService;
 use App\Services\SmsNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -87,6 +88,10 @@ class RegistrationController extends Controller
         $fullPhone = $validated['phone_country_code'].$validated['phone'];
 
         app(SmsNotificationService::class)->sendRegistrationConfirmation($fullPhone, $firstName, $registration->id);
+
+        // Confirmation email (cPanel SMTP). The service logs and swallows its own
+        // failures, so a mail outage can never break a registration.
+        app(EmailNotificationService::class)->sendRegistrationConfirmation($registration);
 
         return redirect()
             ->route('register.thanks')
