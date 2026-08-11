@@ -2,28 +2,31 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlogCategoryController;
-use App\Http\Controllers\CompanyApplicationController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CmsController;
+use App\Http\Controllers\CompanyApplicationController;
+use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseEnrollmentController;
-use App\Http\Controllers\JobBoardController;
+use App\Http\Controllers\Dashboard\BulkEmailController;
+use App\Http\Controllers\Dashboard\EditorImageController;
+use App\Http\Controllers\Dashboard\EmailLogsController;
+use App\Http\Controllers\Dashboard\EmailTemplatesController;
+use App\Http\Controllers\Dashboard\SmsLogsController;
+use App\Http\Controllers\Dashboard\SurveyQuestionsController;
+use App\Http\Controllers\Dashboard\SurveysController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\Dashboard\BulkEmailController;
-use App\Http\Controllers\Dashboard\EditorImageController;
-use App\Http\Controllers\Dashboard\EmailLogsController;
-use App\Http\Controllers\Dashboard\EmailTemplatesController;
-use App\Http\Controllers\Dashboard\SmsLogsController;
 use Illuminate\Support\Facades\Route;
 
 // Public landing page + registration
@@ -46,6 +49,13 @@ Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'showPost'])->name('blog.show');
 Route::view('/contact', 'contact')->name('contact');
 Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+
+// Pulse Check — public session check-in surveys. No login: the link is handed
+// out in the room, so `thanks` is registered before the {type} catch-all.
+Route::get('/check-in', [SurveyController::class, 'index'])->name('surveys.index');
+Route::get('/check-in/thanks', [SurveyController::class, 'thanks'])->name('surveys.thanks');
+Route::get('/check-in/{type}', [SurveyController::class, 'show'])->name('surveys.show');
+Route::post('/check-in/{type}', [SurveyController::class, 'store'])->name('surveys.store');
 
 // Job board
 Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');
@@ -120,6 +130,17 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy'])->name('dashboard.schedules.destroy');
 
     Route::get('/schedules/export', [ScheduleController::class, 'export'])->name('dashboard.schedules.export');
+
+    Route::get('/surveys', [SurveysController::class, 'index'])->name('dashboard.surveys');
+    Route::get('/surveys/export', [SurveysController::class, 'export'])->name('dashboard.surveys.export');
+    Route::get('/surveys/poster', [SurveysController::class, 'poster'])->name('dashboard.surveys.poster');
+    Route::get('/surveys/questions', [SurveyQuestionsController::class, 'index'])->name('dashboard.surveys.questions');
+    Route::post('/surveys/questions', [SurveyQuestionsController::class, 'store'])->name('dashboard.surveys.questions.store');
+    Route::get('/surveys/questions/{question}/edit', [SurveyQuestionsController::class, 'edit'])->name('dashboard.surveys.questions.edit');
+    Route::put('/surveys/questions/{question}', [SurveyQuestionsController::class, 'update'])->name('dashboard.surveys.questions.update');
+    Route::delete('/surveys/questions/{question}', [SurveyQuestionsController::class, 'destroy'])->name('dashboard.surveys.questions.destroy');
+    Route::get('/surveys/responses/{response}', [SurveysController::class, 'show'])->name('dashboard.surveys.response');
+    Route::delete('/surveys/responses/{response}', [SurveysController::class, 'destroy'])->name('dashboard.surveys.response.destroy');
 
     Route::get('/tools', [ToolController::class, 'index'])->name('dashboard.tools');
     Route::post('/tools', [ToolController::class, 'store'])->name('dashboard.tools.store');

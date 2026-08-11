@@ -1,0 +1,85 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Livewire\Concerns\WithSkeletonLoader;
+use App\Models\SurveyQuestion;
+use App\Support\Surveys;
+use Rappasoft\LaravelLivewireTables\DataTableComponent;
+use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
+
+class SurveyQuestionsTable extends DataTableComponent
+{
+    use WithSkeletonLoader;
+
+    protected $model = SurveyQuestion::class;
+
+    public function configure(): void
+    {
+        $this->configureSkeletonLoader();
+        $this->setPrimaryKey('id');
+        $this->setDefaultSort('survey_type', 'asc');
+        $this->setPerPageAccepted([25, 50]);
+        $this->setPerPage(25);
+        $this->setBulkActionsDisabled();
+    }
+
+    public function filters(): array
+    {
+        return [
+            SelectFilter::make('Survey')
+                ->options(['' => 'All'] + array_map(
+                    fn ($copy) => $copy['label'],
+                    Surveys::types(),
+                ))
+                ->filter(fn ($builder, string $value) => $builder->where('survey_type', $value)),
+        ];
+    }
+
+    public function columns(): array
+    {
+        return [
+            Column::make('Survey', 'survey_type')
+                ->sortable()
+                ->format(fn ($value) => Surveys::label($value)),
+            Column::make('Order', 'sort_order')
+                ->sortable(),
+            Column::make('Question', 'prompt')
+                ->sortable()
+                ->searchable(),
+            Column::make('Key', 'key')
+                ->searchable()
+                ->format(fn ($value) => '<code style="font-size:.78rem;">'.e($value).'</code>')
+                ->html(),
+            Column::make('Type', 'type')
+                ->sortable(),
+            Column::make('Options', 'options')
+                ->format(function ($value, $row) {
+                    $options = $row->optionList();
+
+                    return $options
+                        ? e(implode(' · ', array_slice($options, 0, 3))).(count($options) > 3
+                            ? ' <span style="color:var(--ink-soft);">+'.(count($options) - 3).'</span>'
+                            : '')
+                        : '<span style="color:var(--ink-soft);">—</span>';
+                })
+                ->html(),
+            Column::make('Required', 'required')
+                ->sortable()
+                ->format(fn ($value) => $value
+                    ? '<span class="badge badge-yes">Yes</span>'
+                    : '<span class="badge badge-no">Optional</span>')
+                ->html(),
+            Column::make('Live', 'active')
+                ->sortable()
+                ->format(fn ($value) => $value
+                    ? '<span class="badge badge-yes">Live</span>'
+                    : '<span class="badge badge-no">Hidden</span>')
+                ->html(),
+            Column::make('Actions', 'id')
+                ->format(fn ($value) => view('dashboard.surveys.partials.question-actions', ['id' => $value]))
+                ->html(),
+        ];
+    }
+}

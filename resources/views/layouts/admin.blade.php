@@ -27,12 +27,13 @@
 
             @php $caret = '<svg class="side-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'; @endphp
 
-            <div class="side-group {{ request()->routeIs('dashboard.registrations', 'dashboard.show', 'dashboard.schedules*', 'dashboard.tools*') ? 'open' : '' }}" data-side-group>
+            <div class="side-group {{ request()->routeIs('dashboard.registrations', 'dashboard.show', 'dashboard.schedules*', 'dashboard.tools*', 'dashboard.surveys*') ? 'open' : '' }}" data-side-group>
                 <button type="button" class="side-group-toggle" data-side-toggle><span>Bootcamp</span>{!! $caret !!}</button>
                 <div class="side-group-items">
                     <a href="{{ route('dashboard.registrations') }}" class="{{ request()->routeIs('dashboard.registrations') || request()->routeIs('dashboard.show') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><path d="M16 4h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="14" y2="15"/></svg> Registrations</a>
                     <a href="{{ route('dashboard.schedules') }}" class="{{ request()->routeIs('dashboard.schedules*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedules</a>
                     <a href="{{ route('dashboard.tools') }}" class="{{ request()->routeIs('dashboard.tools*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Tools</a>
+                    <a href="{{ route('dashboard.surveys') }}" class="{{ request()->routeIs('dashboard.surveys*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="1.6"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg> Pulse Check</a>
                 </div>
             </div>
 
