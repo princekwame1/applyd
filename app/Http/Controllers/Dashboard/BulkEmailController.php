@@ -34,6 +34,9 @@ class BulkEmailController extends Controller
 
         return view('dashboard.registrations.bulk-email', [
             'registrations' => $registrations,
+            // Split up front so the screen shows who is actually getting this.
+            'sendable' => $registrations->where('marketing_opt_in', true)->values(),
+            'excluded' => $registrations->where('marketing_opt_in', false)->values(),
             'placeholders' => config('email_templates.placeholders', []),
             'templates' => collect(EmailTemplate::definitions())
                 ->map(fn ($definition, $key) => EmailTemplate::resolve($key))
@@ -54,7 +57,7 @@ class BulkEmailController extends Controller
             'body' => ['required', 'string'],
             'cta_label' => ['nullable', 'string', 'max:100', 'required_with:cta_url'],
             'cta_url' => ['nullable', 'string', 'max:255', 'required_with:cta_label'],
-            'opted_in_only' => ['nullable', 'boolean'],
+            'service_message' => ['nullable', 'boolean'],
         ], [
             'cta_label.required_with' => 'Add button text, or clear the button link.',
             'cta_url.required_with' => 'Add a button link, or clear the button text.',
@@ -64,16 +67,25 @@ class BulkEmailController extends Controller
         // HTML that ends up in someone else's inbox.
         $validated['body'] = Html::clean($validated['body']);
 
-        $registrations = $this->selectedRegistrations($request);
+        $selected = $this->selectedRegistrations($request);
 
-        if ($request->boolean('opted_in_only')) {
-            $registrations = $registrations->where('marketing_opt_in', true);
-        }
+        // Opting out is honoured by default and enforced here, not just in the
+        // UI — a stale form or a hand-rolled POST must not be able to reach
+        // someone who declined. The only way past it is a deliberate
+        // "service message" tick, for non-promotional mail like a schedule
+        // change, which marketing consent does not govern.
+        $registrations = $request->boolean('service_message')
+            ? $selected
+            : $selected->where('marketing_opt_in', true);
+
+        $skipped = $selected->count() - $registrations->count();
 
         if ($registrations->isEmpty()) {
             return back()
                 ->withInput()
-                ->with('error', 'No recipients left to send to — the selection expired or the opt-in filter excluded everyone.');
+                ->with('error', $skipped > 0
+                    ? 'Nobody in that selection has opted in to marketing, so no email was sent.'
+                    : 'No recipients left to send to — the selection expired.');
         }
 
         $sent = 0;
@@ -90,11 +102,18 @@ class BulkEmailController extends Controller
 
         $request->session()->forget(self::SESSION_KEY);
 
+        $message = $failed === 0
+            ? $sent.' email'.($sent === 1 ? '' : 's').' sent.'
+            : $sent.' sent, '.$failed.' failed — check Email Delivery for the errors.';
+
+        // Always say so out loud: a silent drop looks like a delivery failure.
+        if ($skipped > 0) {
+            $message .= ' '.$skipped.' '.($skipped === 1 ? 'recipient was' : 'recipients were').' skipped — not opted in to marketing.';
+        }
+
         return redirect()->route('dashboard.registrations')->with(
             $failed === 0 ? 'success' : 'error',
-            $failed === 0
-                ? $sent.' email'.($sent === 1 ? '' : 's').' sent.'
-                : $sent.' sent, '.$failed.' failed — check Email Delivery for the errors.'
+            $message
         );
     }
 

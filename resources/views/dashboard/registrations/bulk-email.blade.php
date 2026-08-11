@@ -4,9 +4,6 @@
 
 @section('content')
 @php
-    $optedIn = $registrations->where('marketing_opt_in', true)->count();
-    $notOptedIn = $registrations->count() - $optedIn;
-
     // Re-indexed so the <option> value (the loop index) lines up with the JS array.
     $prefillJson = collect($templates)
         ->map(fn ($t) => collect($t)->only(['subject', 'heading', 'body', 'cta_label', 'cta_url']))
@@ -16,7 +13,7 @@
 
 <div class="page-head">
     <div>
-        <h1 class="section-title">Send email to {{ $registrations->count() }} {{ Str::plural('registrant', $registrations->count()) }}</h1>
+        <h1 class="section-title">Send email to <span data-recipient-count>{{ $sendable->count() }}</span> {{ Str::plural('registrant', $sendable->count()) }}</h1>
         <p style="color: var(--ink-soft);">Written once, sent individually — each person gets their own copy with their own details filled in.</p>
     </div>
     <a class="btn btn-sm btn-outline" href="{{ route('dashboard.registrations') }}">Cancel</a>
@@ -91,45 +88,68 @@
                 </div>
             </div>
 
-            @if ($notOptedIn > 0)
+            @if ($excluded->isNotEmpty())
                 <div class="card cms-section">
-                    <div class="card-head"><div><h3>Marketing opt-in</h3></div></div>
-                    <label class="check-line" style="display:flex; gap:10px; align-items:center; cursor:pointer;">
-                        <input type="checkbox" name="opted_in_only" value="1" data-no-select2 {{ old('opted_in_only') ? 'checked' : '' }}>
-                        <span>Only send to the {{ $optedIn }} who opted in to marketing</span>
+                    <div class="card-head"><div><h3>Excluded: {{ $excluded->count() }} opted out</h3></div></div>
+                    <p style="color:var(--ink-soft); font-size:.88rem; margin:0 0 12px;">
+                        {{ $excluded->count() }} of the {{ $registrations->count() }} you picked did not opt in to marketing,
+                        so {{ $excluded->count() === 1 ? 'they are' : 'they are' }} excluded and will not receive this.
+                    </p>
+                    <label class="check-line" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+                        <input type="checkbox" name="service_message" value="1" data-no-select2
+                               data-include-count="{{ $registrations->count() }}"
+                               {{ old('service_message') ? 'checked' : '' }}>
+                        <span>
+                            <strong>This is a service message, not marketing</strong> — include the {{ $excluded->count() }}
+                            who opted out.
+                        </span>
                     </label>
                     <p style="color:var(--ink-soft); font-size:.88rem; margin:8px 0 0;">
-                        {{ $notOptedIn }} of your {{ $registrations->count() }} {{ Str::plural('recipient', $registrations->count()) }}
-                        {{ $notOptedIn === 1 ? 'has' : 'have' }} not opted in. Leave this unticked for service messages
-                        (schedule changes, joining links); tick it for anything promotional.
+                        Only tick this for mail they need regardless of consent: a schedule change, a joining link,
+                        a cancellation. Never for promotions.
                     </p>
                 </div>
             @endif
 
             <div style="position:sticky; bottom:0; padding:16px 0; background:linear-gradient(to top, var(--bg-soft) 60%, transparent); display:flex; gap:10px; align-items:center;">
-                <button type="submit" class="btn btn-brand">Send to {{ $registrations->count() }} {{ Str::plural('recipient', $registrations->count()) }}</button>
+                <button type="submit" class="btn btn-brand" @disabled($sendable->isEmpty() && $excluded->isNotEmpty())>
+                    Send to <span data-recipient-count>{{ $sendable->count() }}</span> {{ Str::plural('recipient', $sendable->count()) }}
+                </button>
                 <a class="btn btn-outline" href="{{ route('dashboard.registrations') }}">Cancel</a>
+                @if ($sendable->isEmpty())
+                    <span style="color:var(--ink-soft); font-size:.85rem;">Nobody in this selection has opted in.</span>
+                @endif
             </div>
         </form>
     </div>
 
     <aside class="email-editor-side">
         <div class="card">
-            <h3 style="margin-bottom:10px;">Recipients ({{ $registrations->count() }})</h3>
-            <ul class="placeholder-list" style="max-height:260px; overflow-y:auto;">
-                @foreach ($registrations as $registration)
-                    <li>
-                        <code>{{ $registration->email }}</code>
-                        <span>
-                            {{ $registration->full_name }}
-                            @unless ($registration->marketing_opt_in)
-                                <span class="badge badge-no">No opt-in</span>
-                            @endunless
-                        </span>
-                    </li>
-                @endforeach
-            </ul>
+            <h3 style="margin-bottom:10px;">Receiving this ({{ $sendable->count() }})</h3>
+            @if ($sendable->isEmpty())
+                <p style="color:var(--ink-soft); font-size:.88rem; margin:0;">Nobody — every registrant you picked has opted out.</p>
+            @else
+                <ul class="placeholder-list" style="max-height:240px; overflow-y:auto;">
+                    @foreach ($sendable as $registration)
+                        <li><code>{{ $registration->email }}</code><span>{{ $registration->full_name }}</span></li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
+
+        @if ($excluded->isNotEmpty())
+            <div class="card">
+                <h3 style="margin-bottom:10px;">Excluded — opted out ({{ $excluded->count() }})</h3>
+                <ul class="placeholder-list" style="max-height:200px; overflow-y:auto; opacity:.7;">
+                    @foreach ($excluded as $registration)
+                        <li>
+                            <code>{{ $registration->email }}</code>
+                            <span>{{ $registration->full_name }} <span class="badge badge-no">No opt-in</span></span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="card">
             <h3 style="margin-bottom:10px;">Placeholders</h3>
@@ -156,6 +176,28 @@
 
 @push('scripts')
 <script>
+// Keep the headline and button count in step with the service-message override,
+// so the number on the button is always the number of people who get mail.
+(function () {
+    var toggle = document.querySelector('input[name="service_message"]');
+    if (!toggle) return;
+
+    var sendable = {{ $sendable->count() }};
+    var withExcluded = parseInt(toggle.dataset.includeCount, 10);
+    var submit = toggle.form.querySelector('button[type="submit"]');
+
+    function sync() {
+        var n = toggle.checked ? withExcluded : sendable;
+        document.querySelectorAll('[data-recipient-count]').forEach(function (el) { el.textContent = n; });
+        if (submit) submit.disabled = n === 0;
+        toggle.form.setAttribute('data-confirm',
+            'Send this email to ' + n + (n === 1 ? ' person' : ' people') + '? This cannot be undone.');
+    }
+
+    toggle.addEventListener('change', sync);
+    sync();
+})();
+
 (function () {
     var prefill = document.getElementById('prefill');
     if (!prefill) return;

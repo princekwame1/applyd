@@ -61,7 +61,7 @@ class BulkRegistrationEmailTest extends TestCase
             ->withSelection([$a, $b])
             ->get(route('dashboard.registrations.bulk-email'))
             ->assertOk()
-            ->assertSee('Send email to 2 registrants')
+            ->assertSee('Receiving this (2)')
             ->assertSee($a->email)
             ->assertSee($b->email);
     }
@@ -122,7 +122,51 @@ class BulkRegistrationEmailTest extends TestCase
             ->assertSessionMissing(BulkEmailController::SESSION_KEY);
     }
 
-    public function test_the_opt_in_filter_excludes_registrants_who_did_not_opt_in(): void
+    public function test_opted_out_registrants_are_excluded_by_default(): void
+    {
+        Mail::fake();
+
+        $yes = $this->registration(['marketing_opt_in' => true]);
+        $no = $this->registration(['marketing_opt_in' => false]);
+
+        // No flag posted at all — exclusion is the default, not something the
+        // admin has to remember to ask for.
+        $this->actingAs($this->admin())
+            ->withSelection([$yes, $no])
+            ->post(route('dashboard.registrations.bulk-email.send'), [
+                'subject' => 'Promo',
+                'body' => '<p>Deal inside</p>',
+            ])
+            ->assertRedirect(route('dashboard.registrations'));
+
+        Mail::assertSent(TemplatedMail::class, 1);
+        Mail::assertSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($yes->email));
+        Mail::assertNotSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($no->email));
+
+        // Nothing is even logged against the opted-out registrant.
+        $this->assertSame(1, EmailLog::count());
+        $this->assertSame(0, EmailLog::where('email', $no->email)->count());
+    }
+
+    public function test_the_skipped_count_is_reported_back_to_the_admin(): void
+    {
+        Mail::fake();
+
+        $yes = $this->registration(['marketing_opt_in' => true]);
+        $no1 = $this->registration(['marketing_opt_in' => false]);
+        $no2 = $this->registration(['marketing_opt_in' => false]);
+
+        $this->actingAs($this->admin())
+            ->withSelection([$yes, $no1, $no2])
+            ->post(route('dashboard.registrations.bulk-email.send'), [
+                'subject' => 'Promo',
+                'body' => '<p>Deal inside</p>',
+            ]);
+
+        $this->assertStringContainsString('2 recipients were skipped', session('success'));
+    }
+
+    public function test_a_service_message_may_deliberately_include_opted_out_registrants(): void
     {
         Mail::fake();
 
@@ -132,15 +176,45 @@ class BulkRegistrationEmailTest extends TestCase
         $this->actingAs($this->admin())
             ->withSelection([$yes, $no])
             ->post(route('dashboard.registrations.bulk-email.send'), [
+                'subject' => 'Venue changed',
+                'body' => '<p>We moved rooms.</p>',
+                'service_message' => 1,
+            ]);
+
+        Mail::assertSent(TemplatedMail::class, 2);
+        Mail::assertSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($no->email));
+    }
+
+    public function test_a_send_to_only_opted_out_registrants_is_refused(): void
+    {
+        Mail::fake();
+
+        $no = $this->registration(['marketing_opt_in' => false]);
+
+        $this->actingAs($this->admin())
+            ->withSelection([$no])
+            ->post(route('dashboard.registrations.bulk-email.send'), [
                 'subject' => 'Promo',
                 'body' => '<p>Deal inside</p>',
-                'opted_in_only' => 1,
             ])
-            ->assertRedirect(route('dashboard.registrations'));
+            ->assertSessionHas('error');
 
-        Mail::assertSent(TemplatedMail::class, 1);
-        Mail::assertSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($yes->email));
-        Mail::assertNotSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($no->email));
+        Mail::assertNothingSent();
+        $this->assertSame(0, EmailLog::count());
+    }
+
+    public function test_the_compose_screen_separates_recipients_from_the_opted_out(): void
+    {
+        $yes = $this->registration(['marketing_opt_in' => true, 'full_name' => 'Ama Mensah']);
+        $no = $this->registration(['marketing_opt_in' => false, 'full_name' => 'Kofi Boateng']);
+
+        $this->actingAs($this->admin())
+            ->withSelection([$yes, $no])
+            ->get(route('dashboard.registrations.bulk-email'))
+            ->assertOk()
+            ->assertSee('Receiving this (1)')
+            ->assertSee('Excluded — opted out (1)')
+            ->assertSee('service message', false);
     }
 
     public function test_script_tags_are_stripped_from_the_body(): void
@@ -209,6 +283,63 @@ class BulkRegistrationEmailTest extends TestCase
             ->assertNoRedirect();
 
         $this->assertNull(session(BulkEmailController::SESSION_KEY));
+    }
+
+    public function test_the_per_row_resend_action_still_works(): void
+    {
+        Mail::fake();
+        $a = $this->registration();
+
+        $this->actingAs($this->admin());
+
+        Livewire::test(RegistrationsTable::class)->call('resendEmail', $a->id);
+
+        Mail::assertSent(TemplatedMail::class, 1);
+        Mail::assertSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($a->email));
+
+        $log = EmailLog::sole();
+        $this->assertSame('sent', $log->status);
+        $this->assertSame('registration_confirmation', $log->template_key);
+    }
+
+    public function test_the_bulk_resend_action_still_works(): void
+    {
+        Mail::fake();
+        $a = $this->registration();
+        $b = $this->registration();
+        $ignored = $this->registration();
+
+        $this->actingAs($this->admin());
+
+        Livewire::test(RegistrationsTable::class)
+            ->set('selected', [(string) $a->id, (string) $b->id])
+            ->call('resendSelected');
+
+        Mail::assertSent(TemplatedMail::class, 2);
+        Mail::assertNotSent(TemplatedMail::class, fn (TemplatedMail $m) => $m->hasTo($ignored->email));
+
+        $this->assertSame(2, EmailLog::count());
+        $this->assertSame(['registration_confirmation', 'registration_confirmation'], EmailLog::pluck('template_key')->all());
+    }
+
+    public function test_resend_and_compose_do_not_collide_on_the_same_table(): void
+    {
+        Mail::fake();
+        $a = $this->registration();
+
+        $this->actingAs($this->admin());
+
+        // Compose stashes ids and clears the tick boxes; a following resend must
+        // not silently reuse that stale selection.
+        $component = Livewire::test(RegistrationsTable::class)
+            ->set('selected', [(string) $a->id])
+            ->call('composeSelected');
+
+        $this->assertSame([], $component->get('selected'));
+
+        $component->call('resendSelected');
+
+        Mail::assertNothingSent();
     }
 
     public function test_guests_cannot_reach_the_bulk_email_screens(): void
