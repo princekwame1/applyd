@@ -2159,6 +2159,12 @@ textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3p
 .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid #cbd5e1; }
 .btn-outline:hover { background: var(--bg-soft); }
 
+/* Destructive actions: brand red, but outlined so it never competes with the
+   primary .btn-brand call to action until you hover it. */
+.btn-danger { background: #fff; color: var(--brand); border: 1.5px solid var(--brand); }
+.btn-danger:hover, .btn-danger:focus { background: var(--brand); color: #fff; }
+.btn-danger:disabled { opacity: .55; cursor: not-allowed; }
+
 /* ---------- Creative touches ---------- */
 .blob {
   position: absolute;

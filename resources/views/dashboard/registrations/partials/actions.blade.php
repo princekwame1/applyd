@@ -6,4 +6,12 @@
         <span wire:loading.remove wire:target="resendEmail({{ $id }})">Resend email</span>
         <span wire:loading wire:target="resendEmail({{ $id }})">Sending…</span>
     </button>
+
+    @can('manage registrations')
+        <button type="button" class="btn btn-sm btn-danger" style="padding:6px 12px; font-size:.85rem;"
+                wire:click="deleteRow({{ $id }})" wire:loading.attr="disabled" wire:target="performDelete({{ $id }})">
+            <span wire:loading.remove wire:target="performDelete({{ $id }})">Delete</span>
+            <span wire:loading wire:target="performDelete({{ $id }})">Deleting…</span>
+        </button>
+    @endcan
 </div>

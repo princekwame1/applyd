@@ -4,9 +4,13 @@ namespace App\Livewire;
 
 use App\Http\Controllers\Dashboard\BulkEmailController;
 use App\Models\Registration;
+use App\Models\SmsLog;
+use App\Models\Tool;
 use App\Services\EmailNotificationService;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filters\MultiSelectFilter;
 
 class RegistrationsTable extends DataTableComponent
 {
@@ -21,6 +25,24 @@ class RegistrationsTable extends DataTableComponent
         $this->setDefaultSort('created_at', 'desc');
         $this->setPerPageAccepted([15, 25, 50, 100]);
         $this->setPerPage(15);
+    }
+
+    public function filters(): array
+    {
+        return [
+            MultiSelectFilter::make('Tools')
+                ->options(Tool::ordered()->pluck('name', 'name')->all())
+                // `tools` is a JSON array, so match on containment rather than
+                // equality. Multiple picks are OR-ed: "anyone who chose any of
+                // these", which is what you want when sizing a session.
+                ->filter(function (Builder $builder, array $values) {
+                    $builder->where(function (Builder $query) use ($values) {
+                        foreach ($values as $value) {
+                            $query->orWhereJsonContains('tools', $value);
+                        }
+                    });
+                }),
+        ];
     }
 
     public function columns(): array
@@ -43,7 +65,23 @@ class RegistrationsTable extends DataTableComponent
                 ->searchable()
                 ->format(fn ($value, $row) => $row->phone_country_code.' '.$value),
             Column::make('Tools', 'tools')
-                ->format(fn ($value) => count($value ?? []).' selected'),
+                // Names, not a bare count — once you filter by tool you need to
+                // see which ones matched.
+                ->format(function ($value) {
+                    $tools = $value ?? [];
+
+                    if (! $tools) {
+                        return '<span style="color:var(--ink-soft);">None</span>';
+                    }
+
+                    $shown = implode(', ', array_map('e', array_slice($tools, 0, 3)));
+                    $extra = count($tools) - 3;
+
+                    return $extra > 0
+                        ? $shown.' <span style="color:var(--ink-soft);">+'.$extra.' more</span>'
+                        : $shown;
+                })
+                ->html(),
             Column::make('Opt-in', 'marketing_opt_in')
                 ->sortable()
                 ->format(fn ($value) => $value
@@ -61,10 +99,117 @@ class RegistrationsTable extends DataTableComponent
 
     public function bulkActions(): array
     {
-        return [
+        $actions = [
             'composeSelected' => 'Send email to selected…',
             'resendSelected' => 'Resend confirmation email',
         ];
+
+        if ($this->canDelete()) {
+            $actions['deleteSelected'] = 'Delete selected';
+        }
+
+        return $actions;
+    }
+
+    protected function canDelete(): bool
+    {
+        return (bool) auth()->user()?->can('manage registrations');
+    }
+
+    /**
+     * Ask first. The row is gone for good — there are no soft deletes on
+     * registrations.
+     */
+    public function deleteRow(int $id): void
+    {
+        $registration = Registration::find($id);
+
+        if (! $registration) {
+            return;
+        }
+
+        $this->confirm(
+            'Delete '.$registration->full_name.'?',
+            'Their registration is removed permanently. Delivery history is kept.',
+            'performDelete('.$id.')'
+        );
+    }
+
+    public function deleteSelected(): void
+    {
+        $count = count($this->getSelected());
+
+        if (! $count) {
+            $this->toast(false, 'Tick at least one registrant first');
+
+            return;
+        }
+
+        $this->confirm(
+            'Delete '.$count.' '.($count === 1 ? 'registration' : 'registrations').'?',
+            'They are removed permanently. Delivery history is kept.',
+            'performDeleteSelected'
+        );
+    }
+
+    public function performDelete(int $id): void
+    {
+        abort_unless($this->canDelete(), 403);
+
+        $registration = Registration::find($id);
+
+        if (! $registration) {
+            return;
+        }
+
+        $name = $registration->full_name;
+        $this->detachLogs([$id]);
+        $registration->delete();
+
+        $this->toast(true, $name.' deleted');
+    }
+
+    public function performDeleteSelected(): void
+    {
+        abort_unless($this->canDelete(), 403);
+
+        $ids = array_map('intval', $this->getSelected());
+        $this->clearSelected();
+
+        if (! $ids) {
+            return;
+        }
+
+        $this->detachLogs($ids);
+        $deleted = Registration::whereIn('id', $ids)->delete();
+
+        $this->toast(true, $deleted.' '.($deleted === 1 ? 'registration' : 'registrations').' deleted');
+    }
+
+    /**
+     * `sms_logs.registration_id` is ON DELETE CASCADE, so deleting a registrant
+     * would wipe their SMS delivery history — while `email_logs` is nullOnDelete
+     * and keeps it. Detaching first makes both behave the same: the person goes,
+     * the audit trail of what we sent them stays.
+     */
+    protected function detachLogs(array $ids): void
+    {
+        SmsLog::whereIn('registration_id', $ids)->update(['registration_id' => null]);
+    }
+
+    /**
+     * SweetAlert2 confirm that calls back into the component on "yes" — the
+     * project's confirmation convention, adapted for a Livewire action where
+     * there is no form to hang `data-confirm` on.
+     */
+    protected function confirm(string $title, string $text, string $onConfirm): void
+    {
+        $this->js(sprintf(
+            "Swal.fire({title:'%s',text:'%s',icon:'warning',showCancelButton:true,confirmButtonColor:'#c73a41',cancelButtonColor:'#5f605f',confirmButtonText:'Yes, delete',cancelButtonText:'Cancel'}).then((r) => { if (r.isConfirmed) { \$wire.%s } })",
+            addslashes($title),
+            addslashes($text),
+            $onConfirm,
+        ));
     }
 
     /**
