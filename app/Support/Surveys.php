@@ -27,7 +27,7 @@ class Surveys
      * map keyed by question key — the shape that keeps a response readable as
      * one row, and cheap enough at bootcamp volumes (hundreds, not millions).
      *
-     * @return array<int, array{question: \App\Models\SurveyQuestion, answered: int, buckets: array<int, array{label: string, count: int, percent: float}>, texts: array<int, string>}>
+     * @return array<int, array{question: \App\Models\SurveyQuestion, answered: int, buckets: array<int, array{label: string, count: int, percent: float}>, top: ?array{label: string, count: int, percent: float}, average: ?float, texts: array<int, string>}>
      */
     public static function summarise(Survey $survey, Collection $responses): array
     {
@@ -54,10 +54,15 @@ class Surveys
 
             $numeric = $values->filter(fn ($v) => is_numeric($v));
 
+            // The one figure worth showing before anyone opens the question:
+            // the option that won. Null when nothing has been answered yet.
+            $top = collect($buckets)->sortByDesc('count')->first();
+
             $out[] = [
                 'question' => $question,
                 'answered' => $values->count(),
                 'buckets' => $buckets,
+                'top' => ($top && $top['count'] > 0) ? $top : null,
                 'average' => $question->type === 'scale' && $numeric->count()
                     ? round($numeric->avg(), 1)
                     : null,

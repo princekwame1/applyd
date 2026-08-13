@@ -2445,7 +2445,13 @@ footer a:hover { color: var(--accent); }
   color: var(--ink-soft); padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid #f0eaea;
 }
 .stat-pop-head b { color: var(--ink); font-size: .85rem; letter-spacing: 0; }
-.stat-pop-list { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; }
+/* Scrolls past ~9 countries, with no visible scrollbar — the list is short
+   enough that a bar would be more chrome than help. */
+.stat-pop-list {
+  list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto;
+  scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior: contain;
+}
+.stat-pop-list::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .stat-pop-list li { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: .85rem; }
 .stat-pop-list li + li { border-top: 1px solid #f7f3f3; }
 .stat-pop-name { flex: 1 1 auto; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2715,9 +2721,66 @@ footer a:hover { color: var(--accent); }
 .sv-tab.active .sv-tab-closed { background: rgba(255, 255, 255, .16); color: #fff; }
 .sv-empty-state { text-align: center; padding: 48px 24px; }
 
-.sv-questions { display: grid; gap: 26px; }
-.sv-q-title { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
-.sv-q-meta { font-size: .78rem; color: var(--ink-soft); margin-bottom: 12px; }
+/* Results screen: flat surfaces, no outlines — separation comes from spacing
+   and a soft shadow, so the numbers are the only thing drawing a line. */
+.sv-flat, .card.sv-flat, .stat-card.sv-flat {
+  border: 0;
+  box-shadow: 0 1px 2px rgba(39, 40, 39, .04), 0 10px 26px rgba(39, 40, 39, .05);
+}
+.sv-flat:hover { transform: none; border-color: transparent; }
+
+/* A card whose whole body is folded away until asked for. */
+.sv-disclose { padding: 0; overflow: hidden; }
+.sv-disclose > summary {
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+  padding: 20px 26px; list-style: none;
+}
+.sv-disclose > summary::-webkit-details-marker { display: none; }
+.sv-disclose > summary:hover .sv-disclose-title { color: var(--brand); }
+.sv-disclose-title { font-size: 1.05rem; font-weight: 800; color: var(--ink); }
+.sv-disclose-hint {
+  flex: 1 1 auto; min-width: 0; font-size: .82rem; color: var(--ink-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sv-disclose > *:not(summary) { padding: 0 26px 24px; }
+.sv-disclose .sv-share { margin-bottom: 0; }
+
+.sv-chevron {
+  flex: 0 0 16px; width: 16px; height: 16px; color: var(--ink-soft);
+  transition: transform .18s ease;
+}
+details[open] > summary .sv-chevron { transform: rotate(90deg); color: var(--brand); }
+
+.sv-expand-all {
+  margin-left: auto; background: none; border: 0; padding: 0; cursor: pointer;
+  font-size: .82rem; font-weight: 700; color: var(--brand);
+}
+.sv-expand-all:hover { color: var(--brand-dark); text-decoration: underline; }
+
+/* One question per row: headline visible, distribution on demand. */
+.sv-questions { display: grid; }
+.sv-q + .sv-q { border-top: 1px solid #f2ecec; }
+.sv-q > summary {
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+  padding: 14px 0; list-style: none;
+}
+.sv-q > summary::-webkit-details-marker { display: none; }
+.sv-q > summary:hover .sv-q-title { color: var(--brand); }
+.sv-q-head { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sv-q-title { font-size: .95rem; font-weight: 700; color: var(--ink); }
+.sv-q-meta { font-size: .76rem; color: var(--ink-soft); }
+.sv-q-headline {
+  flex: 0 0 auto; max-width: 45%; text-align: right;
+  font-size: .82rem; color: var(--ink-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sv-q-headline b { color: var(--ink); font-weight: 700; }
+.sv-q-body { padding: 2px 0 18px 30px; }
+@media (max-width: 640px) {
+  .sv-q-headline { max-width: 38%; }
+  .sv-q-body { padding-left: 0; }
+  .sv-disclose > summary, .sv-disclose > *:not(summary) { padding-inline: 18px; }
+}
 
 .sv-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 7px; }
 .sv-bar-label { width: 170px; flex-shrink: 0; font-size: .82rem; color: var(--ink-soft); }
