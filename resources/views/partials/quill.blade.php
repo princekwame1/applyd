@@ -3,6 +3,18 @@
         <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
         <style>
             .rich-editor-holder { background: #fff; }
+            /* Quill ships `.ql-container { height: 100% }`. Inside a grid or
+               flex form row the item stretches, that percentage resolves
+               against a height measured without the editor's content, and the
+               box collapses to nothing while the text paints over the field
+               below. Size to content instead — everywhere, for every editor. */
+            .rich-editor-holder.ql-container { height: auto; }
+            /* The toolbar and the editor are siblings: keep them out of any
+               parent's column flow so they always stack. */
+            .ql-toolbar.ql-snow, .rich-editor-holder.ql-container { display: block; width: 100%; }
+            /* Header/list dropdowns open downward over the next field — they
+               have to land on top of it, not behind it. */
+            .ql-snow .ql-picker-options { z-index: 5; }
             .rich-editor-holder .ql-editor { min-height: 120px; max-height: 260px; overflow-y: auto; font-size: .95rem; font-family: inherit; line-height: 1.7; }
             .rich-editor-holder .ql-editor.ql-blank::before { font-style: normal; color: #9a9a9a; }
             .rich-editor-holder .ql-editor img { max-width: 100%; height: auto; border-radius: 6px; }
@@ -17,7 +29,14 @@
             .ql-snow.ql-toolbar button:hover .ql-fill,
             .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: var(--brand); }
             .ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color: var(--brand); }
-            textarea.rich-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; opacity: 0; pointer-events: none; }
+            /* Every declaration is !important: the textareas this replaces carry
+               inline padding/border styles (their no-JS fallback look), and an
+               inline style beats a plain class rule — leaving a 30px ghost. */
+            textarea.rich-hidden {
+              position: absolute !important; width: 1px !important; height: 1px !important;
+              padding: 0 !important; margin: -1px !important; border: 0 !important;
+              overflow: hidden !important; opacity: 0 !important; pointer-events: none !important;
+            }
         </style>
     @endpush
 

@@ -1,4 +1,7 @@
-@extends('layouts.admin')
+{{-- /profile is shared by every signed-in user, so the chrome around it has to
+     follow the role: a recruiter gets their own portal nav, not the admin
+     sidebar full of links they can't open. --}}
+@extends(auth()->user()?->hasRole('company') ? 'layouts.company' : 'layouts.admin')
 
 @section('title', 'Profile — Applyd Academy')
 
