@@ -367,6 +367,22 @@
     </div>
 </section>
 
+{{-- Session recordings (hidden until an admin publishes one) --}}
+@if ($videos->isNotEmpty())
+<section id="videos">
+    <div class="container">
+        <div class="center">
+            <h2 class="section-title">Watch a <span class="hl">past session</span></h2>
+            <p class="section-lead">Recordings from previous bootcamp sessions — see exactly how we teach before you join.</p>
+        </div>
+        @include('partials.video-grid', ['videos' => $videos])
+        <div class="center" style="margin-top:32px;">
+            <a href="{{ route('videos') }}" class="btn btn-outline btn-sm">See all session videos →</a>
+        </div>
+    </div>
+</section>
+@endif
+
 {{-- Testimonials (placeholder quotes — replace with real learner feedback) --}}
 <section class="alt">
     <div class="container">

@@ -32,9 +32,13 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
+        $countryCounts = $this->registrationsByCountry();
+
         $stats = [
             'total' => Registration::count(),
-            'countries' => Registration::distinct('country')->count('country'),
+            // Counted off the breakdown so the number on the card and the list
+            // behind it can never disagree.
+            'countries' => $countryCounts->count(),
             'opted_in' => Registration::where('marketing_opt_in', true)->count(),
             'today' => Registration::whereDate('created_at', now()->toDateString())->count(),
         ];
@@ -45,7 +49,24 @@ class DashboardController extends Controller
             ->sortDesc()
             ->take(5);
 
-        return view('dashboard.index', compact('stats', 'topTools'));
+        return view('dashboard.index', compact('stats', 'topTools', 'countryCounts'));
+    }
+
+    /**
+     * Behind the "Countries Reached" card: which countries, and how many
+     * registrations from each. Grouped in SQL — `country` is a real column,
+     * unlike `tools`. Keyed by country, biggest first.
+     */
+    private function registrationsByCountry(): \Illuminate\Support\Collection
+    {
+        return Registration::query()
+            ->selectRaw('country, count(*) as registrations')
+            ->whereNotNull('country')
+            ->where('country', '!=', '')
+            ->groupBy('country')
+            ->orderByDesc('registrations')
+            ->orderBy('country')
+            ->pluck('registrations', 'country');
     }
 
     public function show(Registration $registration)

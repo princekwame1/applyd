@@ -5,16 +5,14 @@
 | Session check-in surveys ("Pulse Check")
 |--------------------------------------------------------------------------
 |
-| Two short surveys participants fill in around a bootcamp session — one on
-| arrival, one on the way out.
+| Short surveys participants fill in around a bootcamp session.
 |
-| The `questions` block below is only the migration seed, exactly like
-| `bootcamp.tool_categories` is for the tools table. Once migrated, the
-| questions live in the `survey_questions` table and are edited at
-| /dashboard/surveys/questions — do not read this array at runtime.
-|
-| `types` IS read at runtime: it's the structural list of surveys, and the
-| copy that wraps them.
+| NOTHING here is read at runtime — the whole file is the migration seed, the
+| way `bootcamp.tool_categories` is for the tools table. `types` seeded the
+| `surveys` table and `questions` seeded `survey_questions`; both are managed
+| in the dashboard afterwards (/dashboard/surveys/manage and
+| /dashboard/surveys/questions). Editing this file changes nothing on a
+| database that has already migrated.
 |
 */
 

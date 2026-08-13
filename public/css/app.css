@@ -2424,6 +2424,38 @@ footer a:hover { color: var(--accent); }
 .stat-card .lbl { color: var(--ink-soft); font-size: .88rem; margin-top: 2px; }
 .stat-card .stat-meta { margin-top: 8px; font-size: .78rem; font-weight: 700; color: var(--ink-soft); }
 
+/* Stat card with a breakdown behind it (e.g. countries → per-country counts).
+   The card clips its own content, so the host has to hand that back. */
+.stat-pop-host { overflow: visible; cursor: default; }
+.stat-pop-host:focus { outline: 2px solid rgba(199, 58, 65, .45); outline-offset: 2px; }
+.stat-pop {
+  position: absolute; z-index: 40; top: calc(100% - 6px); left: 0; min-width: 100%; width: max-content; max-width: 330px;
+  /* No gap to the card: the pointer has to be able to travel into the list. */
+  padding: 14px 16px; border: 1px solid #eee6e6; border-radius: var(--radius);
+  background: #fff; box-shadow: 0 18px 40px rgba(39, 40, 39, .16);
+  opacity: 0; visibility: hidden; transform: translateY(-4px);
+  transition: opacity .16s ease, transform .16s ease, visibility .16s;
+}
+.stat-pop-host:hover .stat-pop,
+.stat-pop-host:focus .stat-pop,
+.stat-pop-host:focus-within .stat-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+.stat-pop-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  font-size: .74rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-soft); padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid #f0eaea;
+}
+.stat-pop-head b { color: var(--ink); font-size: .85rem; letter-spacing: 0; }
+.stat-pop-list { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; }
+.stat-pop-list li { display: flex; align-items: center; gap: 10px; padding: 5px 0; font-size: .85rem; }
+.stat-pop-list li + li { border-top: 1px solid #f7f3f3; }
+.stat-pop-name { flex: 1 1 auto; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-pop-bar { flex: 0 0 56px; height: 6px; border-radius: 4px; background: #f0eaea; overflow: hidden; }
+.stat-pop-bar span { display: block; height: 100%; border-radius: 4px; background: var(--brand); }
+.stat-pop-list b { flex: 0 0 auto; color: var(--ink); font-weight: 700; min-width: 28px; text-align: right; }
+/* Last column of cards: flip the panel so it can't run off the page. */
+.stat-cards .stat-pop-host:last-child .stat-pop { left: auto; right: 0; }
+@media (max-width: 640px) { .stat-pop { max-width: 100%; } }
+
 /* ---------- Dashboard home ---------- */
 .dash-hero {
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
@@ -2675,6 +2707,13 @@ footer a:hover { color: var(--accent); }
 .sv-tab:hover { border-color: var(--brand); color: var(--brand); }
 .sv-tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
 .sv-tab b { font-weight: 700; }
+/* A survey that's been switched off still has results worth reading. */
+.sv-tab-closed {
+  font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 999px; background: #faeaeb; color: var(--brand-dark);
+}
+.sv-tab.active .sv-tab-closed { background: rgba(255, 255, 255, .16); color: #fff; }
+.sv-empty-state { text-align: center; padding: 48px 24px; }
 
 .sv-questions { display: grid; gap: 26px; }
 .sv-q-title { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
@@ -2701,9 +2740,16 @@ footer a:hover { color: var(--accent); }
 /* Share panel — QR + link for the public check-in form */
 .sv-share { display: flex; gap: 24px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
 .sv-share-qr {
-  flex: 0 0 auto; padding: 10px; border: 2px solid var(--ink);
-  border-radius: 14px; background: #fff; line-height: 0;
+  /* Fixed box: the QR is drawn by a CDN script, and the panel must not
+     collapse into nothing when that script can't load. */
+  flex: 0 0 auto; width: 188px; height: 188px; padding: 10px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  border: 2px solid var(--ink); border-radius: 14px; background: #fff; line-height: 0;
 }
+.sv-share-qr.is-missing { border-color: var(--brand); background: #faeaeb; }
+.sv-qr-fallback { display: flex; flex-direction: column; gap: 4px; line-height: 1.4; padding: 6px; }
+.sv-qr-fallback strong { font-size: .85rem; color: var(--brand); }
+.sv-qr-fallback span { font-size: .74rem; color: var(--ink-soft); }
 .sv-share-body { flex: 1 1 320px; }
 .sv-share-body h2 { font-size: 1.05rem; margin-bottom: 6px; }
 .sv-share-body p { font-size: .88rem; color: var(--ink-soft); margin-bottom: 12px; max-width: 460px; }
@@ -2714,3 +2760,48 @@ footer a:hover { color: var(--accent); }
 }
 .sv-share-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 @media (max-width: 640px) { .sv-share { justify-content: center; text-align: center; } .sv-share-body p { margin-inline: auto; } }
+
+/* ==========================================================================
+   Session videos — public grid (landing highlights + /videos page)
+   ========================================================================== */
+.video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; max-width: 1120px; margin: 0 auto; }
+@media (max-width: 900px) { .video-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .video-grid { grid-template-columns: 1fr; } }
+
+.video-card {
+  display: flex; flex-direction: column; padding: 0 !important; overflow: hidden;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.video-card:hover { transform: translateY(-4px); border-color: #eec6c8; }
+
+/* The clickable poster. It is a link to YouTube until the script swaps it for
+   an iframe, so it must look like a play surface either way. */
+.video-thumb {
+  position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden;
+  background: var(--ink); text-decoration: none;
+}
+.video-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s ease, opacity .2s ease; }
+.video-thumb:hover img { transform: scale(1.04); opacity: .85; }
+.video-play {
+  position: absolute; inset: 0; margin: auto; width: 62px; height: 62px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--brand); color: #fff;
+  box-shadow: 0 10px 26px rgba(199, 58, 65, .45);
+  transition: transform .2s ease, background .2s ease;
+}
+.video-play svg { width: 26px; height: 26px; margin-left: 3px; }
+.video-thumb:hover .video-play { transform: scale(1.08); background: var(--brand-dark); }
+.video-chip {
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: rgba(39, 40, 39, .82); color: #fff;
+  font-size: .72rem; font-weight: 700; letter-spacing: .03em;
+  padding: 5px 12px; border-radius: 999px;
+}
+.video-frame { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: var(--ink); }
+
+.video-body { display: flex; flex-direction: column; gap: 8px; padding: 22px; flex: 1; }
+.video-meta { color: var(--ink-soft); font-size: .8rem; }
+.video-body h3 { font-size: 1.12rem; font-weight: 800; line-height: 1.3; }
+.video-desc { color: var(--ink-soft); font-size: .92rem; line-height: 1.6; flex: 1; }
+.video-link { color: var(--brand); font-weight: 700; font-size: .88rem; text-decoration: none; margin-top: 4px; }
+.video-link:hover { color: var(--brand-dark); }

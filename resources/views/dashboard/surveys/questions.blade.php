@@ -7,6 +7,7 @@
     <h1 class="section-title">Pulse Check Questions</h1>
     <div style="display:flex; gap:10px;">
         <button type="button" class="btn btn-brand btn-sm" data-modal-open data-modal-template="#questionCreateTpl" data-modal-title="Add Question">Add Question</button>
+        <a class="btn btn-sm btn-outline" href="{{ route('dashboard.surveys.manage') }}">Manage Surveys</a>
         <a class="btn btn-sm btn-outline" href="{{ route('dashboard.surveys') }}">Back to Results</a>
     </div>
 </div>

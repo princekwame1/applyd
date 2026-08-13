@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
 class SurveyQuestion extends Model
@@ -11,7 +12,7 @@ class SurveyQuestion extends Model
     public const TYPES = ['choice', 'scale', 'text'];
 
     protected $fillable = [
-        'survey_type',
+        'survey_id',
         'key',
         'type',
         'prompt',
@@ -38,9 +39,23 @@ class SurveyQuestion extends Model
         return $query->where('active', true);
     }
 
-    public function scopeForSurvey(Builder $query, string $surveyType): Builder
+    public function survey(): BelongsTo
     {
-        return $query->where('survey_type', $surveyType);
+        return $this->belongsTo(Survey::class);
+    }
+
+    /** Accepts a Survey, its id, or its slug — whichever the caller has. */
+    public function scopeForSurvey(Builder $query, Survey|int|string $survey): Builder
+    {
+        if ($survey instanceof Survey) {
+            return $query->where('survey_id', $survey->id);
+        }
+
+        if (is_int($survey)) {
+            return $query->where('survey_id', $survey);
+        }
+
+        return $query->whereHas('survey', fn ($q) => $q->where('slug', $survey));
     }
 
     /** Choice options / scale labels, always an array even when the column is null. */

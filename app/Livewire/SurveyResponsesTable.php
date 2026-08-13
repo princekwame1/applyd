@@ -5,8 +5,8 @@ namespace App\Livewire;
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
-use App\Support\Surveys;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -21,7 +21,7 @@ class SurveyResponsesTable extends DataTableComponent
 
     protected $model = SurveyResponse::class;
 
-    public string $surveyType = 'pre';
+    public int $surveyId = 0;
 
     public function configure(): void
     {
@@ -41,7 +41,7 @@ class SurveyResponsesTable extends DataTableComponent
 
     public function builder(): Builder
     {
-        return SurveyResponse::query()->where('survey_type', $this->surveyType);
+        return SurveyResponse::query()->where('survey_id', $this->surveyId);
     }
 
     public function columns(): array
@@ -54,7 +54,7 @@ class SurveyResponsesTable extends DataTableComponent
 
         // One column per live question. They're label columns: the answers sit
         // inside a JSON map, so there is no real DB column to sort or search on.
-        foreach (Surveys::questions($this->surveyType) as $question) {
+        foreach ($this->questions() as $question) {
             $columns[] = Column::make(Str::limit($question->prompt, 30))
                 ->label(fn ($row) => $this->renderAnswer($question, $row))
                 ->html();
@@ -65,6 +65,12 @@ class SurveyResponsesTable extends DataTableComponent
             ->html();
 
         return $columns;
+    }
+
+    /** The live questions of the survey being viewed, in display order. */
+    protected function questions(): Collection
+    {
+        return SurveyQuestion::where('survey_id', $this->surveyId)->active()->ordered()->get();
     }
 
     protected function renderAnswer(SurveyQuestion $question, SurveyResponse $response): string

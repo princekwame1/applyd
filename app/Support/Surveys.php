@@ -2,49 +2,22 @@
 
 namespace App\Support;
 
-use App\Models\SurveyQuestion;
+use App\Models\Survey;
 use App\Models\SurveyResponse;
 use Illuminate\Support\Collection;
 
 /**
- * The two check-in surveys ("Pulse Check") and the aggregation behind the
- * dashboard results screen.
+ * Aggregation behind the dashboard results screen.
  *
- * The survey *types* are structural and live in config/surveys.php; the
- * *questions* are DB-driven (`survey_questions`) and admin-editable.
+ * Surveys and their questions are both DB-driven (`surveys`, `survey_questions`)
+ * and admin-editable; config/surveys.php is only the migration seed.
  */
 class Surveys
 {
-    /** @return array<string, array{label: string, eyebrow: string, blurb: string, thanks: string}> */
-    public static function types(): array
+    /** Every survey, in display order. */
+    public static function all(): Collection
     {
-        return config('surveys.types', []);
-    }
-
-    public static function exists(string $surveyType): bool
-    {
-        return array_key_exists($surveyType, static::types());
-    }
-
-    public static function label(string $surveyType): string
-    {
-        return static::types()[$surveyType]['label'] ?? ucfirst($surveyType);
-    }
-
-    public static function copy(string $surveyType): array
-    {
-        return static::types()[$surveyType] ?? [
-            'label' => ucfirst($surveyType),
-            'eyebrow' => '',
-            'blurb' => '',
-            'thanks' => 'Thanks for your feedback.',
-        ];
-    }
-
-    /** The live questions for one survey, in display order. */
-    public static function questions(string $surveyType): Collection
-    {
-        return SurveyQuestion::forSurvey($surveyType)->active()->ordered()->get();
+        return Survey::ordered()->get();
     }
 
     /**
@@ -54,13 +27,13 @@ class Surveys
      * map keyed by question key — the shape that keeps a response readable as
      * one row, and cheap enough at bootcamp volumes (hundreds, not millions).
      *
-     * @return array<int, array{question: SurveyQuestion, answered: int, buckets: array<int, array{label: string, count: int, percent: float}>, texts: array<int, string>}>
+     * @return array<int, array{question: \App\Models\SurveyQuestion, answered: int, buckets: array<int, array{label: string, count: int, percent: float}>, texts: array<int, string>}>
      */
-    public static function summarise(string $surveyType, Collection $responses): array
+    public static function summarise(Survey $survey, Collection $responses): array
     {
         $out = [];
 
-        foreach (static::questions($surveyType) as $question) {
+        foreach ($survey->liveQuestions() as $question) {
             $values = $responses
                 ->map(fn (SurveyResponse $r) => $r->answer($question->key))
                 ->filter(fn ($v) => $v !== null)

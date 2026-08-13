@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $copy['label'].' — Pulse Check')
+@section('title', $survey->name.' — Pulse Check')
 
 @section('content')
 @php
@@ -25,14 +25,14 @@
         </div>
 
         <div class="pulse-step-meta" id="pulseStepMeta">
-            {{ strtoupper($copy['label']) }} · {{ $total }} {{ Str::plural('QUESTION', $total) }}
+            {{ strtoupper($survey->name) }} · {{ $total }} {{ Str::plural('QUESTION', $total) }}
         </div>
 
         @if ($errors->any())
             <div class="error-box">Please check your answers below.</div>
         @endif
 
-        <form method="POST" action="{{ route('surveys.store', $type) }}" class="pulse-form" id="pulseForm" novalidate>
+        <form method="POST" action="{{ route('surveys.store', $survey) }}" class="pulse-form" id="pulseForm" novalidate>
             @csrf
 
             @foreach ($questions as $index => $question)
@@ -111,7 +111,7 @@
     var backBtn = document.getElementById('pulseBack');
     var nextBtn = document.getElementById('pulseNext');
     var submitBtn = document.getElementById('pulseSubmit');
-    var surveyLabel = @json(strtoupper($copy['label']));
+    var surveyLabel = @json(strtoupper($survey->name));
     var current = 1;
 
     // Only now do the steps become one-at-a-time — without JS every question

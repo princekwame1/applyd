@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Livewire\SurveyResponsesTable;
+use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use App\Models\User;
-use App\Support\Surveys;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -23,9 +23,17 @@ class SurveyDashboardTest extends TestCase
         return $user;
     }
 
-    protected function response(array $answers, string $type = 'pre'): SurveyResponse
+    protected function survey(string $slug = 'pre'): Survey
     {
-        return SurveyResponse::create(['survey_type' => $type, 'answers' => $answers]);
+        return Survey::where('slug', $slug)->firstOrFail();
+    }
+
+    protected function response(array $answers, string $slug = 'pre'): SurveyResponse
+    {
+        return SurveyResponse::create([
+            'survey_id' => $this->survey($slug)->id,
+            'answers' => $answers,
+        ]);
     }
 
     public function test_a_guest_cannot_reach_the_results(): void
@@ -72,7 +80,7 @@ class SurveyDashboardTest extends TestCase
             ->assertSee('Finally understand spreadsheets');
     }
 
-    public function test_the_two_surveys_are_counted_separately(): void
+    public function test_each_survey_is_counted_separately(): void
     {
         $this->actingAs($this->admin());
 
@@ -103,9 +111,21 @@ class SurveyDashboardTest extends TestCase
 
         $this->response(['motivation' => 'Career growth', 'comfort' => 3]);
 
-        Livewire::test(SurveyResponsesTable::class, ['surveyType' => 'pre'])
+        Livewire::test(SurveyResponsesTable::class, ['surveyId' => $this->survey()->id])
             ->assertSee('Career growth')
             ->assertSee('3 · Comfortable');
+    }
+
+    public function test_the_responses_table_shows_only_its_own_survey(): void
+    {
+        $this->actingAs($this->admin());
+
+        $this->response(['motivation' => 'Career growth'], 'pre');
+        $this->response(['valuable' => 'The automation demo'], 'post');
+
+        Livewire::test(SurveyResponsesTable::class, ['surveyId' => $this->survey('post')->id])
+            ->assertSee('The automation demo')
+            ->assertDontSee('Career growth');
     }
 
     public function test_a_skipped_answer_shows_as_a_dash_rather_than_blank(): void
@@ -114,7 +134,7 @@ class SurveyDashboardTest extends TestCase
 
         $this->response(['motivation' => 'Career growth']);
 
-        Livewire::test(SurveyResponsesTable::class, ['surveyType' => 'pre'])
+        Livewire::test(SurveyResponsesTable::class, ['surveyId' => $this->survey()->id])
             ->assertSee('—');
     }
 
@@ -146,7 +166,7 @@ class SurveyDashboardTest extends TestCase
         $this->actingAs($this->admin());
 
         $this->post(route('dashboard.surveys.questions.store'), [
-            'survey_type' => 'post',
+            'survey_id' => $this->survey('post')->id,
             'key' => 'recommend',
             'type' => 'choice',
             'prompt' => 'Would you recommend this session?',
@@ -169,7 +189,7 @@ class SurveyDashboardTest extends TestCase
         $this->actingAs($this->admin());
 
         $this->post(route('dashboard.surveys.questions.store'), [
-            'survey_type' => 'post',
+            'survey_id' => $this->survey('post')->id,
             'key' => 'lonely',
             'type' => 'choice',
             'prompt' => 'One option only?',
@@ -184,19 +204,19 @@ class SurveyDashboardTest extends TestCase
         $this->actingAs($this->admin());
 
         $this->post(route('dashboard.surveys.questions.store'), [
-            'survey_type' => 'pre',
+            'survey_id' => $this->survey('pre')->id,
             'key' => 'motivation',
             'type' => 'text',
             'prompt' => 'Another motivation question',
         ])->assertSessionHasErrors('key');
     }
 
-    public function test_the_same_key_may_be_reused_in_the_other_survey(): void
+    public function test_the_same_key_may_be_reused_in_another_survey(): void
     {
         $this->actingAs($this->admin());
 
         $this->post(route('dashboard.surveys.questions.store'), [
-            'survey_type' => 'post',
+            'survey_id' => $this->survey('post')->id,
             'key' => 'motivation',
             'type' => 'text',
             'prompt' => 'What kept you motivated today?',
@@ -205,7 +225,7 @@ class SurveyDashboardTest extends TestCase
         $this->assertNotNull(SurveyQuestion::forSurvey('post')->where('key', 'motivation')->first());
     }
 
-    public function test_editing_a_question_cannot_change_its_key(): void
+    public function test_editing_a_question_cannot_change_its_key_or_survey(): void
     {
         $this->actingAs($this->admin());
 
@@ -214,7 +234,7 @@ class SurveyDashboardTest extends TestCase
 
         $this->put(route('dashboard.surveys.questions.update', $question), [
             'key' => 'why_they_came',
-            'survey_type' => 'post',
+            'survey_id' => $this->survey('post')->id,
             'type' => 'choice',
             'prompt' => 'What brought you here?',
             'options' => "Career growth\nPlain curiosity",
@@ -228,7 +248,7 @@ class SurveyDashboardTest extends TestCase
         // under the key, so changing it would orphan everything collected so far.
         $this->assertSame('What brought you here?', $question->prompt);
         $this->assertSame('motivation', $question->key);
-        $this->assertSame('pre', $question->survey_type);
+        $this->assertSame('pre', $question->survey->slug);
         $this->assertSame('Career growth', SurveyResponse::first()->answer('motivation'));
     }
 
@@ -241,6 +261,6 @@ class SurveyDashboardTest extends TestCase
         SurveyQuestion::forSurvey('pre')->where('key', 'motivation')->update(['active' => false]);
 
         $this->assertSame('Career growth', SurveyResponse::first()->answer('motivation'));
-        $this->assertCount(3, Surveys::questions('pre'));
+        $this->assertCount(3, $this->survey()->liveQuestions());
     }
 }

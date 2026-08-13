@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\SurveyQuestion;
-use App\Support\Surveys;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -21,7 +20,7 @@ class SurveyQuestionsController extends Controller
         $data = $this->validated($request);
 
         $data['sort_order'] = $data['sort_order']
-            ?? (SurveyQuestion::where('survey_type', $data['survey_type'])->max('sort_order') ?? 0) + 1;
+            ?? (SurveyQuestion::where('survey_id', $data['survey_id'])->max('sort_order') ?? 0) + 1;
 
         SurveyQuestion::create($data);
 
@@ -69,10 +68,10 @@ class SurveyQuestionsController extends Controller
         // question would silently orphan every answer already collected. It's
         // set once, at creation.
         if (! $question) {
-            $rules['survey_type'] = ['required', Rule::in(array_keys(Surveys::types()))];
+            $rules['survey_id'] = ['required', Rule::exists('surveys', 'id')];
             $rules['key'] = [
                 'required', 'string', 'max:60', 'regex:/^[a-z][a-z0-9_]*$/',
-                Rule::unique('survey_questions', 'key')->where('survey_type', $request->input('survey_type')),
+                Rule::unique('survey_questions', 'key')->where('survey_id', $request->input('survey_id')),
             ];
         }
 

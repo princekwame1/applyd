@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\EditorImageController;
 use App\Http\Controllers\Dashboard\EmailLogsController;
 use App\Http\Controllers\Dashboard\EmailTemplatesController;
 use App\Http\Controllers\Dashboard\SmsLogsController;
+use App\Http\Controllers\Dashboard\SurveyManagerController;
 use App\Http\Controllers\Dashboard\SurveyQuestionsController;
 use App\Http\Controllers\Dashboard\SurveysController;
 use App\Http\Controllers\DashboardController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SessionVideoController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
@@ -45,6 +47,7 @@ Route::post('/application', [CourseEnrollmentController::class, 'submit'])->name
 Route::post('/application/tuition', [CourseEnrollmentController::class, 'tuitionInit'])->name('application.tuition');
 Route::get('/application/tuition/callback', [CourseEnrollmentController::class, 'tuitionCallback'])->name('application.tuition.callback');
 Route::get('/courses/{course}', [PageController::class, 'showCourse'])->name('courses.show');
+Route::get('/videos', [PageController::class, 'videos'])->name('videos');
 Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'showPost'])->name('blog.show');
 Route::view('/contact', 'contact')->name('contact');
@@ -54,8 +57,8 @@ Route::post('/contact', [ContactController::class, 'submit'])->name('contact.sub
 // out in the room, so `thanks` is registered before the {type} catch-all.
 Route::get('/check-in', [SurveyController::class, 'index'])->name('surveys.index');
 Route::get('/check-in/thanks', [SurveyController::class, 'thanks'])->name('surveys.thanks');
-Route::get('/check-in/{type}', [SurveyController::class, 'show'])->name('surveys.show');
-Route::post('/check-in/{type}', [SurveyController::class, 'store'])->name('surveys.store');
+Route::get('/check-in/{survey}', [SurveyController::class, 'show'])->name('surveys.show');
+Route::post('/check-in/{survey}', [SurveyController::class, 'store'])->name('surveys.store');
 
 // Job board
 Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');
@@ -134,6 +137,13 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/surveys', [SurveysController::class, 'index'])->name('dashboard.surveys');
     Route::get('/surveys/export', [SurveysController::class, 'export'])->name('dashboard.surveys.export');
     Route::get('/surveys/poster', [SurveysController::class, 'poster'])->name('dashboard.surveys.poster');
+    Route::get('/surveys/manage', [SurveyManagerController::class, 'index'])->name('dashboard.surveys.manage');
+    Route::post('/surveys/manage', [SurveyManagerController::class, 'store'])->name('dashboard.surveys.manage.store');
+    Route::get('/surveys/manage/{survey}/edit', [SurveyManagerController::class, 'edit'])->name('dashboard.surveys.manage.edit');
+    Route::put('/surveys/manage/{survey}', [SurveyManagerController::class, 'update'])->name('dashboard.surveys.manage.update');
+    Route::post('/surveys/manage/{survey}/duplicate', [SurveyManagerController::class, 'duplicate'])->name('dashboard.surveys.manage.duplicate');
+    Route::delete('/surveys/manage/{survey}', [SurveyManagerController::class, 'destroy'])->name('dashboard.surveys.manage.destroy');
+
     Route::get('/surveys/questions', [SurveyQuestionsController::class, 'index'])->name('dashboard.surveys.questions');
     Route::post('/surveys/questions', [SurveyQuestionsController::class, 'store'])->name('dashboard.surveys.questions.store');
     Route::get('/surveys/questions/{question}/edit', [SurveyQuestionsController::class, 'edit'])->name('dashboard.surveys.questions.edit');
@@ -148,6 +158,13 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/tools/{tool}/edit', [ToolController::class, 'edit'])->name('dashboard.tools.edit');
     Route::put('/tools/{tool}', [ToolController::class, 'update'])->name('dashboard.tools.update');
     Route::delete('/tools/{tool}', [ToolController::class, 'destroy'])->name('dashboard.tools.destroy');
+
+    Route::get('/videos', [SessionVideoController::class, 'index'])->name('dashboard.videos');
+    Route::post('/videos', [SessionVideoController::class, 'store'])->name('dashboard.videos.store');
+    Route::get('/videos/export', [SessionVideoController::class, 'export'])->name('dashboard.videos.export');
+    Route::get('/videos/{video}/edit', [SessionVideoController::class, 'edit'])->name('dashboard.videos.edit');
+    Route::put('/videos/{video}', [SessionVideoController::class, 'update'])->name('dashboard.videos.update');
+    Route::delete('/videos/{video}', [SessionVideoController::class, 'destroy'])->name('dashboard.videos.destroy');
 
     Route::get('/courses', [CourseController::class, 'index'])->name('dashboard.courses');
     Route::post('/courses', [CourseController::class, 'store'])->name('dashboard.courses.store');

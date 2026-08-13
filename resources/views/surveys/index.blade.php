@@ -10,23 +10,25 @@
             Digital Tools Bootcamp · Pulse Check
         </span>
 
-        <h1 class="pulse-title">Two quick check-ins.<br>Under a minute each.</h1>
+        <h1 class="pulse-title">Quick check-ins.<br>Under a minute each.</h1>
         <p class="pulse-lead">
             Tap into the one that applies to you right now. Your answers help us run a better session today.
         </p>
 
-        @if (empty($surveys))
+        @if ($surveys->isEmpty())
             <div class="card pulse-empty">
                 <p>The check-ins aren't open yet. Please come back when your facilitator shares the link.</p>
             </div>
         @else
             <div class="pulse-cards">
-                @foreach ($surveys as $type => $survey)
-                    <a class="pulse-card" href="{{ route('surveys.show', $type) }}">
-                        <span class="pulse-card-eyebrow">{{ $survey['eyebrow'] }}</span>
-                        <h2 class="pulse-card-title">{{ $survey['label'] }}</h2>
+                @foreach ($surveys as $survey)
+                    <a class="pulse-card" href="{{ route('surveys.show', $survey) }}">
+                        @if ($survey->eyebrow)
+                            <span class="pulse-card-eyebrow">{{ $survey->eyebrow }}</span>
+                        @endif
+                        <h2 class="pulse-card-title">{{ $survey->name }}</h2>
                         <p class="pulse-card-desc">
-                            {{ $survey['blurb'] }} — {{ $survey['count'] }} short {{ Str::plural('question', $survey['count']) }}.
+                            {{ $survey->blurb ? $survey->blurb.' — ' : '' }}{{ $survey->live_questions_count }} short {{ Str::plural('question', $survey->live_questions_count) }}.
                         </p>
                         <span class="pulse-card-cta">
                             Start

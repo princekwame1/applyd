@@ -3,8 +3,9 @@
 namespace App\Livewire;
 
 use App\Livewire\Concerns\WithSkeletonLoader;
+use App\Models\Survey;
 use App\Models\SurveyQuestion;
-use App\Support\Surveys;
+use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
@@ -19,30 +20,38 @@ class SurveyQuestionsTable extends DataTableComponent
     {
         $this->configureSkeletonLoader();
         $this->setPrimaryKey('id');
-        $this->setDefaultSort('survey_type', 'asc');
+        $this->setDefaultSort('survey_id', 'asc');
         $this->setPerPageAccepted([25, 50]);
         $this->setPerPage(25);
         $this->setBulkActionsDisabled();
     }
 
+    public function builder(): Builder
+    {
+        return SurveyQuestion::query()->with('survey');
+    }
+
     public function filters(): array
     {
+        $options = ['' => 'All'];
+
+        foreach (Survey::ordered()->get() as $survey) {
+            $options[$survey->id] = $survey->name;
+        }
+
         return [
             SelectFilter::make('Survey')
-                ->options(['' => 'All'] + array_map(
-                    fn ($copy) => $copy['label'],
-                    Surveys::types(),
-                ))
-                ->filter(fn ($builder, string $value) => $builder->where('survey_type', $value)),
+                ->options($options)
+                ->filter(fn (Builder $builder, string $value) => $builder->where('survey_id', $value)),
         ];
     }
 
     public function columns(): array
     {
         return [
-            Column::make('Survey', 'survey_type')
+            Column::make('Survey', 'survey_id')
                 ->sortable()
-                ->format(fn ($value) => Surveys::label($value)),
+                ->format(fn ($value, $row) => e($row->survey?->name ?? '—')),
             Column::make('Order', 'sort_order')
                 ->sortable(),
             Column::make('Question', 'prompt')

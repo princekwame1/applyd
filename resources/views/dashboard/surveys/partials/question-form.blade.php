@@ -7,18 +7,18 @@
 
     <div class="modal-grid">
         <div>
-            <label class="field-label" for="q_survey_type">Survey <span class="req">*</span></label>
+            <label class="field-label" for="q_survey_id">Survey <span class="req">*</span></label>
             @if ($isEdit)
-                <input type="text" id="q_survey_type" value="{{ App\Support\Surveys::label($model->survey_type) }}" disabled>
+                <input type="text" id="q_survey_id" value="{{ $model->survey?->name }}" disabled>
                 <div class="upload-hint">A question can't be moved between surveys — add it to the other one instead.</div>
             @else
-                <select id="q_survey_type" name="survey_type" required>
-                    @foreach (App\Support\Surveys::types() as $type => $copy)
-                        <option value="{{ $type }}" @selected(old('survey_type') === $type)>{{ $copy['label'] }}</option>
+                <select id="q_survey_id" name="survey_id" required>
+                    @foreach (App\Support\Surveys::all() as $survey)
+                        <option value="{{ $survey->id }}" @selected((int) old('survey_id', request()->integer('survey')) === $survey->id)>{{ $survey->name }}</option>
                     @endforeach
                 </select>
             @endif
-            <div class="field-error" data-error="survey_type"></div>
+            <div class="field-error" data-error="survey_id"></div>
         </div>
 
         <div>

@@ -2,9 +2,9 @@
 
 namespace App\Exports;
 
+use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
-use App\Support\Surveys;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,16 +15,16 @@ class SurveyResponsesExport implements FromCollection, WithHeadings, WithMapping
     /** @var Collection<int, SurveyQuestion> */
     protected Collection $questions;
 
-    public function __construct(protected string $surveyType)
+    public function __construct(protected Survey $survey)
     {
         // Resolved once so the headings and every mapped row stay in step even
         // if a question is edited mid-export.
-        $this->questions = Surveys::questions($surveyType);
+        $this->questions = $survey->liveQuestions();
     }
 
     public function collection(): Collection
     {
-        return SurveyResponse::forSurvey($this->surveyType)->latest()->get();
+        return SurveyResponse::forSurvey($this->survey)->latest()->get();
     }
 
     public function headings(): array
@@ -46,7 +46,7 @@ class SurveyResponsesExport implements FromCollection, WithHeadings, WithMapping
         return array_merge(
             [
                 $response->id,
-                Surveys::label($response->survey_type),
+                $this->survey->name,
                 $response->created_at->format('Y-m-d H:i'),
             ],
             $answers,

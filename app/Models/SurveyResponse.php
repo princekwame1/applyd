@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Support\Surveys;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SurveyResponse extends Model
 {
     protected $fillable = [
-        'survey_type',
+        'survey_id',
         'answers',
     ];
 
@@ -17,9 +17,23 @@ class SurveyResponse extends Model
         'answers' => 'array',
     ];
 
-    public function scopeForSurvey(Builder $query, string $surveyType): Builder
+    public function survey(): BelongsTo
     {
-        return $query->where('survey_type', $surveyType);
+        return $this->belongsTo(Survey::class);
+    }
+
+    /** Accepts a Survey, its id, or its slug — whichever the caller has. */
+    public function scopeForSurvey(Builder $query, Survey|int|string $survey): Builder
+    {
+        if ($survey instanceof Survey) {
+            return $query->where('survey_id', $survey->id);
+        }
+
+        if (is_int($survey)) {
+            return $query->where('survey_id', $survey);
+        }
+
+        return $query->whereHas('survey', fn ($q) => $q->where('slug', $survey));
     }
 
     /** A single answer by question key, or null when the question was skipped. */
@@ -32,6 +46,6 @@ class SurveyResponse extends Model
 
     public function getSurveyLabelAttribute(): string
     {
-        return Surveys::label($this->survey_type);
+        return $this->survey?->name ?? '—';
     }
 }

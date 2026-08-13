@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BlogCategory;
 use App\Models\Course;
 use App\Models\Post;
+use App\Models\SessionVideo;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
@@ -25,6 +26,13 @@ class PageController extends Controller
                 ->ordered()
                 ->take(3)
                 ->get(),
+        ]);
+    }
+
+    public function videos()
+    {
+        return view('videos', [
+            'videos' => SessionVideo::published()->ordered()->paginate(12),
         ]);
     }
 

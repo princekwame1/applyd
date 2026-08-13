@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Registration;
 use App\Models\Schedule;
+use App\Models\SessionVideo;
 use App\Models\Tool;
 use App\Services\EmailNotificationService;
 use App\Services\SmsNotificationService;
@@ -26,6 +27,7 @@ class RegistrationController extends Controller
             'ageRanges' => config('bootcamp.age_ranges'),
             'educationLevels' => config('bootcamp.education_levels'),
             'schedules' => Schedule::ordered()->get(),
+            'videos' => SessionVideo::published()->ordered()->take(3)->get(),
         ]);
     }
 

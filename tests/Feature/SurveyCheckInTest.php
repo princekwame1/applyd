@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +60,22 @@ class SurveyCheckInTest extends TestCase
         $this->get(route('surveys.show', 'midway'))->assertNotFound();
     }
 
+    public function test_a_closed_survey_is_off_the_picker_and_its_form_is_a_404(): void
+    {
+        Survey::where('slug', 'post')->update(['is_active' => false]);
+
+        $this->get(route('surveys.index'))
+            ->assertOk()
+            ->assertDontSee('Before you go');
+
+        $this->get(route('surveys.show', 'post'))->assertNotFound();
+
+        $this->post(route('surveys.store', 'post'), ['answers' => ['expectations' => 4]])
+            ->assertNotFound();
+
+        $this->assertSame(0, SurveyResponse::count());
+    }
+
     public function test_a_valid_submission_is_stored_and_redirects_to_thanks(): void
     {
         $this->post(route('surveys.store', 'pre'), ['answers' => $this->validPreAnswers()])
@@ -67,7 +84,7 @@ class SurveyCheckInTest extends TestCase
         $this->assertSame(1, SurveyResponse::count());
 
         $response = SurveyResponse::first();
-        $this->assertSame('pre', $response->survey_type);
+        $this->assertSame('pre', $response->survey->slug);
         $this->assertSame('Career growth', $response->answer('motivation'));
         $this->assertSame('Learn Notion properly', $response->answer('goal'));
     }
