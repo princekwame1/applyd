@@ -8,7 +8,10 @@
         <span class="page-eyebrow">{{ cms('jobs', 'hero_eyebrow') }}</span>
         <h1 class="section-title">{{ cms('jobs', 'hero_title') }}</h1>
         <p class="section-lead">{{ cms('jobs', 'hero_sub') }}</p>
-        <a href="{{ route('companies.register') }}" class="btn btn-brand btn-sm" style="margin-top:22px;">{{ cms('jobs', 'hero_cta') }}</a>
+        <div class="hero-actions" style="margin-top:22px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="{{ route('companies.register') }}" class="btn btn-brand btn-sm">{{ cms('jobs', 'hero_cta') }}</a>
+            <a href="{{ route('talent.create') }}" class="btn btn-sm btn-outline">{{ cms('jobs', 'talent_cta') }}</a>
+        </div>
     </div>
 </section>
 

@@ -22,6 +22,8 @@
             <a href="{{ route('company.home') }}" class="{{ request()->routeIs('company.home') ? 'active' : '' }}">My Jobs</a>
 
             <span class="side-heading">General</span>
+            <a href="{{ route('company.talent') }}" class="{{ request()->routeIs('company.talent*') ? 'active' : '' }}">Talent Pool</a>
+            <a href="{{ route('company.plans') }}" class="{{ request()->routeIs('company.plans*') ? 'active' : '' }}">Plans &amp; Credits</a>
             <a href="{{ route('jobs') }}">View Job Board</a>
             <a href="{{ route('landing') }}">Applyd Academy Site</a>
         </nav>

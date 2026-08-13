@@ -159,6 +159,7 @@ return [
                     'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Jobs & Opportunities'],
                     'hero_sub' => ['type' => 'text', 'label' => 'Subtitle', 'default' => 'Openings from companies in our network. Apply with your CV. No account needed.'],
                     'hero_cta' => ['type' => 'text', 'label' => 'CTA button', 'default' => 'Are you hiring? Post a job'],
+                    'talent_cta' => ['type' => 'text', 'label' => 'Talent pool button', 'default' => 'Nothing fits? Drop your CV'],
                 ]],
             ],
         ],

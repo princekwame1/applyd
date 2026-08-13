@@ -6,6 +6,8 @@ use App\Http\Controllers\CmsController;
 use App\Http\Controllers\CompanyApplicationController;
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyPlanController;
+use App\Http\Controllers\CompanyTalentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseEnrollmentController;
@@ -13,10 +15,13 @@ use App\Http\Controllers\Dashboard\BulkEmailController;
 use App\Http\Controllers\Dashboard\EditorImageController;
 use App\Http\Controllers\Dashboard\EmailLogsController;
 use App\Http\Controllers\Dashboard\EmailTemplatesController;
+use App\Http\Controllers\Dashboard\PlanPurchaseController;
+use App\Http\Controllers\Dashboard\RecruiterPlanController;
 use App\Http\Controllers\Dashboard\SmsLogsController;
 use App\Http\Controllers\Dashboard\SurveyManagerController;
 use App\Http\Controllers\Dashboard\SurveyQuestionsController;
 use App\Http\Controllers\Dashboard\SurveysController;
+use App\Http\Controllers\Dashboard\TalentPoolController as DashboardTalentPoolController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\PageController;
@@ -27,6 +32,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SessionVideoController;
 use App\Http\Controllers\SurveyController;
+use App\Http\Controllers\TalentPoolController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -65,9 +71,18 @@ Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');
 Route::get('/jobs/{opening}', [JobBoardController::class, 'show'])->name('jobs.show');
 Route::post('/jobs/{opening}/apply', [JobBoardController::class, 'apply'])->name('jobs.apply');
 
+// Talent pool — drop a CV without applying to a specific job
+Route::get('/talent-pool', [TalentPoolController::class, 'create'])->name('talent.create');
+Route::post('/talent-pool', [TalentPoolController::class, 'store'])->name('talent.store');
+
 // Company signup
 Route::get('/companies/register', [CompanyAuthController::class, 'show'])->name('companies.register');
 Route::post('/companies/register', [CompanyAuthController::class, 'register'])->name('companies.register.store');
+
+// Paystack sends the recruiter's browser back here after paying for credits.
+// Outside the auth group on purpose: verifying a payment must not depend on
+// the session still being alive.
+Route::get('/company/plans/callback', [CompanyPlanController::class, 'callback'])->name('company.plans.callback');
 
 // Company portal
 Route::middleware(['auth', 'role:company'])->prefix('company')->name('company.')->group(function () {
@@ -80,6 +95,14 @@ Route::middleware(['auth', 'role:company'])->prefix('company')->name('company.')
     Route::patch('/applications/{application}/status', [CompanyApplicationController::class, 'updateStatus'])->name('applications.status');
     Route::get('/applications/{application}/cv', [CompanyApplicationController::class, 'downloadCv'])->name('applications.cv');
     Route::get('/documents/{document}', [CompanyApplicationController::class, 'downloadDocument'])->name('applications.document');
+
+    // Talent pool + the credits that open it
+    Route::get('/talent', [CompanyTalentController::class, 'index'])->name('talent');
+    Route::post('/talent/{profile}/unlock', [CompanyTalentController::class, 'unlock'])->name('talent.unlock');
+    Route::get('/talent/{profile}/cv', [CompanyTalentController::class, 'downloadCv'])->name('talent.cv');
+
+    Route::get('/plans', [CompanyPlanController::class, 'index'])->name('plans');
+    Route::post('/plans/{plan}/checkout', [CompanyPlanController::class, 'checkout'])->name('plans.checkout');
 });
 Route::post('/register', [RegistrationController::class, 'store'])->name('register.store');
 Route::get('/thank-you', [RegistrationController::class, 'thanks'])->name('register.thanks');
@@ -172,6 +195,23 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('dashboard.courses.edit');
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('dashboard.courses.destroy');
+
+    Route::get('/recruiter-plans', [RecruiterPlanController::class, 'index'])->name('dashboard.recruiter-plans');
+    Route::post('/recruiter-plans', [RecruiterPlanController::class, 'store'])->name('dashboard.recruiter-plans.store');
+    Route::get('/recruiter-plans/export', [RecruiterPlanController::class, 'export'])->name('dashboard.recruiter-plans.export');
+    Route::get('/recruiter-plans/{plan}/edit', [RecruiterPlanController::class, 'edit'])->name('dashboard.recruiter-plans.edit');
+    Route::put('/recruiter-plans/{plan}', [RecruiterPlanController::class, 'update'])->name('dashboard.recruiter-plans.update');
+    Route::delete('/recruiter-plans/{plan}', [RecruiterPlanController::class, 'destroy'])->name('dashboard.recruiter-plans.destroy');
+
+    Route::get('/plan-purchases', [PlanPurchaseController::class, 'index'])->name('dashboard.plan-purchases');
+    Route::get('/plan-purchases/export', [PlanPurchaseController::class, 'export'])->name('dashboard.plan-purchases.export');
+    Route::post('/plan-purchases/grant', [PlanPurchaseController::class, 'grant'])->name('dashboard.plan-purchases.grant');
+
+    Route::get('/talent-pool', [DashboardTalentPoolController::class, 'index'])->name('dashboard.talent-pool');
+    Route::get('/talent-pool/export', [DashboardTalentPoolController::class, 'export'])->name('dashboard.talent-pool.export');
+    Route::get('/talent-pool/{profile}', [DashboardTalentPoolController::class, 'show'])->name('dashboard.talent-pool.show');
+    Route::get('/talent-pool/{profile}/cv', [DashboardTalentPoolController::class, 'downloadCv'])->name('dashboard.talent-pool.cv');
+    Route::delete('/talent-pool/{profile}', [DashboardTalentPoolController::class, 'destroy'])->name('dashboard.talent-pool.destroy');
 
     Route::get('/cms', [CmsController::class, 'index'])->name('dashboard.cms');
     Route::get('/cms/{page}', [CmsController::class, 'edit'])->name('dashboard.cms.edit');

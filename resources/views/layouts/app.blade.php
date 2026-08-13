@@ -81,6 +81,7 @@
                     <li><a href="{{ route('landing') }}">Home</a></li>
                     <li><a href="{{ route('about') }}">About Us</a></li>
                     <li><a href="{{ route('jobs') }}">Jobs</a></li>
+                    <li><a href="{{ route('talent.create') }}">Drop your CV</a></li>
                     <li><a href="{{ route('courses') }}">Courses</a></li>
                     <li><a href="{{ route('videos') }}">Videos</a></li>
                     <li><a href="{{ route('blog') }}">Blog</a></li>
