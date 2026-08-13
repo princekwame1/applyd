@@ -4,12 +4,22 @@ namespace Tests\Feature;
 
 use App\Models\SessionVideo;
 use App\Models\User;
+use App\Support\Cms;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SessionVideoTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Cms caches overrides in a static, which outlives the rolled-back
+        // database between tests in the same process.
+        Cms::flush();
+    }
 
     private function admin(): User
     {
@@ -129,6 +139,37 @@ class SessionVideoTest extends TestCase
             ->assertOk()
             ->assertSee('Published session')
             ->assertDontSee('Hidden session');
+    }
+
+    public function test_the_page_copy_comes_from_the_cms(): void
+    {
+        $this->video();
+
+        $this->get('/videos')
+            ->assertOk()
+            ->assertSee('Missed a session? Watch it here.')
+            ->assertSee('Join the next one →', false);
+
+        $this->actingAs($this->admin())
+            ->put('/dashboard/cms/videos', ['fields' => [
+                'hero_title' => 'Catch up on any session',
+                'cta_button' => 'Come to the next one',
+            ]])
+            ->assertRedirect(route('dashboard.cms.edit', 'videos'));
+
+        $this->get('/videos')
+            ->assertOk()
+            ->assertSee('Catch up on any session')
+            ->assertSee('Come to the next one')
+            ->assertDontSee('Missed a session? Watch it here.');
+    }
+
+    public function test_the_empty_state_copy_comes_from_the_cms(): void
+    {
+        // No videos published: the page still has to say something useful.
+        $this->get('/videos')
+            ->assertOk()
+            ->assertSee('Nothing here just yet');
     }
 
     public function test_guests_cannot_reach_the_dashboard_crud(): void

@@ -66,6 +66,11 @@ return [
                     'stat4_num' => ['type' => 'text', 'label' => 'Stat 4 — number', 'default' => '100%'],
                     'stat4_lbl' => ['type' => 'text', 'label' => 'Stat 4 — label', 'default' => 'Free. No catch.'],
                 ]],
+                'Session videos strip' => ['fields' => [
+                    'videos_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'See a session before you sign up'],
+                    'videos_lead' => ['type' => 'text', 'label' => 'Lead', 'default' => "Recordings from sessions we've already run. Watch a few minutes and you'll know exactly what you're walking into."],
+                    'videos_cta' => ['type' => 'text', 'label' => 'Link text', 'default' => 'See all sessions →'],
+                ]],
                 'Final CTA' => ['fields' => [
                     'cta_title' => ['type' => 'text', 'label' => 'Heading', 'default' => 'No experience? No problem.'],
                     'cta_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => "You dream of a better career. We're the bridge. 24 days. 24 tools. Completely free."],
@@ -154,6 +159,27 @@ return [
                     'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Jobs & Opportunities'],
                     'hero_sub' => ['type' => 'text', 'label' => 'Subtitle', 'default' => 'Openings from companies in our network. Apply with your CV. No account needed.'],
                     'hero_cta' => ['type' => 'text', 'label' => 'CTA button', 'default' => 'Are you hiring? Post a job'],
+                ]],
+            ],
+        ],
+
+        'videos' => [
+            'label' => 'Session Videos',
+            'route' => 'videos',
+            'sections' => [
+                'Hero' => ['fields' => [
+                    'hero_eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'Past sessions'],
+                    'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Missed a session? Watch it here.'],
+                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => "Every session we record ends up on this page. Watch the whole thing, or skip straight to the part you need — whenever suits you."],
+                ]],
+                'When there are no videos yet' => ['fields' => [
+                    'empty_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Nothing here just yet'],
+                    'empty_text' => ['type' => 'text', 'label' => 'Message', 'default' => "We're still putting the first recordings together. Check back after the next session."],
+                ]],
+                'Bottom CTA' => ['fields' => [
+                    'cta_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Watching helps. Being in the room helps more.'],
+                    'cta_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => "The next cohort is free, it's live, and you get to ask your own questions as we go."],
+                    'cta_button' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Join the next one →'],
                 ]],
             ],
         ],
