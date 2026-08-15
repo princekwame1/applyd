@@ -724,7 +724,7 @@ a { color: var(--brand); }
 }
 .attend-radio-body strong { font-size: .95rem; }
 .attend-radio-body .attend-price { font-size: 1.15rem; font-weight: 800; color: var(--ink); }
-.attend-radio input:checked + .attend-radio-body { border-color: var(--brand); background: var(--red-tint, #faeaeb); }
+.attend-radio input:checked + .attend-radio-body { border-color: var(--brand); background: #faeaeb; }
 .attend-radio input:checked + .attend-radio-body .attend-price { color: var(--brand); }
 .attend-radio input:focus-visible + .attend-radio-body { box-shadow: 0 0 0 3px rgba(199, 58, 65, .18); }
 .tuition-total {
@@ -1930,7 +1930,7 @@ textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3p
   transition: color .15s ease, background .15s ease, border-color .15s ease;
 }
 .row-actions a:hover,
-.row-actions button:hover { border-color: var(--brand); color: var(--brand); background: var(--red-tint, #faeaeb); }
+.row-actions button:hover { border-color: var(--brand); color: var(--brand); background: #faeaeb; }
 .row-actions .link-danger { color: var(--danger); }
 .row-actions .link-danger:hover { color: #fff; background: var(--danger); border-color: var(--danger); }
 
@@ -2064,8 +2064,8 @@ textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3p
   cursor: pointer;
   transition: border-color .15s ease, background .15s ease;
 }
-.avatar-drop:hover { border-color: var(--brand); background: var(--red-tint, #faeaeb); }
-.avatar-drop.is-drag { border-color: var(--brand); background: var(--red-tint, #faeaeb); box-shadow: 0 0 0 3px rgba(199, 58, 65, .12); }
+.avatar-drop:hover { border-color: var(--brand); background: #faeaeb; }
+.avatar-drop.is-drag { border-color: var(--brand); background: #faeaeb; box-shadow: 0 0 0 3px rgba(199, 58, 65, .12); }
 .avatar-drop.is-error { border-color: var(--danger); background: #fef2f2; }
 .avatar-drop-ic {
   flex: 0 0 38px; width: 38px; height: 38px; border-radius: 10px;
@@ -2526,7 +2526,7 @@ footer a:hover { color: var(--accent); }
   background: var(--bg-soft); color: var(--ink);
   transition: background .15s ease, color .15s ease;
 }
-.quick-link:hover .ql-ic { background: var(--red-tint, #faeaeb); color: var(--brand); }
+.quick-link:hover .ql-ic { background: #faeaeb; color: var(--brand); }
 .quick-link .ql-ic svg { width: 19px; height: 19px; }
 .quick-link span:last-child { display: flex; flex-direction: column; }
 .quick-link strong { font-size: .93rem; font-weight: 700; }
@@ -2564,7 +2564,7 @@ footer a:hover { color: var(--accent); }
 .placeholder-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .placeholder-list li { display: flex; flex-direction: column; gap: 2px; }
 .placeholder-list code {
-  background: var(--red-tint, #faeaeb); color: var(--brand); font-size: .82rem;
+  background: #faeaeb; color: var(--brand); font-size: .82rem;
   padding: 3px 8px; border-radius: 6px; align-self: flex-start; font-weight: 600;
 }
 .placeholder-list span { font-size: .82rem; color: var(--ink-soft); }
@@ -2940,3 +2940,75 @@ details[open] > summary .sv-chevron { transform: rotate(90deg); color: var(--bra
   color: var(--brand); font-weight: 800; font-size: .85rem;
 }
 .plan-card form { margin-top: auto; }
+
+/* ==========================================================================
+   Questionnaires — public form pages (/forms/{slug})
+   One long, plain form: no stepper, no JS requirement. Same red-on-charcoal
+   palette as everything else; the only new shapes here are the field blocks.
+   ========================================================================== */
+.qform-wrap { background: var(--bg-soft); min-height: calc(100vh - 78px); padding: 56px 0 80px; }
+.qform-narrow { max-width: 720px; }
+
+.qform-head { margin-bottom: 26px; }
+.qform-title { font-size: clamp(1.7rem, 4.4vw, 2.3rem); line-height: 1.15; letter-spacing: -.02em; margin-bottom: 10px; }
+.qform-lead { color: var(--ink-soft); margin-bottom: 6px; white-space: pre-line; }
+.qform-deadline { font-size: .82rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: .05em; }
+
+.qform { display: grid; gap: 18px; }
+.qform-field {
+  background: #fff; border: 1px solid #ece7e7; border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 6px 18px rgba(39, 40, 39, .04);
+}
+.qform-field.has-error { border-color: var(--danger); }
+.qform-label { display: block; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.qform-label .req { color: var(--brand); margin-left: 2px; }
+.qform-optional { font-size: .72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; margin-left: 6px; }
+.qform-help { font-size: .84rem; color: var(--ink-soft); margin: 0 0 10px; }
+
+.qform-field input[type=text],
+.qform-field input[type=email],
+.qform-field input[type=tel],
+.qform-field input[type=number],
+.qform-field input[type=date],
+.qform-field input[type=file],
+.qform-field select,
+.qform-field textarea {
+  width: 100%; margin-top: 8px; padding: 11px 13px;
+  border: 1.5px solid #e2ddde; border-radius: 10px;
+  font-family: inherit; font-size: .95rem; color: var(--ink); background: #fff;
+}
+.qform-field textarea { resize: vertical; min-height: 110px; }
+.qform-field input:focus,
+.qform-field select:focus,
+.qform-field textarea:focus {
+  outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(199, 58, 65, .15);
+}
+
+/* Radio + checkbox lists share one shape — the control tells them apart. */
+.qform-choices { display: grid; gap: 8px; margin-top: 10px; }
+.qform-choice {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  padding: 10px 13px; border: 1.5px solid #e9e4e4; border-radius: 10px;
+  font-size: .94rem; transition: border-color .18s ease, background .18s ease;
+}
+.qform-choice:hover { border-color: rgba(199, 58, 65, .45); background: var(--bg-soft); }
+.qform-choice input { accent-color: var(--brand); width: 17px; height: 17px; margin: 1px 0 0; flex-shrink: 0; }
+.qform-choice:has(input:checked) { border-color: var(--brand); background: #faeaeb; }
+
+.qform-actions { margin-top: 8px; text-align: center; }
+.qform-note { font-size: .8rem; color: var(--ink-soft); margin-top: 12px; }
+
+.qform-done { text-align: center; padding-top: 40px; }
+.qform-done-mark {
+  width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand); color: #fff;
+}
+.qform-done-mark svg { width: 28px; height: 28px; }
+.qform-reference { font-size: .88rem; color: var(--ink-soft); margin: 14px 0 26px; }
+.qform-reference strong { color: var(--ink); font-family: monospace; letter-spacing: .04em; }
+
+@media (max-width: 640px) {
+  .qform-wrap { padding: 34px 0 60px; }
+  .qform-field { padding: 16px 16px; border-radius: 12px; }
+}

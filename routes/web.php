@@ -16,6 +16,9 @@ use App\Http\Controllers\Dashboard\EditorImageController;
 use App\Http\Controllers\Dashboard\EmailLogsController;
 use App\Http\Controllers\Dashboard\EmailTemplatesController;
 use App\Http\Controllers\Dashboard\PlanPurchaseController;
+use App\Http\Controllers\Dashboard\QuestionnaireController;
+use App\Http\Controllers\Dashboard\QuestionnaireQuestionController;
+use App\Http\Controllers\Dashboard\QuestionnaireResponseController;
 use App\Http\Controllers\Dashboard\RecruiterPlanController;
 use App\Http\Controllers\Dashboard\SmsLogsController;
 use App\Http\Controllers\Dashboard\SurveyManagerController;
@@ -27,6 +30,7 @@ use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QuestionnaireFormController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
@@ -65,6 +69,13 @@ Route::get('/check-in', [SurveyController::class, 'index'])->name('surveys.index
 Route::get('/check-in/thanks', [SurveyController::class, 'thanks'])->name('surveys.thanks');
 Route::get('/check-in/{survey}', [SurveyController::class, 'show'])->name('surveys.show');
 Route::post('/check-in/{survey}', [SurveyController::class, 'store'])->name('surveys.store');
+
+// Questionnaires — admin-built forms shared as a plain link. No login: whoever
+// has the link can fill it in, so `/{questionnaire}/thanks` is the only extra
+// segment and nothing here sits behind auth.
+Route::get('/forms/{questionnaire}', [QuestionnaireFormController::class, 'show'])->name('forms.show');
+Route::post('/forms/{questionnaire}', [QuestionnaireFormController::class, 'store'])->name('forms.store');
+Route::get('/forms/{questionnaire}/thanks', [QuestionnaireFormController::class, 'thanks'])->name('forms.thanks');
 
 // Job board
 Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');
@@ -174,6 +185,26 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::delete('/surveys/questions/{question}', [SurveyQuestionsController::class, 'destroy'])->name('dashboard.surveys.questions.destroy');
     Route::get('/surveys/responses/{response}', [SurveysController::class, 'show'])->name('dashboard.surveys.response');
     Route::delete('/surveys/responses/{response}', [SurveysController::class, 'destroy'])->name('dashboard.surveys.response.destroy');
+
+    // Questionnaires. Fixed segments are declared before the {questionnaire}
+    // wildcard so a form can never shadow one of them.
+    Route::get('/questionnaires', [QuestionnaireController::class, 'index'])->name('dashboard.questionnaires');
+    Route::post('/questionnaires', [QuestionnaireController::class, 'store'])->name('dashboard.questionnaires.store');
+    Route::get('/questionnaires/responses/{response}', [QuestionnaireResponseController::class, 'show'])->name('dashboard.questionnaires.response');
+    Route::delete('/questionnaires/responses/{response}', [QuestionnaireResponseController::class, 'destroy'])->name('dashboard.questionnaires.response.destroy');
+    Route::get('/questionnaires/files/{file}', [QuestionnaireResponseController::class, 'download'])->name('dashboard.questionnaires.file');
+    Route::get('/questionnaires/questions/{question}/edit', [QuestionnaireQuestionController::class, 'edit'])->name('dashboard.questionnaires.questions.edit');
+    Route::put('/questionnaires/questions/{question}', [QuestionnaireQuestionController::class, 'update'])->name('dashboard.questionnaires.questions.update');
+    Route::delete('/questionnaires/questions/{question}', [QuestionnaireQuestionController::class, 'destroy'])->name('dashboard.questionnaires.questions.destroy');
+    Route::get('/questionnaires/{questionnaire}/edit', [QuestionnaireController::class, 'edit'])->name('dashboard.questionnaires.edit');
+    Route::put('/questionnaires/{questionnaire}', [QuestionnaireController::class, 'update'])->name('dashboard.questionnaires.update');
+    Route::delete('/questionnaires/{questionnaire}', [QuestionnaireController::class, 'destroy'])->name('dashboard.questionnaires.destroy');
+    Route::post('/questionnaires/{questionnaire}/duplicate', [QuestionnaireController::class, 'duplicate'])->name('dashboard.questionnaires.duplicate');
+    Route::get('/questionnaires/{questionnaire}/build', [QuestionnaireController::class, 'build'])->name('dashboard.questionnaires.build');
+    Route::get('/questionnaires/{questionnaire}/questions/create', [QuestionnaireQuestionController::class, 'create'])->name('dashboard.questionnaires.questions.create');
+    Route::post('/questionnaires/{questionnaire}/questions', [QuestionnaireQuestionController::class, 'store'])->name('dashboard.questionnaires.questions.store');
+    Route::get('/questionnaires/{questionnaire}/responses', [QuestionnaireResponseController::class, 'index'])->name('dashboard.questionnaires.responses');
+    Route::get('/questionnaires/{questionnaire}/responses/export', [QuestionnaireResponseController::class, 'export'])->name('dashboard.questionnaires.responses.export');
 
     Route::get('/tools', [ToolController::class, 'index'])->name('dashboard.tools');
     Route::post('/tools', [ToolController::class, 'store'])->name('dashboard.tools.store');
