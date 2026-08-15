@@ -170,7 +170,8 @@
 
 @if ($survey)
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="{{ asset('js/qrcode.js') }}"></script>
+<script src="{{ asset('js/qr-share.js') }}"></script>
 <script>
 (function () {
     var canvas = document.getElementById('surveyQr');
@@ -179,16 +180,10 @@
     var url = @json(route('surveys.show', $survey));
     if (!canvas) return;
 
-    // The QR is drawn by a CDN script. If it's blocked or the machine is offline
-    // the frame stays on the page in its unavailable state rather than
-    // collapsing — the panel still has to read as "the QR goes here".
-    var drawn = false;
-    try {
-        if (window.QRious) {
-            new QRious({ element: canvas, value: url, size: 168, level: 'M', background: '#ffffff', foreground: '#272827' });
-            drawn = true;
-        }
-    } catch (e) { /* fall through to the placeholder */ }
+    // If the generator can't load at all, the frame stays on the page in its
+    // unavailable state rather than collapsing — the panel still has to read
+    // as "the QR goes here".
+    var drawn = window.ApplydQr && ApplydQr.draw(canvas, url, 168);
 
     if (!drawn) {
         box.classList.add('is-missing');
@@ -218,25 +213,11 @@
     }
 
     document.getElementById('surveyCopy').addEventListener('click', function () {
-        // navigator.clipboard needs a secure context; fall back for plain http.
         var done = function () {
             Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2200, icon: 'success', title: 'Link copied' });
         };
 
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(url).then(done);
-            return;
-        }
-
-        var tmp = document.createElement('textarea');
-        tmp.value = url;
-        tmp.style.position = 'fixed';
-        tmp.style.opacity = '0';
-        document.body.appendChild(tmp);
-        tmp.select();
-        document.execCommand('copy');
-        document.body.removeChild(tmp);
-        done();
+        ApplydQr.copy(url).then(done);
     });
 })();
 </script>

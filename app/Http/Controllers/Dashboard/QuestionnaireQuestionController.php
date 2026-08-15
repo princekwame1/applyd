@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireQuestion;
+use App\Support\Questionnaires;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +23,7 @@ class QuestionnaireQuestionController extends Controller
             return view('dashboard.questionnaires.partials.question-form', [
                 'model' => null,
                 'questionnaire' => $questionnaire,
+                'controllers' => Questionnaires::controllersFor($questionnaire->questions()->ordered()->get()),
             ]);
         }
 
@@ -46,6 +48,10 @@ class QuestionnaireQuestionController extends Controller
             return view('dashboard.questionnaires.partials.question-form', [
                 'model' => $question,
                 'questionnaire' => $question->questionnaire,
+                'controllers' => Questionnaires::controllersFor(
+                    $question->questionnaire->questions()->ordered()->get(),
+                    $question,
+                ),
             ]);
         }
 
@@ -84,6 +90,10 @@ class QuestionnaireQuestionController extends Controller
             'max_kb' => ['nullable', 'integer', 'min:64', 'max:20480'],
             'is_required' => ['boolean'],
             'is_active' => ['boolean'],
+            'condition_key' => ['nullable', 'string', 'max:60'],
+            'condition_operator' => ['nullable', Rule::in(array_keys(QuestionnaireQuestion::OPERATORS))],
+            'condition_values' => ['nullable', 'array', 'max:50'],
+            'condition_values.*' => ['string', 'max:255'],
         ];
 
         // Answers are stored keyed by `key`, so letting it change on an
@@ -108,6 +118,7 @@ class QuestionnaireQuestionController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['options'] = $this->parseOptions($type, $data['options'] ?? null);
         $data['settings'] = $this->settingsFor($type, $data);
+        $data['visible_when'] = $this->conditionFor($questionnaire, $question, $data);
 
         if (in_array($type, QuestionnaireQuestion::OPTION_TYPES, true) && count($data['options']) < 2) {
             throw ValidationException::withMessages([
@@ -121,9 +132,61 @@ class QuestionnaireQuestionController extends Controller
             $data['placeholder'] = null;
         }
 
-        unset($data['max_select'], $data['mimes'], $data['max_kb']);
+        unset(
+            $data['max_select'], $data['mimes'], $data['max_kb'],
+            $data['condition_key'], $data['condition_operator'], $data['condition_values'],
+        );
 
         return $data;
+    }
+
+    /**
+     * "Only ask this when …". Blank controller means always ask. The named
+     * question has to be a real, earlier one on this same form, and the values
+     * have to be options it actually offers — otherwise the rule could never
+     * be satisfied and the question would silently never appear.
+     */
+    private function conditionFor(Questionnaire $questionnaire, ?QuestionnaireQuestion $question, array $data): ?array
+    {
+        $key = trim((string) ($data['condition_key'] ?? ''));
+
+        if ($key === '') {
+            return null;
+        }
+
+        $candidates = Questionnaires::controllersFor(
+            $questionnaire->questions()->ordered()->get(),
+            $question,
+        );
+
+        $controller = $candidates->firstWhere('key', $key);
+
+        if (! $controller) {
+            throw ValidationException::withMessages([
+                'condition_key' => 'Pick a question that comes before this one on the form — a question can only depend on one that has already been answered.',
+            ]);
+        }
+
+        $operator = $data['condition_operator'] ?? 'in';
+        $values = array_values(array_unique(array_filter((array) ($data['condition_values'] ?? []), fn ($v) => $v !== '')));
+
+        if ($operator === 'answered') {
+            return ['key' => $key, 'operator' => 'answered', 'values' => []];
+        }
+
+        if (! $values) {
+            throw ValidationException::withMessages([
+                'condition_values' => 'Choose which answers should bring this question up.',
+            ]);
+        }
+
+        if ($controller->hasOptions() && array_diff($values, $controller->optionList())) {
+            throw ValidationException::withMessages([
+                'condition_values' => 'Those answers aren\'t on "'.$controller->label.'" any more. Pick from its current options.',
+            ]);
+        }
+
+        return ['key' => $key, 'operator' => $operator, 'values' => $values];
     }
 
     /** One option per line; everything that isn't a list question has none. */

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\QuestionnaireQuestion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -19,6 +20,9 @@ class QuestionnaireQuestionsTable extends DataTableComponent
     protected $model = QuestionnaireQuestion::class;
 
     public int $questionnaireId = 0;
+
+    /** @var Collection<string, QuestionnaireQuestion>|null */
+    protected ?Collection $questionsByKey = null;
 
     public function configure(): void
     {
@@ -37,6 +41,7 @@ class QuestionnaireQuestionsTable extends DataTableComponent
         $this->setAdditionalSelects([
             'questionnaire_questions.options',
             'questionnaire_questions.settings',
+            'questionnaire_questions.visible_when',
         ]);
     }
 
@@ -69,6 +74,9 @@ class QuestionnaireQuestionsTable extends DataTableComponent
             Column::make('Choices')
                 ->label(fn ($row) => $this->choicesCell($row))
                 ->html(),
+            Column::make('Asked when')
+                ->label(fn ($row) => $this->conditionCell($row))
+                ->html(),
             Column::make('Required', 'is_required')
                 ->sortable()
                 ->format(fn ($value) => $value
@@ -85,6 +93,30 @@ class QuestionnaireQuestionsTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.questionnaires.partials.question-actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    /** Reads the condition back as a sentence, or "Always" when there isn't one. */
+    protected function conditionCell(QuestionnaireQuestion $question): string
+    {
+        $rule = $question->condition();
+
+        if (! $rule) {
+            return '<span style="color:var(--ink-soft);">Always</span>';
+        }
+
+        $controller = $this->questionsByKey()->get($rule['key']);
+
+        return '<span style="color:var(--brand); font-size:.82rem;">'
+            .e($question->conditionSummary($controller) ?? '')
+            .'</span>';
+    }
+
+    /** This form's questions keyed for label lookups, resolved once per render. */
+    protected function questionsByKey(): Collection
+    {
+        return $this->questionsByKey ??= QuestionnaireQuestion::where('questionnaire_id', $this->questionnaireId)
+            ->get()
+            ->keyBy('key');
     }
 
     /** Options for a list question, upload limits for a file one, else a dash. */

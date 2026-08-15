@@ -29,6 +29,13 @@ class QuestionnaireQuestion extends Model
     /** Types that accept more than one answer. */
     public const MULTI_TYPES = ['checkbox'];
 
+    /** How a conditional question compares itself against its controller. */
+    public const OPERATORS = [
+        'in' => 'is one of',
+        'not_in' => 'is none of',
+        'answered' => 'has any answer',
+    ];
+
     public const DEFAULT_FILE_MIMES = 'pdf,doc,docx,jpg,jpeg,png';
 
     public const DEFAULT_FILE_MAX_KB = 5120;
@@ -42,6 +49,7 @@ class QuestionnaireQuestion extends Model
         'placeholder',
         'options',
         'settings',
+        'visible_when',
         'is_required',
         'is_active',
         'sort_order',
@@ -50,6 +58,7 @@ class QuestionnaireQuestion extends Model
     protected $casts = [
         'options' => 'array',
         'settings' => 'array',
+        'visible_when' => 'array',
         'is_required' => 'boolean',
         'is_active' => 'boolean',
     ];
@@ -172,6 +181,72 @@ class QuestionnaireQuestion extends Model
             'file' => [$path => [$presence, 'file', 'mimes:'.$this->fileMimes(), 'max:'.$this->fileMaxKb()]],
             default => [$path => [$presence, 'string', 'max:255']],
         };
+    }
+
+    /**
+     * The rule deciding whether this question gets asked at all, or null when
+     * it is always asked. Shape: {key, operator, values}.
+     */
+    public function condition(): ?array
+    {
+        $rule = $this->visible_when;
+
+        if (! is_array($rule) || empty($rule['key']) || empty($rule['operator'])) {
+            return null;
+        }
+
+        return [
+            'key' => (string) $rule['key'],
+            'operator' => (string) $rule['operator'],
+            'values' => array_values(array_map('strval', (array) ($rule['values'] ?? []))),
+        ];
+    }
+
+    public function isConditional(): bool
+    {
+        return $this->condition() !== null;
+    }
+
+    /**
+     * Does the controlling question's answer satisfy this question's rule?
+     * `$given` is whatever was answered there — a string, or an array for a
+     * checkbox, in which case "is one of" means the two sets overlap.
+     */
+    public function conditionMet(mixed $given): bool
+    {
+        $rule = $this->condition();
+
+        if (! $rule) {
+            return true;
+        }
+
+        $answers = array_map('strval', array_filter(
+            is_array($given) ? $given : [$given],
+            fn ($v) => $v !== null && $v !== '',
+        ));
+
+        return match ($rule['operator']) {
+            'answered' => $answers !== [],
+            'not_in' => array_intersect($answers, $rule['values']) === [],
+            default => array_intersect($answers, $rule['values']) !== [],
+        };
+    }
+
+    /** How the rule reads in the dashboard, e.g. "Employment is one of Employed". */
+    public function conditionSummary(?self $controller = null): ?string
+    {
+        $rule = $this->condition();
+
+        if (! $rule) {
+            return null;
+        }
+
+        $subject = $controller?->label ?? $rule['key'];
+        $verb = static::OPERATORS[$rule['operator']] ?? $rule['operator'];
+
+        return $rule['operator'] === 'answered'
+            ? $subject.' '.$verb
+            : $subject.' '.$verb.' '.implode(', ', $rule['values']);
     }
 
     /** How a stored answer reads on the dashboard and in an export. */

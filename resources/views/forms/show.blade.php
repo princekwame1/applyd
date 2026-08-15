@@ -36,7 +36,9 @@
                 @php($value = old($path))
                 @php($id = 'q_'.$question->key)
 
-                <div class="qform-field @error($path) has-error @enderror">
+                <div class="qform-field @error($path) has-error @enderror"
+                     data-question-key="{{ $question->key }}"
+                     @if ($question->isConditional()) data-visible-when="{{ json_encode($question->condition()) }}" @endif>
                     <label class="qform-label" for="{{ $id }}">
                         {{ $question->label }}
                         @if ($question->is_required)
@@ -147,3 +149,70 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    // Conditional questions. Without this script every question simply shows —
+    // the server decides all over again which ones were actually being asked,
+    // ignores answers to the rest, and never requires them. So this is polish,
+    // not the rule: it just spares people questions that don't apply to them.
+    var form = document.querySelector('.qform');
+    if (!form) return;
+
+    var fields = Array.prototype.slice.call(form.querySelectorAll('[data-question-key]'));
+    var conditional = fields.filter(function (f) { return f.hasAttribute('data-visible-when'); });
+    if (!conditional.length) return;
+
+    var byKey = {};
+    fields.forEach(function (f) { byKey[f.dataset.questionKey] = f; });
+
+    /** Everything currently ticked, typed or picked for one question. */
+    function answersFor(field) {
+        if (!field) return [];
+
+        var checked = field.querySelectorAll('input[type=radio]:checked, input[type=checkbox]:checked');
+        if (checked.length) return Array.prototype.map.call(checked, function (i) { return i.value; });
+
+        // A hidden question has no answer, whatever is still typed into it.
+        if (field.hidden) return [];
+
+        var single = field.querySelector('select, textarea, input:not([type=radio]):not([type=checkbox])');
+        return single && single.value !== '' ? [single.value] : [];
+    }
+
+    function met(rule, values) {
+        if (rule.operator === 'answered') return values.length > 0;
+
+        var hit = values.some(function (v) { return rule.values.indexOf(v) !== -1; });
+
+        return rule.operator === 'not_in' ? !hit : hit;
+    }
+
+    function sync() {
+        // In document order, so a rule pointing at an earlier question always
+        // reads a state that has already been settled this pass.
+        conditional.forEach(function (field) {
+            var rule = JSON.parse(field.dataset.visibleWhen);
+            var controller = byKey[rule.key];
+            var show = !!controller && !controller.hidden && met(rule, answersFor(controller));
+
+            if (field.hidden === !show) return;
+
+            field.hidden = !show;
+
+            // Disabled, not just hidden: a hidden `required` control blocks
+            // submission with an error the visitor can never see or fix, and a
+            // disabled one isn't posted at all.
+            field.querySelectorAll('input, select, textarea').forEach(function (input) {
+                input.disabled = !show;
+            });
+        });
+    }
+
+    form.addEventListener('change', sync);
+    form.addEventListener('input', sync);
+    sync();
+})();
+</script>
+@endpush

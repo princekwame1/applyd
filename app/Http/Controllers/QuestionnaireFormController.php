@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Questionnaire;
 use App\Models\QuestionnaireQuestion;
 use App\Models\QuestionnaireResponse;
+use App\Support\Questionnaires;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -46,10 +47,15 @@ class QuestionnaireFormController extends Controller
             return redirect()->route('forms.show', $questionnaire)->with('form_closed', $reason);
         }
 
+        // Conditional questions are only asked — and only required — when the
+        // answers actually posted satisfy their rule. Anything sent for a
+        // question that wasn't being asked is dropped rather than stored.
+        $asked = Questionnaires::visible($questions, (array) $request->input('answers', []));
+
         $rules = [];
         $attributes = [];
 
-        foreach ($questions as $question) {
+        foreach ($asked as $question) {
             $rules += $question->validationRules();
             $attributes[$question->inputPath()] = '"'.$question->label.'"';
         }
@@ -58,7 +64,7 @@ class QuestionnaireFormController extends Controller
 
         $answers = [];
 
-        foreach ($questions as $question) {
+        foreach ($asked as $question) {
             if ($question->isFile()) {
                 continue;   // handled below, once the response row exists
             }
@@ -75,7 +81,7 @@ class QuestionnaireFormController extends Controller
         }
 
         // The uploads and the row they belong to land together or not at all.
-        $response = DB::transaction(function () use ($request, $questionnaire, $questions, $answers) {
+        $response = DB::transaction(function () use ($request, $questionnaire, $asked, $answers) {
             $response = QuestionnaireResponse::create([
                 'questionnaire_id' => $questionnaire->id,
                 'answers' => $answers,
@@ -83,7 +89,7 @@ class QuestionnaireFormController extends Controller
                 'user_agent' => substr((string) $request->userAgent(), 0, 255),
             ]);
 
-            foreach ($questions as $question) {
+            foreach ($asked as $question) {
                 if (! $question->isFile()) {
                     continue;
                 }

@@ -90,41 +90,40 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="{{ asset('js/qrcode.js') }}"></script>
+<script src="{{ asset('js/qr-share.js') }}"></script>
 <script>
 (function () {
     var url = @json($questionnaire->publicUrl());
-
-    // QR is a nicety — if the CDN is blocked the link still does the job.
     var canvas = document.getElementById('formQr');
     var box = document.getElementById('formQrBox');
-    if (canvas && window.QRious) {
-        new QRious({ element: canvas, value: url, size: 168, level: 'M', background: '#ffffff', foreground: '#272827' });
-    } else if (box) {
-        canvas.hidden = true;
-        var fallback = box.querySelector('.sv-qr-fallback');
-        if (fallback) fallback.hidden = false;
-    }
-
-    var copy = document.getElementById('formCopy');
-    if (copy) {
-        copy.addEventListener('click', function () {
-            navigator.clipboard.writeText(url).then(function () {
-                copy.textContent = 'Copied';
-                setTimeout(function () { copy.textContent = 'Copy link'; }, 1800);
-            });
-        });
-    }
-
     var download = document.getElementById('formQrDownload');
-    if (download && canvas) {
-        download.addEventListener('click', function () {
-            var a = document.createElement('a');
-            a.href = canvas.toDataURL('image/png');
-            a.download = @json($questionnaire->slug).'-qr.png';
-            a.click();
-        });
+    var copy = document.getElementById('formCopy');
+
+    var drawn = window.ApplydQr && ApplydQr.draw(canvas, url, 168);
+
+    if (!drawn && box) {
+        box.classList.add('is-missing');
+        canvas.hidden = true;
+        box.querySelector('.sv-qr-fallback').hidden = false;
+        download.disabled = true;
+        download.title = 'The QR generator could not load';
     }
+
+    download.addEventListener('click', function () {
+        if (!drawn) return;
+        var a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = @json($questionnaire->slug.'-qr.png');
+        a.click();
+    });
+
+    copy.addEventListener('click', function () {
+        ApplydQr.copy(url).then(function () {
+            copy.textContent = 'Copied';
+            setTimeout(function () { copy.textContent = 'Copy link'; }, 1800);
+        });
+    });
 })();
 </script>
 <script>
@@ -152,6 +151,38 @@
         toggle(form.querySelectorAll('[data-max-select-field]'), type === 'checkbox');
         toggle(form.querySelectorAll('[data-placeholder-field]'), PLACEHOLDER_TYPES.indexOf(type) !== -1);
         toggle(form.querySelectorAll('[data-file-field]'), type === 'file');
+
+        syncCondition(form);
+    }
+
+    // "Only ask this sometimes": the answers to choose from belong to whichever
+    // earlier question was picked, so the list is narrowed to that question's
+    // own options every time the choice changes.
+    function syncCondition(form) {
+        var keySelect = form.querySelector('[data-condition-key]');
+        if (!keySelect) return;
+
+        var key = keySelect.value;
+        var operator = (form.querySelector('[data-condition-operator]') || {}).value;
+        var list = form.querySelector('[data-condition-value-list]');
+        var mine = list ? list.querySelectorAll('option[data-for="' + key + '"]') : [];
+
+        Array.prototype.forEach.call(list ? list.options : [], function (option) {
+            var keep = option.dataset.for === key;
+            option.hidden = !keep;
+            if (!keep) option.selected = false;
+        });
+
+        // A question answered in free text has no list to compare against, so
+        // the only rule it can carry is "they answered it at all".
+        var hasOptions = mine.length > 0;
+
+        toggle(form.querySelectorAll('[data-condition-detail]'), key !== '');
+        toggle(form.querySelectorAll('[data-condition-values]'), key !== '' && hasOptions && operator !== 'answered');
+        toggle(form.querySelectorAll('[data-condition-freetext]'), key !== '' && !hasOptions);
+
+        var operatorSelect = form.querySelector('[data-condition-operator]');
+        if (operatorSelect && !hasOptions && key !== '') operatorSelect.value = 'answered';
     }
 
     function syncAll() {
@@ -162,6 +193,7 @@
     // hidden original still receives — but only via delegation on the document.
     document.addEventListener('change', function (e) {
         if (e.target.matches('[data-question-type]')) sync(e.target.closest('form'));
+        if (e.target.matches('[data-condition-key], [data-condition-operator]')) syncCondition(e.target.closest('form'));
     });
     if (window.jQuery) {
         jQuery(document).on('change', '[data-question-type]', function () { sync(this.closest('form')); });

@@ -82,26 +82,14 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+    <script src="{{ asset('js/qrcode.js') }}"></script>
+    <script src="{{ asset('js/qr-share.js') }}"></script>
     <script>
         var canvas = document.getElementById('qr');
         var box = document.getElementById('qrBox');
         var download = document.getElementById('download');
-        var drawn = false;
-
-        try {
-            if (window.QRious) {
-                new QRious({
-                    element: canvas,
-                    value: @json($url),
-                    size: 320,
-                    level: 'M',        // survives a bit of print smudge
-                    background: '#ffffff',
-                    foreground: '#272827',
-                });
-                drawn = true;
-            }
-        } catch (e) { /* fall through to the placeholder */ }
+        // 320px so it survives a bit of print smudge.
+        var drawn = window.ApplydQr && ApplydQr.draw(canvas, @json($url), 320);
 
         if (!drawn) {
             box.classList.add('is-missing');

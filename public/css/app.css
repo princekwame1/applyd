@@ -3012,3 +3012,21 @@ details[open] > summary .sv-chevron { transform: rotate(90deg); color: var(--bra
   .qform-wrap { padding: 34px 0 60px; }
   .qform-field { padding: 16px 16px; border-radius: 12px; }
 }
+
+/* Conditional-logic panel inside the question modal. Folded away by default:
+   most questions are simply always asked, and the panel shouldn't suggest
+   otherwise by taking up room. */
+.q-cond { border: 1px dashed #ddd6d6; border-radius: 10px; padding: 12px 14px; background: var(--bg-soft); }
+.q-cond > summary {
+  cursor: pointer; font-weight: 700; font-size: .9rem; color: var(--ink);
+  list-style: none; display: flex; align-items: center; gap: 8px;
+}
+.q-cond > summary::-webkit-details-marker { display: none; }
+.q-cond > summary::before {
+  content: "+"; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%; background: var(--brand); color: #fff;
+  font-size: .8rem; font-weight: 800; line-height: 1;
+}
+.q-cond[open] > summary::before { content: "−"; }
+.q-cond > summary:hover { color: var(--brand); }
+.q-cond select[multiple] { padding: 6px; }

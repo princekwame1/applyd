@@ -402,6 +402,32 @@ class QuestionnaireDashboardTest extends TestCase
     }
 
     /**
+     * The QR code is drawn by scripts served from our own origin, and the
+     * download filename is built in PHP. It was once built with a PHP `.` in
+     * the middle of the JavaScript, which is a syntax error that took the whole
+     * block — QR included — down with it. Hence both assertions.
+     */
+    public function test_the_qr_code_is_drawn_from_local_scripts_with_valid_javascript(): void
+    {
+        $form = $this->form();
+        $this->question($form, ['key' => 'name', 'label' => 'Your name']);
+
+        $page = $this->actingAs($this->admin())
+            ->get(route('dashboard.questionnaires.build', $form))
+            ->assertOk()
+            ->assertSee(asset('js/qrcode.js'))
+            ->assertSee(asset('js/qr-share.js'))
+            ->assertDontSee('cdn.jsdelivr.net/npm/qrious', false)
+            ->getContent();
+
+        $this->assertStringContainsString('"mentor-application-qr.png"', $page);
+        $this->assertStringNotContainsString('".\'-qr.png\'', $page);
+
+        $this->assertFileExists(public_path('js/qrcode.js'));
+        $this->assertFileExists(public_path('js/qr-share.js'));
+    }
+
+    /**
      * The create/edit forms are fetched into the shared admin modal over AJAX,
      * so they only ever render through that path — worth exercising.
      */
@@ -419,10 +445,13 @@ class QuestionnaireDashboardTest extends TestCase
         $this->get(route('dashboard.questionnaires'))->assertOk()->assertSee('New Form');
 
         $this->get(route('dashboard.questionnaires.edit', $form), $ajax)
-            ->assertOk()->assertSee('Thank-you message');
+            ->assertOk()->assertSee('What should they see afterwards?');
 
         $this->get(route('dashboard.questionnaires.questions.create', $form), $ajax)
-            ->assertOk()->assertSee('Answer type')->assertSee('Allowed file types');
+            ->assertOk()
+            ->assertSee('How should people answer?')
+            ->assertSee('Which files will you accept?')
+            ->assertSee('Only ask this sometimes');
 
         // Existing options come back one per line, ready to edit.
         $this->get(route('dashboard.questionnaires.questions.edit', $question), $ajax)
