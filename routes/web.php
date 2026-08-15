@@ -15,6 +15,9 @@ use App\Http\Controllers\Dashboard\BulkEmailController;
 use App\Http\Controllers\Dashboard\EditorImageController;
 use App\Http\Controllers\Dashboard\EmailLogsController;
 use App\Http\Controllers\Dashboard\EmailTemplatesController;
+use App\Http\Controllers\Dashboard\FinanceCategoryController;
+use App\Http\Controllers\Dashboard\FinanceController;
+use App\Http\Controllers\Dashboard\FinanceDocumentController;
 use App\Http\Controllers\Dashboard\PlanPurchaseController;
 use App\Http\Controllers\Dashboard\QuestionnaireController;
 use App\Http\Controllers\Dashboard\QuestionnaireQuestionController;
@@ -185,6 +188,29 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::delete('/surveys/questions/{question}', [SurveyQuestionsController::class, 'destroy'])->name('dashboard.surveys.questions.destroy');
     Route::get('/surveys/responses/{response}', [SurveysController::class, 'show'])->name('dashboard.surveys.response');
     Route::delete('/surveys/responses/{response}', [SurveysController::class, 'destroy'])->name('dashboard.surveys.response.destroy');
+
+    // Finance. The books are the one dashboard area not open to every admin by
+    // default, so it carries its own permission on top of the role group.
+    Route::middleware('permission:manage finance')->group(function () {
+        Route::get('/finance', [FinanceController::class, 'index'])->name('dashboard.finance');
+        Route::post('/finance', [FinanceController::class, 'store'])->name('dashboard.finance.store');
+        Route::get('/finance/export', [FinanceController::class, 'export'])->name('dashboard.finance.export');
+
+        Route::get('/finance/categories', [FinanceCategoryController::class, 'index'])->name('dashboard.finance.categories');
+        Route::post('/finance/categories', [FinanceCategoryController::class, 'store'])->name('dashboard.finance.categories.store');
+        Route::get('/finance/categories/{category}/edit', [FinanceCategoryController::class, 'edit'])->name('dashboard.finance.categories.edit');
+        Route::put('/finance/categories/{category}', [FinanceCategoryController::class, 'update'])->name('dashboard.finance.categories.update');
+        Route::delete('/finance/categories/{category}', [FinanceCategoryController::class, 'destroy'])->name('dashboard.finance.categories.destroy');
+
+        Route::get('/finance/documents/{document}', [FinanceDocumentController::class, 'download'])->name('dashboard.finance.document');
+        Route::delete('/finance/documents/{document}', [FinanceDocumentController::class, 'destroy'])->name('dashboard.finance.document.destroy');
+
+        Route::get('/finance/{transaction}', [FinanceController::class, 'show'])->name('dashboard.finance.transaction');
+        Route::get('/finance/{transaction}/edit', [FinanceController::class, 'edit'])->name('dashboard.finance.edit');
+        Route::put('/finance/{transaction}', [FinanceController::class, 'update'])->name('dashboard.finance.update');
+        Route::delete('/finance/{transaction}', [FinanceController::class, 'destroy'])->name('dashboard.finance.destroy');
+        Route::post('/finance/{transaction}/documents', [FinanceDocumentController::class, 'store'])->name('dashboard.finance.documents.store');
+    });
 
     // Questionnaires. Fixed segments are declared before the {questionnaire}
     // wildcard so a form can never shadow one of them.

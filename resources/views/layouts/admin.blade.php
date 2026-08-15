@@ -55,6 +55,16 @@
                 </div>
             </div>
 
+            @can('manage finance')
+                <div class="side-group {{ request()->routeIs('dashboard.finance*') ? 'open' : '' }}" data-side-group>
+                    <button type="button" class="side-group-toggle" data-side-toggle><span>Finance</span>{!! $caret !!}</button>
+                    <div class="side-group-items">
+                        <a href="{{ route('dashboard.finance') }}" class="{{ request()->routeIs('dashboard.finance') || request()->routeIs('dashboard.finance.transaction') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Income &amp; Expenses</a>
+                        <a href="{{ route('dashboard.finance.categories') }}" class="{{ request()->routeIs('dashboard.finance.categories*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg> Categories</a>
+                    </div>
+                </div>
+            @endcan
+
             @canany(['manage users', 'manage roles'])
                 <div class="side-group {{ request()->routeIs('dashboard.users*', 'dashboard.roles*') ? 'open' : '' }}" data-side-group>
                     <button type="button" class="side-group-toggle" data-side-toggle><span>Administration</span>{!! $caret !!}</button>
