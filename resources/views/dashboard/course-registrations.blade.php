@@ -11,6 +11,9 @@
 @if (session('status'))
     <div class="success-box">{{ session('status') }}</div>
 @endif
+@if (session('error'))
+    <div class="error-box">{{ session('error') }}</div>
+@endif
 
 <div class="stat-cards">
     <div class="stat-card">

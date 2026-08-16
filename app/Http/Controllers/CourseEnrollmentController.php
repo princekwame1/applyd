@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Exports\CourseEnrollmentsExport;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
+use App\Services\SmsNotificationService;
+use App\Services\StudentAccountService;
 use App\Support\Paystack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
@@ -28,6 +31,26 @@ class CourseEnrollmentController extends Controller
     public function export()
     {
         return Excel::download(new CourseEnrollmentsExport, 'course-registrations-'.now()->format('Y-m-d').'.xlsx');
+    }
+
+    /**
+     * Issue (or re-issue) a student's portal login from the dashboard — for
+     * when an SMS bounced, or the account couldn't be created at the time.
+     *
+     * Only for a finished registration: the ID marks someone as enrolled, and
+     * handing one out mid-application would say something that isn't true yet.
+     */
+    public function resendCredentials(Request $request, CourseEnrollment $enrollment)
+    {
+        if (! $enrollment->is_completed) {
+            return back()->with('error', 'This registration isn\'t complete yet, so there\'s no student ID to issue.');
+        }
+
+        $result = app(StudentAccountService::class)->resendCredentials($enrollment);
+
+        return back()->with('status', $result['reset']
+            ? 'Sent — student ID '.$result['student_id'].' with a new temporary password. Any password issued before now no longer works.'
+            : 'Sent — student ID '.$result['student_id'].'. They have already set their own password, so it was left alone.');
     }
 
     public function store(Request $request, Course $course)
@@ -120,14 +143,14 @@ class CourseEnrollmentController extends Controller
         $message = "Dear {$enrollment->first_name}, You have started your {$course} application with SNo:{$enrollment->serial_no} and PIN:{$enrollment->pin}. Ensure you complete all stages of the application. Continue: {$link}";
 
         try {
-            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
+            app(SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
         } catch (\Throwable $e) {
             report($e);
         }
 
         // Email copy of the credentials
         try {
-            \Illuminate\Support\Facades\Mail::send('emails.application-started', [
+            Mail::send('emails.application-started', [
                 'firstName' => $enrollment->first_name,
                 'courseTitle' => $course,
                 'serialNo' => $enrollment->serial_no,
@@ -208,7 +231,7 @@ class CourseEnrollmentController extends Controller
         if (! ($enrollment->course && $enrollment->course->requiresTuition())) {
             if ($enrollment->completed_at === null) {
                 $enrollment->update(['completed_at' => now(), 'tuition_status' => 'paid']);
-                $this->sendRegistrationCompleteSms($enrollment);
+                $this->completeRegistration($enrollment);
             }
 
             return redirect()->route('application.complete')->with('status', 'Your registration is complete!');
@@ -318,7 +341,7 @@ class CourseEnrollmentController extends Controller
             ]);
 
             if ($firstCompletion) {
-                $this->sendRegistrationCompleteSms($enrollment->fresh('course'));
+                $this->completeRegistration($enrollment->fresh('course'));
             }
         } else {
             $enrollment->update(['tuition_status' => $enrollment->tuition_amount > 0 ? 'partial' : 'unpaid']);
@@ -330,14 +353,28 @@ class CourseEnrollmentController extends Controller
         );
     }
 
-    protected function sendRegistrationCompleteSms(CourseEnrollment $enrollment): void
+    /**
+     * Registration is finished. This is the single place that happens — a free
+     * course lands here from the details step, a paid one from the tuition
+     * callback — so it is also where the student gets their ID and a login.
+     */
+    protected function completeRegistration(CourseEnrollment $enrollment): void
     {
         $course = $enrollment->course?->title ?? 'course';
 
         $message = "Dear {$enrollment->first_name}, your registration for {$course} has been completed successfully. Further communication regarding the next steps will be sent to you. Thank you for choosing Applyd Academy.";
 
         try {
-            app(\App\Services\SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
+            app(SmsNotificationService::class)->send($enrollment->phone, $message, null, $enrollment->name);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        // Issuing the account is wrapped too: a paid, completed registration
+        // must stand even if the account can't be created this second. The
+        // admin can issue and resend from the dashboard.
+        try {
+            app(StudentAccountService::class)->issueAndNotify($enrollment);
         } catch (\Throwable $e) {
             report($e);
         }

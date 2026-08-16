@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class CourseEnrollment extends Model
 {
@@ -15,6 +16,9 @@ class CourseEnrollment extends Model
         'phone',
         'amount',
         'reference',
+        'student_id',
+        'user_id',
+        'credentials_sent_at',
         'serial_no',
         'pin',
         'status',
@@ -40,11 +44,18 @@ class CourseEnrollment extends Model
         'completed_at' => 'datetime',
         'tuition_amount' => 'decimal:2',
         'tuition_paid_at' => 'datetime',
+        'credentials_sent_at' => 'datetime',
     ];
 
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    /** The shared account this registration issued (or was claimed by). */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function getAmountLabelAttribute(): string
@@ -91,7 +102,7 @@ class CourseEnrollment extends Model
 
         return $this->course
             ? $this->course->attendanceLabel($this->attendance_type)
-            : (string) \Illuminate\Support\Str::of($this->attendance_type)->replace('-', ' ')->title();
+            : (string) Str::of($this->attendance_type)->replace('-', ' ')->title();
     }
 
     public function getTuitionStatusLabelAttribute(): string

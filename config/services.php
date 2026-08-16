@@ -35,6 +35,15 @@ return [
         ],
     ],
 
+    /*
+    | The sibling learning portal (applyd-portal): its own app, on this same
+    | database, sharing these accounts. Students sign in there, so the
+    | credentials this app issues have to link to it.
+    */
+    'portal' => [
+        'url' => env('PORTAL_URL'),
+    ],
+
     'paystack' => [
         'secret' => env('PAYSTACK_SECRET_KEY'),
         'public' => env('PAYSTACK_PUBLIC_KEY'),

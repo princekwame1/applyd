@@ -6,6 +6,7 @@ use App\Mail\TemplatedMail;
 use App\Models\EmailLog;
 use App\Models\EmailTemplate;
 use App\Models\Registration;
+use App\Support\Portal;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -214,10 +215,27 @@ class EmailNotificationService
     }
 
     /**
-     * Sample values used by the template editor preview and test sends.
+     * Sample values used by the template editor preview and test sends. A
+     * template with its own placeholder list needs its own sample set, or the
+     * preview renders a page of blanks.
      */
-    public function sampleVariables(): array
+    public function sampleVariables(?string $key = null): array
     {
+        if ($key === 'student_credentials') {
+            return [
+                'first_name' => 'Ama',
+                'full_name' => 'Ama Mensah',
+                'student_id' => '20260007',
+                'course_title' => 'Data Analytics',
+                'email' => 'ama.mensah@example.com',
+                'temp_password' => 'K7RQ2MTXVP',
+                'password_line' => 'Temporary password: K7RQ2MTXVP',
+                'login_url' => Portal::loginUrl(),
+                'site_name' => (string) config('app.name'),
+                'site_url' => (string) config('app.url'),
+            ];
+        }
+
         return [
             'first_name' => 'Ama',
             'full_name' => 'Ama Mensah',

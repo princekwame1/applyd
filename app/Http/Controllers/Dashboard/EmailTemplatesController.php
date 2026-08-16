@@ -33,7 +33,11 @@ class EmailTemplatesController extends Controller
         return view('dashboard.email-templates.edit', [
             'key' => $key,
             'template' => $template,
-            'placeholders' => config('email_templates.placeholders', []),
+            // A template may declare its own tokens; the shared list is only
+            // the fallback. Offering a bootcamp token on a student email would
+            // just be an invitation to insert something that renders blank.
+            'placeholders' => config("email_templates.templates.$key.placeholders")
+                ?? config('email_templates.placeholders', []),
         ]);
     }
 
@@ -86,7 +90,7 @@ class EmailTemplatesController extends Controller
         $template = EmailTemplate::resolve($key);
         abort_unless($template, 404);
 
-        $rendered = $this->emails->renderTemplate($template, $this->emails->sampleVariables());
+        $rendered = $this->emails->renderTemplate($template, $this->emails->sampleVariables($key));
 
         return response()->view('emails.template', [
             'heading' => $rendered['heading'],
@@ -109,7 +113,7 @@ class EmailTemplatesController extends Controller
             'test_email' => ['required', 'email', 'max:255'],
         ]);
 
-        $rendered = $this->emails->renderTemplate($template, $this->emails->sampleVariables());
+        $rendered = $this->emails->renderTemplate($template, $this->emails->sampleVariables($key));
         $rendered['subject'] = '[TEST] '.$rendered['subject'];
 
         $success = $this->emails->send(

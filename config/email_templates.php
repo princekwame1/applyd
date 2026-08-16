@@ -40,10 +40,46 @@ return [
             'cta_url' => '{{ site_url }}',
         ],
 
+        'student_credentials' => [
+            'label' => 'Student ID & portal login',
+            'description' => 'Sent the moment a course registration is completed — it carries the student ID and the temporary password for the learning portal. This is what the "Resend login details" button on a course registration re-sends (with a freshly generated password).',
+            'audience' => 'New students',
+            'subject' => 'Your student ID and login — {{ site_name }}',
+            'heading' => 'Welcome, {{ first_name }} — here are your details',
+            'body' => <<<'HTML'
+                <p>Hi {{ first_name }},</p>
+                <p>Your registration for <strong>{{ course_title }}</strong> is complete. Here is everything you need to get into the learning portal, where your timetable, materials, assignments and results live.</p>
+                <ul>
+                    <li>Student ID: <strong>{{ student_id }}</strong></li>
+                    <li>Sign in with: {{ email }}</li>
+                    <li>{{ password_line }}</li>
+                </ul>
+                <p>Please change that password as soon as you sign in — you'll be asked to set your own before you go any further.</p>
+                <p>Keep your student ID somewhere safe. It's how we identify you on everything from attendance to your transcript.</p>
+                HTML,
+            'cta_label' => 'Sign in to the portal',
+            'cta_url' => '{{ login_url }}',
+            // Declared per-template: none of the bootcamp registration tokens
+            // mean anything here, and offering them would only mislead.
+            'placeholders' => [
+                'first_name' => "Student's first name",
+                'full_name' => 'Full name as registered',
+                'student_id' => 'The issued 8-digit student ID, e.g. 20260007',
+                'course_title' => 'Course they registered for',
+                'email' => 'Email address, which is also their username',
+                'temp_password' => 'The temporary password (blank if they already had an account)',
+                'password_line' => 'A ready-made line: the temporary password, or a note to use their existing one',
+                'login_url' => 'Learning portal sign-in URL',
+                'site_name' => 'Site name (APP_NAME)',
+                'site_url' => 'Site URL (APP_URL)',
+            ],
+        ],
+
     ],
 
     /*
-    | Tokens available to every template. Keys map to the array returned by
+    | Default tokens, used by any template that doesn't declare its own
+    | `placeholders` list. Keys map to the array returned by
     | EmailNotificationService::variablesFor().
     */
     'placeholders' => [

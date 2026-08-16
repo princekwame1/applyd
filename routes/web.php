@@ -276,6 +276,7 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
 
     Route::get('/course-registrations', [CourseEnrollmentController::class, 'adminIndex'])->name('dashboard.course-registrations');
     Route::get('/course-registrations/export', [CourseEnrollmentController::class, 'export'])->name('dashboard.course-registrations.export');
+    Route::post('/course-registrations/{enrollment}/credentials', [CourseEnrollmentController::class, 'resendCredentials'])->name('dashboard.course-registrations.credentials');
 
     Route::get('/blog', [PostController::class, 'index'])->name('dashboard.blog');
     Route::post('/blog', [PostController::class, 'store'])->name('dashboard.blog.store');
