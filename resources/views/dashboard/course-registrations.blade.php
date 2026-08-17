@@ -34,7 +34,59 @@
     </div>
 </div>
 
+{{-- What students are actually sent, so it can be checked and read out over
+     the phone when someone can't find the email. --}}
+<details class="card sv-flat sv-disclose" style="margin-bottom:22px;">
+    <summary>
+        <span class="sv-disclose-title">Student logins</span>
+        <span class="sv-disclose-hint">{{ number_format($stats['credentials_sent']) }} sent · {{ number_format($stats['awaiting_credentials']) }} waiting</span>
+        <svg class="sv-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
+
+    <div class="sv-share-body" style="max-width:none;">
+        <p>
+            Finishing a registration issues a student ID and a portal login, sent by email and SMS.
+            To send them again, use the <strong>paper-plane</strong> button on a row, or tick several
+            and pick <strong>“Send login details to selected”</strong>. Filter by
+            <strong>Login details → Ready to send</strong> to find everyone still waiting.
+        </p>
+        <p style="color:var(--ink-soft); font-size:.86rem;">
+            A resend gives a new temporary password to anyone who hasn't set their own yet, so the
+            previous one stops working. Students who already chose a password keep it.
+        </p>
+
+        <div class="sv-share-url" id="portalUrl">{{ App\Support\Portal::loginUrl() }}</div>
+        <div class="sv-share-actions">
+            <button type="button" class="btn btn-sm btn-brand" id="portalCopy">Copy sign-in link</button>
+            <a class="btn btn-sm btn-outline" href="{{ App\Support\Portal::loginUrl() }}" target="_blank" rel="noopener">Open the portal</a>
+        </div>
+        @unless (App\Support\Portal::configured())
+            <p class="error-box" style="margin-top:14px;">
+                <strong>PORTAL_URL isn't set</strong>, so links point at this site instead of the learning
+                portal — and a student can't sign in here. Set it in <code>.env</code> before sending.
+            </p>
+        @endunless
+    </div>
+</details>
+
 <div class="card">
     <livewire:course-enrollments-table />
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/qr-share.js') }}"></script>
+<script>
+(function () {
+    var copy = document.getElementById('portalCopy');
+    if (!copy) return;
+
+    copy.addEventListener('click', function () {
+        ApplydQr.copy(@json(App\Support\Portal::loginUrl())).then(function () {
+            copy.textContent = 'Copied';
+            setTimeout(function () { copy.textContent = 'Copy sign-in link'; }, 1800);
+        });
+    });
+})();
+</script>
+@endpush

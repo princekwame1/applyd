@@ -25,6 +25,12 @@ class CourseEnrollmentController extends Controller
                 'completed' => CourseEnrollment::whereNotNull('completed_at')->count(),
                 'form_revenue' => CourseEnrollment::where('status', 'paid')->sum('amount'),
                 'tuition_revenue' => CourseEnrollment::sum('tuition_amount'),
+                'credentials_sent' => CourseEnrollment::whereNotNull('credentials_sent_at')->count(),
+                // Finished registering but never got their login — the set the
+                // resend action exists for.
+                'awaiting_credentials' => CourseEnrollment::whereNotNull('completed_at')
+                    ->whereNull('credentials_sent_at')
+                    ->count(),
             ],
         ]);
     }
