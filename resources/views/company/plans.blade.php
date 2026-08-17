@@ -37,6 +37,12 @@
             @if ($plan->is_featured)<span class="plan-flag">Most popular</span>@endif
             <h3 class="plan-name">{{ $plan->name }}</h3>
             <div class="plan-price">{{ $plan->price_label }}</div>
+            @if (App\Support\PaystackFees::passedOn() && (float) $plan->price > 0)
+                <div class="plan-fee-note">
+                    + {{ App\Models\Course::money(App\Support\PaystackFees::fee((float) $plan->price)) }} payment charge
+                    · <strong>{{ App\Models\Course::money(App\Support\PaystackFees::gross((float) $plan->price)) }}</strong> at checkout
+                </div>
+            @endif
             <div class="plan-credits">{{ number_format($plan->cv_credits) }} CV {{ Str::plural('unlock', $plan->cv_credits) }}</div>
             @if ($plan->blurb)<p class="plan-blurb">{{ $plan->blurb }}</p>@endif
 

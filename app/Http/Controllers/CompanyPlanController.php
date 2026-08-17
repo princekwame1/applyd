@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PlanPurchase;
 use App\Models\RecruiterPlan;
 use App\Support\Paystack;
+use App\Support\PaystackFees;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -44,18 +45,24 @@ class CompanyPlanController extends Controller
 
         // The row exists before the redirect so a payment can always be traced
         // back, even if the recruiter abandons the Paystack page.
+        $price = (float) $plan->price;
+        // Grossed up so the plan price still lands in full. `amount` stays the
+        // price — it is what the purchase is worth — and the charge sits beside it.
+        $charged = PaystackFees::gross($price);
+
         $purchase = $company->purchases()->create([
             'recruiter_plan_id' => $plan->id,
             'plan_name' => $plan->name,
             'credits' => $plan->cv_credits,
-            'amount' => $plan->price,
+            'amount' => $price,
+            'fee' => PaystackFees::fee($price),
             'reference' => $reference,
             'status' => 'pending',
         ]);
 
         $init = Paystack::initialize([
             'email' => $request->user()->email,
-            'amount' => (int) round((float) $plan->price * 100),   // pesewas
+            'amount' => PaystackFees::pesewas($charged),
             'currency' => config('services.paystack.currency', 'GHS'),
             'reference' => $reference,
             'callback_url' => route('company.plans.callback'),
@@ -64,6 +71,7 @@ class CompanyPlanController extends Controller
                 'company_name' => $company->name,
                 'plan' => $plan->name,
                 'credits' => $plan->cv_credits,
+                'base_amount' => $price,
             ],
         ]);
 

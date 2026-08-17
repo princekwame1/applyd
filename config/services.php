@@ -48,6 +48,24 @@ return [
         'secret' => env('PAYSTACK_SECRET_KEY'),
         'public' => env('PAYSTACK_PUBLIC_KEY'),
         'currency' => env('PAYSTACK_CURRENCY', 'GHS'),
+
+        /*
+        | Passing Paystack's transaction charge on to the payer. These are
+        | Paystack's numbers, not ours — they differ by country and payment
+        | method and Paystack changes them, so confirm against your dashboard
+        | rather than trusting the defaults. `cap` is the most it will ever
+        | take on one transaction (blank = uncapped).
+        |
+        | Off by default: switching it on changes what every customer is
+        | charged, which should be a deliberate act, not something that
+        | arrives with a deploy.
+        */
+        'fee' => [
+            'pass_on' => env('PAYSTACK_PASS_ON_FEE', false),
+            'percent' => env('PAYSTACK_FEE_PERCENT', 1.95),
+            'fixed' => env('PAYSTACK_FEE_FIXED', 0),
+            'cap' => env('PAYSTACK_FEE_CAP'),
+        ],
     ],
 
     'mnotify' => [

@@ -66,6 +66,8 @@
                             <span>Registration form</span>
                             <strong>{{ $course->form_fee_label }}</strong>
                         </div>
+                        @include('partials.paystack-fee', ['net' => (float) $course->form_fee, 'label' => 'Registration form'])
+
                         <p class="enroll-note">Purchase the registration form to secure your place. We'll follow up with the next steps.</p>
 
                         @if (session('enroll_error'))
@@ -92,7 +94,8 @@
                                 <input type="tel" id="en_phone" name="phone" value="{{ old('phone') }}" required>
                                 @error('phone') <div class="field-error">{{ $message }}</div> @enderror
                             </div>
-                            <button type="submit" class="btn btn-brand" style="width:100%; margin-top:4px;">Pay {{ $course->form_fee_label }} &amp; Register</button>
+                            @php($formTotal = App\Support\PaystackFees::gross((float) $course->form_fee))
+                            <button type="submit" class="btn btn-brand" style="width:100%; margin-top:4px;">Pay {{ App\Models\Course::money($formTotal) }} &amp; Register</button>
                             <p class="enroll-secure"><i class="fa-solid fa-lock"></i> Secure payment via Paystack</p>
                         </form>
                     </div>

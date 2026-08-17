@@ -171,7 +171,7 @@ return [
                 'Hero' => ['fields' => [
                     'hero_eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'Past sessions'],
                     'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Missed a session? Watch it here.'],
-                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => "Every session we record ends up on this page. Watch the whole thing, or skip straight to the part you need — whenever suits you."],
+                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'Every session we record ends up on this page. Watch the whole thing, or skip straight to the part you need — whenever suits you.'],
                 ]],
                 'When there are no videos yet' => ['fields' => [
                     'empty_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Nothing here just yet'],
@@ -181,6 +181,21 @@ return [
                     'cta_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Watching helps. Being in the room helps more.'],
                     'cta_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => "The next cohort is free, it's live, and you get to ask your own questions as we go."],
                     'cta_button' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Join the next one →'],
+                ]],
+            ],
+        ],
+
+        /*
+        | Not a page — the bits that sit on every public page. No `route`, so
+        | the editor simply doesn't offer a "View live" link for it.
+        */
+        'site' => [
+            'label' => 'Site-wide',
+            'sections' => [
+                'WhatsApp button' => ['fields' => [
+                    'whatsapp_number' => ['type' => 'text', 'label' => 'WhatsApp number (clear this field to hide the button)', 'default' => '0240835458'],
+                    'whatsapp_message' => ['type' => 'text', 'label' => 'Message people start with', 'default' => "Hello Applyd Academy, I'd like to ask about"],
+                    'whatsapp_label' => ['type' => 'text', 'label' => 'Button tooltip', 'default' => 'Chat with us on WhatsApp'],
                 ]],
             ],
         ],

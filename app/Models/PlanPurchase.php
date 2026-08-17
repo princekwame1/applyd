@@ -14,6 +14,7 @@ class PlanPurchase extends Model
         'plan_name',
         'credits',
         'amount',
+        'fee',
         'reference',
         'status',
         'paid_at',
@@ -22,6 +23,7 @@ class PlanPurchase extends Model
     protected $casts = [
         'credits' => 'integer',
         'amount' => 'decimal:2',
+        'fee' => 'decimal:2',
         'paid_at' => 'datetime',
     ];
 

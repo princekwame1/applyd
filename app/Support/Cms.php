@@ -54,6 +54,19 @@ class Cms
         return null;
     }
 
+    /**
+     * The stored override exactly as saved, or null when there isn't one.
+     *
+     * Unlike get(), a saved blank stays blank rather than falling back to the
+     * registry default — which is what lets an admin turn something off by
+     * clearing its field. Only reach for this where "cleared" has to mean
+     * something different from "never touched".
+     */
+    public static function stored(string $page, string $key): ?string
+    {
+        return self::store()[$page][$key] ?? null;
+    }
+
     /** Get a text value: stored override, else registry default, else $default. */
     public static function get(string $page, string $key, ?string $default = null): string
     {

@@ -136,7 +136,15 @@
                     <h2 class="section-title" style="font-size:1.4rem;">Choose attendance &amp; pay tuition</h2>
                     <p class="section-lead">Select how you'll attend, then pay in full or make a 50% part payment. Registration confirms once payment is received.</p>
 
-                    <form method="POST" action="{{ route('application.tuition') }}" class="tuition-form" id="tuitionForm">
+                    {{-- The charge settings ride along as data so the running
+                         total on this page matches what Paystack will ask for.
+                         Server-side is still the authority — this only has to
+                         agree with it. --}}
+                    <form method="POST" action="{{ route('application.tuition') }}" class="tuition-form" id="tuitionForm"
+                          data-fee-on="{{ App\Support\PaystackFees::passedOn() ? '1' : '0' }}"
+                          data-fee-rate="{{ App\Support\PaystackFees::rate() }}"
+                          data-fee-fixed="{{ App\Support\PaystackFees::fixed() }}"
+                          data-fee-cap="{{ App\Support\PaystackFees::cap() ?? '' }}">
                         @csrf
                         <div class="attend-choose">
                             <span class="tuition-label">Attendance type</span>
@@ -167,6 +175,13 @@
                             </div>
                         </div>
 
+                        @if (App\Support\PaystackFees::passedOn())
+                            <div class="tuition-total tuition-total-sub">
+                                <span>Payment charge ({{ App\Support\PaystackFees::label() }})</span>
+                                <span id="tuitionFee">—</span>
+                            </div>
+                        @endif
+
                         <div class="tuition-total">
                             <span>You'll pay now</span>
                             <strong id="tuitionTotal">—</strong>
@@ -182,11 +197,36 @@
                         function money(n) { return 'GHS ' + Number(n).toFixed(2).replace(/\.00$/, ''); }
                         function price() { var r = form.querySelector('input[name=attendance_type]:checked'); return r ? parseFloat(r.dataset.price) : 0; }
                         function factor() { var r = form.querySelector('input[name=option]:checked'); return r ? parseFloat(r.dataset.factor) : 1; }
+
+                        // Mirrors App\Support\PaystackFees::gross(). Adding the
+                        // fee to the bill isn't enough — Paystack takes its cut
+                        // of whatever is charged, so the figure has to be
+                        // grossed up or the academy lands short.
+                        var feeOn = form.dataset.feeOn === '1';
+                        var feeRate = parseFloat(form.dataset.feeRate) || 0;
+                        var feeFixed = parseFloat(form.dataset.feeFixed) || 0;
+                        var feeCap = form.dataset.feeCap === '' ? null : parseFloat(form.dataset.feeCap);
+
+                        function gross(net) {
+                            if (!feeOn || net <= 0 || feeRate >= 1) return Math.round(net * 100) / 100;
+                            var total = Math.ceil(((net + feeFixed) / (1 - feeRate)) * 100) / 100;
+                            if (feeCap !== null && total - net > feeCap) total = Math.round((net + feeCap) * 100) / 100;
+                            return total;
+                        }
+
                         function update() {
                             var p = price();
                             var f = form.querySelector('[data-amt=full]'); if (f) f.textContent = money(p);
                             var h = form.querySelector('[data-amt=half]'); if (h) h.textContent = money(p * 0.5);
-                            document.getElementById('tuitionTotal').textContent = money(p * factor());
+
+                            // The option prices above stay the tuition itself;
+                            // only the total carries the charge, so the two
+                            // lines don't say the same number twice.
+                            var due = p * factor();
+                            var total = gross(due);
+                            var feeEl = document.getElementById('tuitionFee');
+                            if (feeEl) feeEl.textContent = money(total - due);
+                            document.getElementById('tuitionTotal').textContent = money(total);
                         }
                         form.addEventListener('change', update);
                         update();
@@ -205,12 +245,17 @@
                         <div class="pay-balance">
                             <div>
                                 <strong>Outstanding balance: {{ Course::money($balance) }}</strong>
-                                <p>You made a 50% part payment. You can clear the remaining balance now.</p>
+                                <p>
+                                    You made a 50% part payment. You can clear the remaining balance now.
+                                    @if (App\Support\PaystackFees::passedOn())
+                                        A {{ App\Support\PaystackFees::label() }} payment charge is added at checkout.
+                                    @endif
+                                </p>
                             </div>
                             <form method="POST" action="{{ route('application.tuition') }}">
                                 @csrf
                                 <input type="hidden" name="option" value="balance">
-                                <button type="submit" class="btn btn-brand btn-sm">Pay balance {{ Course::money($balance) }}</button>
+                                <button type="submit" class="btn btn-brand btn-sm">Pay balance {{ Course::money(App\Support\PaystackFees::gross($balance)) }}</button>
                             </form>
                         </div>
                     @endif

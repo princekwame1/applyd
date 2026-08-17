@@ -15,6 +15,8 @@ class CourseEnrollment extends Model
         'email',
         'phone',
         'amount',
+        'amount_fee',
+        'tuition_fee',
         'reference',
         'student_id',
         'user_id',
@@ -39,6 +41,8 @@ class CourseEnrollment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'amount_fee' => 'decimal:2',
+        'tuition_fee' => 'decimal:2',
         'paid_at' => 'datetime',
         'date_of_birth' => 'date',
         'completed_at' => 'datetime',

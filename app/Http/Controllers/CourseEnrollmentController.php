@@ -8,6 +8,7 @@ use App\Models\CourseEnrollment;
 use App\Services\SmsNotificationService;
 use App\Services\StudentAccountService;
 use App\Support\Paystack;
+use App\Support\PaystackFees;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -65,7 +66,10 @@ class CourseEnrollmentController extends Controller
             return back()->with('enroll_error', 'Online payment is not available right now. Please contact us to register.')->withInput();
         }
 
-        $amount = $course->form_fee;
+        $amount = (float) $course->form_fee;
+        // The charge is added on top, grossed up so the form fee itself still
+        // lands in full. `amount` stays the fee; the charge is its own column.
+        $charged = PaystackFees::gross($amount);
         $reference = 'CRS-'.$course->id.'-'.strtoupper(Str::random(10));
 
         $enrollment = CourseEnrollment::create([
@@ -74,13 +78,14 @@ class CourseEnrollmentController extends Controller
             'email' => $data['email'],
             'phone' => $data['phone'],
             'amount' => $amount,
+            'amount_fee' => PaystackFees::fee($amount),
             'reference' => $reference,
             'status' => 'pending',
         ]);
 
         $init = Paystack::initialize([
             'email' => $data['email'],
-            'amount' => (int) round($amount * 100), // pesewas
+            'amount' => PaystackFees::pesewas($charged),
             'currency' => config('services.paystack.currency', 'GHS'),
             'reference' => $reference,
             'callback_url' => route('courses.enroll.callback'),
@@ -89,6 +94,10 @@ class CourseEnrollmentController extends Controller
                 'course_title' => $course->title,
                 'name' => $data['name'],
                 'phone' => $data['phone'],
+                // What this payment is worth to us, before the charge. Read
+                // back on the callback so a balance is never credited with
+                // money that went to Paystack.
+                'base_amount' => $amount,
             ],
         ]);
 
@@ -295,7 +304,7 @@ class CourseEnrollmentController extends Controller
 
         $init = Paystack::initialize([
             'email' => $enrollment->email,
-            'amount' => (int) round($amount * 100),
+            'amount' => PaystackFees::pesewas(PaystackFees::gross($amount)),
             'currency' => config('services.paystack.currency', 'GHS'),
             'reference' => $reference,
             'callback_url' => route('application.tuition.callback'),
@@ -304,6 +313,9 @@ class CourseEnrollmentController extends Controller
                 'enrollment_id' => $enrollment->id,
                 'course_title' => $course->title,
                 'option' => $validated['option'],
+                // The tuition this instalment covers, before the charge — the
+                // figure the balance has to move by.
+                'base_amount' => $amount,
             ],
         ]);
 
@@ -327,7 +339,11 @@ class CourseEnrollmentController extends Controller
         $success = ! empty($verify['status']) && ($verify['data']['status'] ?? null) === 'success';
 
         if ($success) {
-            $paidNow = (float) (($verify['data']['amount'] ?? 0) / 100);
+            $charged = (float) (($verify['data']['amount'] ?? 0) / 100);
+            // What they were charged includes the Paystack fee. Only the
+            // tuition part counts against the balance, or a fully-paid student
+            // would read as having overpaid.
+            $paidNow = $this->netPaid($verify, $charged);
             $newTotal = round($enrollment->tuition_amount + $paidNow, 2);
             $full = $enrollment->course?->tuition_full ?? 0;
             $status = ($newTotal + 0.01) >= $full ? 'paid' : 'partial';
@@ -335,6 +351,7 @@ class CourseEnrollmentController extends Controller
 
             $enrollment->update([
                 'tuition_amount' => $newTotal,
+                'tuition_fee' => round((float) $enrollment->tuition_fee + max($charged - $paidNow, 0), 2),
                 'tuition_status' => $status,
                 'tuition_paid_at' => now(),
                 'completed_at' => $enrollment->completed_at ?? now(),
@@ -351,6 +368,25 @@ class CourseEnrollmentController extends Controller
             $success ? 'status' : 'enroll_error',
             $success ? 'Payment received. Thank you!' : 'We could not confirm your tuition payment. Please try again.'
         );
+    }
+
+    /**
+     * The part of a verified payment that is ours, with the Paystack charge
+     * taken back off.
+     *
+     * The base travels in the transaction metadata, because that is exact.
+     * Inverting the charged figure is the fallback for anything started before
+     * the fee was passed on, or where metadata didn't come back.
+     */
+    protected function netPaid(array $verify, float $charged): float
+    {
+        $base = $verify['data']['metadata']['base_amount'] ?? null;
+
+        if (is_numeric($base) && (float) $base > 0 && (float) $base <= $charged + 0.01) {
+            return round((float) $base, 2);
+        }
+
+        return PaystackFees::netFrom($charged);
     }
 
     /**
