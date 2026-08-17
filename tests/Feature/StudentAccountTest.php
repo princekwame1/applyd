@@ -194,6 +194,33 @@ class StudentAccountTest extends TestCase
         $this->assertNotNull($enrollment->fresh()->credentials_sent_at);
     }
 
+    /**
+     * One character outside GSM-7 flips an SMS to UCS-2, where a segment is 70
+     * characters instead of 160 — so a stray em dash triples the bill for every
+     * student. Pinned here because it already happened once.
+     */
+    public function test_the_sms_fits_one_segment_and_stays_in_the_gsm_alphabet(): void
+    {
+        config(['services.portal.url' => 'https://sts.applydacademy.com']);
+
+        $service = $this->service();
+        $method = new \ReflectionMethod($service, 'smsMessage');
+        $method->setAccessible(true);
+
+        $enrollment = $this->enrollment();
+        $result = $service->issueFor($enrollment);
+
+        foreach ([$result['password'], null] as $password) {
+            $sms = $method->invoke($service, $enrollment->fresh('course'), $password);
+
+            $this->assertLessThanOrEqual(160, strlen($sms), 'SMS spills into a second segment: '.$sms);
+            // Plain ASCII is comfortably inside GSM-7; anything above it isn't.
+            $this->assertSame($sms, mb_convert_encoding($sms, 'ASCII', 'UTF-8'), 'SMS carries a non-GSM character: '.$sms);
+            $this->assertStringContainsString('https://sts.applydacademy.com/login', $sms);
+            $this->assertStringContainsString($result['student_id'], $sms);
+        }
+    }
+
     public function test_the_portal_link_follows_the_configured_portal_url(): void
     {
         config(['services.portal.url' => 'https://portal.example.com/']);

@@ -173,7 +173,15 @@ class StudentAccountService
         ];
     }
 
-    /** Kept short: this has to survive a single 160-character SMS segment. */
+    /**
+     * Kept inside one 160-character SMS segment, and inside the GSM-7 alphabet.
+     *
+     * Both matter to the bill. A single character outside GSM-7 — an em dash,
+     * a curly quote — flips the whole message to UCS-2, where a segment is 70
+     * characters, not 160. The first draft of this ran to three segments per
+     * student on the strength of one dash. Plain ASCII only here, and no email
+     * address: it is long, and the email copy carries it anyway.
+     */
     protected function smsMessage(CourseEnrollment $enrollment, ?string $password): string
     {
         $login = Portal::loginUrl();
@@ -184,7 +192,7 @@ class StudentAccountService
         }
 
         return "Hi {$enrollment->first_name}, your Applyd student ID is {$enrollment->student_id}. "
-            ."Sign in at {$login} with {$enrollment->email} and temporary password {$password} — you'll be asked to change it.";
+            ."Sign in at {$login} with password {$password}. Please change it once you are in.";
     }
 
     /**
