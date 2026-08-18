@@ -18,5 +18,9 @@
         </span>
     @endif
 
-    @include('dashboard.partials.row-delete', ['id' => $enrollment->id])
+    @include('dashboard.partials.row-delete', [
+        'id' => $enrollment->id,
+        'title' => 'Delete '.$enrollment->name.'?',
+        'text' => 'The registration and its payment record go for good. The student account and its student ID are kept.',
+    ])
 </div>

@@ -72,7 +72,11 @@ class PlanPurchasesTable extends DataTableComponent
                 ->sortable()
                 ->format(fn ($value) => $value->format('M j, Y g:ia')),
             Column::make('Actions', 'id')
-                ->format(fn ($value) => view('dashboard.partials.row-delete', ['id' => $value]))
+                ->format(fn ($value) => view('dashboard.partials.row-delete', [
+                    'id' => $value,
+                    'title' => 'Delete this purchase?',
+                    'text' => 'Credits already bought are counted from these rows.',
+                ]))
                 ->html(),
         ];
     }

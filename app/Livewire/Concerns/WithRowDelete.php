@@ -78,30 +78,20 @@ trait WithRowDelete
             : $user->hasAnyRole(['admin', 'super']);
     }
 
-    public function deleteRow(int $id): void
-    {
-        $row = $this->findForDelete($id);
-
-        if (! $row) {
-            return;
-        }
-
-        if ($reason = $this->deleteBlockedReason($row)) {
-            $this->deleteToast(false, $reason);
-
-            return;
-        }
-
-        $this->confirmDelete(
-            'Delete '.$this->deleteLabel($row).'?',
-            $this->deleteWarning(),
-            'performDelete('.$id.')',
-        );
-    }
+    /**
+     * The ids a pending "delete selected" is holding.
+     *
+     * A bulk action has to go through the server to raise its dialog, and that
+     * round-trip rebuilds the component — including its tick boxes. Copying the
+     * ids here first means the answer is applied to what was actually ticked,
+     * not to whatever the selection looks like a re-render later.
+     */
+    public array $pendingDeleteIds = [];
 
     public function deleteSelected(): void
     {
-        $count = count($this->getSelected());
+        $this->pendingDeleteIds = array_map('intval', $this->getSelected());
+        $count = count($this->pendingDeleteIds);
 
         if (! $count) {
             $this->deleteToast(false, 'Tick at least one '.$this->deleteNoun().' first');
@@ -146,7 +136,9 @@ trait WithRowDelete
     {
         abort_unless($this->canDeleteRows(), 403);
 
-        $ids = array_map('intval', $this->getSelected());
+        $ids = $this->pendingDeleteIds ?: array_map('intval', $this->getSelected());
+
+        $this->pendingDeleteIds = [];
         $this->clearSelected();
 
         if (! $ids) {

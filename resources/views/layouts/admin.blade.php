@@ -167,6 +167,35 @@
             if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
         });
 
+        // Row delete inside a Livewire table. The dialog is raised here rather
+        // than by the component, so nothing is re-rendered until the answer is
+        // known — the table used to visibly reload before the dialog appeared.
+        document.addEventListener('click', function (e) {
+            var button = e.target.closest('[data-row-delete]');
+            if (!button) return;
+
+            e.preventDefault();
+
+            var root = button.closest('[wire\\:id]');
+            if (!root) return;
+
+            Swal.fire({
+                title: button.getAttribute('data-row-delete-title'),
+                text: button.getAttribute('data-row-delete-text'),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c73a41',
+                cancelButtonColor: '#5f605f',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    Livewire.find(root.getAttribute('wire:id'))
+                        .call('performDelete', Number(button.getAttribute('data-row-delete')));
+                }
+            });
+        });
+
         // Collapsible sidebar nav groups (dropdowns)
         document.addEventListener('click', function (e) {
             var toggle = e.target.closest('[data-side-toggle]');

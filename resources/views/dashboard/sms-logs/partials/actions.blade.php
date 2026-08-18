@@ -7,5 +7,9 @@
         </button>
     @endif
 
-    @include('dashboard.partials.row-delete', ['id' => $id])
+    @include('dashboard.partials.row-delete', [
+        'id' => $id,
+        'title' => 'Delete this log entry?',
+        'text' => 'The record of what was sent goes with it. The message itself has already been delivered.',
+    ])
 </div>

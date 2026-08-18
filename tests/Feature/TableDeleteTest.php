@@ -60,15 +60,17 @@ class TableDeleteTest extends TestCase
 
         $this->assertSame(0, SmsLog::count());
     }
-
-    public function test_deleting_asks_before_it_does_anything(): void
+    public function test_the_confirmation_is_raised_in_the_browser_not_by_a_round_trip(): void
     {
         $log = SmsLog::create(['phone_number' => '+233240000000', 'message' => 'hi', 'status' => 'sent']);
 
-        // deleteRow only raises the dialog; the perform* method does the work.
-        Livewire::actingAs($this->admin())
-            ->test(SmsLogsTable::class)
-            ->call('deleteRow', $log->id);
+        $html = Livewire::actingAs($this->admin())->test(SmsLogsTable::class)->html();
+
+        // The button carries the question; nothing is asked of the server until
+        // the answer is known, so the table can't re-render before the dialog.
+        $this->assertStringContainsString('data-row-delete="'.$log->id.'"', $html);
+        $this->assertStringContainsString('data-row-delete-title', $html);
+        $this->assertStringNotContainsString('deleteRow(', $html);
 
         $this->assertSame(1, SmsLog::count());
     }
