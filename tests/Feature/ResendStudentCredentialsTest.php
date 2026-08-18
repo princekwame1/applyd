@@ -57,16 +57,30 @@ class ResendStudentCredentialsTest extends TestCase
             ->assertSee('https://portal.example.com/login');
     }
 
-    public function test_the_page_warns_when_no_portal_url_is_configured(): void
+    public function test_the_link_is_the_portal_even_with_no_setting_present(): void
     {
         config(['services.portal.url' => null]);
 
         $this->actingAs($this->admin())
             ->get(route('dashboard.course-registrations'))
             ->assertOk()
+            // A missing setting used to leave this pointing at applydacademy.com,
+            // which is a door a student cannot open.
+            ->assertSee('https://sts.applydacademy.com/login')
+            ->assertDontSee('"'.config('app.url').'/login"', false);
+    }
+
+    public function test_the_page_warns_if_the_link_would_point_back_at_this_site(): void
+    {
+        config(['app.url' => 'https://applydacademy.com']);
+        config(['services.portal.url' => 'https://applydacademy.com']);
+
+        $this->actingAs($this->admin())
+            ->get(route('dashboard.course-registrations'))
+            ->assertOk()
             // Sending a link a student can't sign in with is worse than not
             // sending, so the screen says so before anyone presses the button.
-            ->assertSee("PORTAL_URL isn't set", false);
+            ->assertSee('PORTAL_URL points at this site', false);
     }
 
     public function test_one_student_can_be_sent_their_details_again(): void

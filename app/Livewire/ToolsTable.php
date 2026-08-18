@@ -2,13 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Tool;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class ToolsTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = Tool::class;
 
@@ -47,5 +51,33 @@ class ToolsTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.tools.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage tools';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'tool';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Registrations that picked it keep their answer; the tool simply stops being offered and stops being filterable.';
+    }
+
+    /** The row cascades, the file on disk does not. */
+    protected function beforeDelete(Model $row): void
+    {
+        if ($row->image) {
+            Storage::disk('public')->delete($row->image);
+        }
     }
 }

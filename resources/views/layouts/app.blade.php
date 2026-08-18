@@ -143,6 +143,8 @@
         })();
     </script>
     @include('partials.whatsapp-float')
+    @include('partials.impersonation-banner')
+
 
     @stack('scripts')
 </body>

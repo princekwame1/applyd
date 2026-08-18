@@ -225,13 +225,43 @@ class StudentAccountTest extends TestCase
     {
         config(['services.portal.url' => 'https://portal.example.com/']);
 
+        // Trailing slash trimmed, so the link never doubles up.
         $this->assertSame('https://portal.example.com/login', Portal::loginUrl());
+    }
 
-        // With no portal configured we fall back rather than emailing a broken
-        // link — a wrong door beats no door.
-        config(['services.portal.url' => null]);
+    /**
+     * The portal address is a fact about this deployment, not something that
+     * should hinge on a setting being present. With it missing, student links
+     * used to fall back to this site's /login — which a `student` role cannot
+     * get past, and which looks perfectly fine until someone clicks it.
+     */
+    public function test_a_missing_setting_never_sends_students_to_this_site(): void
+    {
+        config(['app.url' => 'https://applydacademy.com']);
 
-        $this->assertSame(route('login'), Portal::loginUrl());
+        foreach ([null, '', '   '] as $missing) {
+            config(['services.portal.url' => $missing]);
+
+            $this->assertSame(Portal::DEFAULT_URL.'/login', Portal::loginUrl());
+            $this->assertSame(Portal::DEFAULT_URL.'/profile', Portal::passwordUrl());
+            // The host is the portal's, never this site's.
+            $this->assertSame('sts.applydacademy.com', parse_url(Portal::loginUrl(), PHP_URL_HOST));
+            $this->assertFalse(Portal::pointsAtThisSite());
+        }
+    }
+
+    public function test_pointing_the_setting_at_this_site_is_reported_not_silently_used(): void
+    {
+        config(['app.url' => 'https://applydacademy.com']);
+
+        config(['services.portal.url' => 'https://sts.applydacademy.com']);
+        $this->assertFalse(Portal::pointsAtThisSite());
+
+        // Someone has set it to the main site: every student link is a dead
+        // end, and the dashboard flags it rather than leaving it to be found
+        // one bounced login at a time.
+        config(['services.portal.url' => 'https://applydacademy.com']);
+        $this->assertTrue(Portal::pointsAtThisSite());
     }
 
     public function test_resending_issues_a_fresh_password_while_the_old_one_is_untouched(): void

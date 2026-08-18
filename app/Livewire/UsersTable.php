@@ -2,14 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class UsersTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = User::class;
 
@@ -53,5 +56,43 @@ class UsersTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.users.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage users';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'user';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The account and its access go for good. Anything they created stays.';
+    }
+
+    /**
+     * Two accounts must survive any tidy-up: your own (locking yourself out of
+     * the dashboard mid-click), and the last `super`, which is the only role
+     * that can hand out roles again afterwards.
+     */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        if ($row->id === auth()->id()) {
+            return 'you cannot delete your own account';
+        }
+
+        if ($row->hasRole('super') && User::role('super')->count() <= 1) {
+            return $row->name.' is the last super account';
+        }
+
+        return null;
     }
 }

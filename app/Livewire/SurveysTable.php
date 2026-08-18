@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Survey;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class SurveysTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = Survey::class;
@@ -20,7 +22,6 @@ class SurveysTable extends DataTableComponent
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
         $this->setDefaultReorderSort('sort_order', 'asc');
         $this->setReorderEnabled();
     }
@@ -60,5 +61,39 @@ class SurveysTable extends DataTableComponent
                 ->format(fn ($value, $row) => view('dashboard.surveys.partials.survey-actions', ['survey' => $row]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'survey';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Its questions go too. Only possible while it has no responses.';
+    }
+
+    /** Mirrors SurveyManagerController::destroy — answers outlive the form. */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        $count = $row->responses()->count();
+
+        return $count
+            ? $row->name.' has '.$count.' response(s) — switch it off instead'
+            : null;
+    }
+
+    /**
+     * Done here rather than left to the FK: SQLite ignores foreign keys added
+     * by a later ALTER TABLE, so the cascade is MySQL-only.
+     */
+    protected function beforeDelete(Model $row): void
+    {
+        $row->questions()->delete();
     }
 }

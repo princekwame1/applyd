@@ -2,14 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Spatie\Permission\Models\Role;
 
 class RolesTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = Role::class;
 
@@ -51,5 +54,37 @@ class RolesTable extends DataTableComponent
                 ->label(fn ($row) => view('dashboard.roles.partials.actions', ['id' => $row->id, 'name' => $row->name])->render())
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage roles';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'role';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Only possible for a role nobody holds.';
+    }
+
+    /** Mirrors RoleController::destroy — the bulk path must not go around it. */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        if ($row->name === 'super') {
+            return 'the super role cannot be deleted';
+        }
+
+        return $row->users()->count()
+            ? $row->name.' is assigned to someone — reassign them first'
+            : null;
     }
 }

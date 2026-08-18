@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\QuestionnaireQuestion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -15,6 +17,7 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
  */
 class QuestionnaireQuestionsTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = QuestionnaireQuestion::class;
@@ -32,7 +35,6 @@ class QuestionnaireQuestionsTable extends DataTableComponent
         $this->setPerPageAccepted([25, 50, 100]);
         $this->setPerPage(50);
         $this->setSearchDisabled();
-        $this->setBulkActionsDisabled();
         $this->setDefaultReorderSort('sort_order', 'asc');
         $this->setReorderEnabled();
 
@@ -134,5 +136,25 @@ class QuestionnaireQuestionsTable extends DataTableComponent
 
         return e(implode(' · ', array_slice($options, 0, 3)))
             .(count($options) > 3 ? ' <span style="color:var(--ink-soft);">+'.(count($options) - 3).'</span>' : '');
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'question';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return Str::limit($row->label, 40);
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Answers already collected for it are kept.';
     }
 }

@@ -7,12 +7,14 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Support\Finance;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class FinanceCategoriesTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = FinanceCategory::class;
@@ -24,7 +26,6 @@ class FinanceCategoriesTable extends DataTableComponent
         $this->setDefaultSort('type', 'asc');
         $this->setPerPageAccepted([25, 50, 100]);
         $this->setPerPage(50);
-        $this->setBulkActionsDisabled();
         $this->setDefaultReorderSort('sort_order', 'asc');
         $this->setReorderEnabled();
     }
@@ -82,5 +83,35 @@ class FinanceCategoriesTable extends DataTableComponent
                 ->format(fn ($value, $row) => view('dashboard.finance.partials.category-actions', ['category' => $row]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage finance';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'category';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Only possible for a heading nothing is filed under.';
+    }
+
+    /** Mirrors FinanceCategoryController::destroy — history keeps its heading. */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        $count = $row->transactions()->count();
+
+        return $count
+            ? $row->name.' is used by '.$count.' entries — switch it off instead'
+            : null;
     }
 }

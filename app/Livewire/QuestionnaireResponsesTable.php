@@ -6,7 +6,9 @@ use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\QuestionnaireQuestion;
 use App\Models\QuestionnaireResponse;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -16,6 +18,7 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
  */
 class QuestionnaireResponsesTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = QuestionnaireResponse::class;
@@ -30,7 +33,6 @@ class QuestionnaireResponsesTable extends DataTableComponent
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(10);
         $this->setSearchDisabled();
-        $this->setBulkActionsDisabled();
 
         // The answer columns are label columns, and rappasoft only SELECTs the
         // fields behind real columns — without this the model arrives with no
@@ -84,5 +86,33 @@ class QuestionnaireResponsesTable extends DataTableComponent
         }
 
         return '<span title="'.e($value).'">'.e(Str::limit($value, 60)).'</span>';
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'response';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return 'response '.$row->reference;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Any file uploaded with it is deleted from the server too.';
+    }
+
+    /** The rows cascade; the uploads on the private disk do not. */
+    protected function beforeDelete(Model $row): void
+    {
+        foreach ($row->files as $file) {
+            Storage::disk('local')->delete($file->path);
+        }
     }
 }

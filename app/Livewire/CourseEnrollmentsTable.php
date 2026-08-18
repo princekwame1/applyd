@@ -7,12 +7,14 @@ use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Services\StudentAccountService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class CourseEnrollmentsTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = CourseEnrollment::class;
@@ -124,6 +126,7 @@ class CourseEnrollmentsTable extends DataTableComponent
     {
         return [
             'sendCredentialsSelected' => 'Send login details to selected',
+            'deleteSelected' => 'Delete selected',
         ];
     }
 
@@ -221,5 +224,35 @@ class CourseEnrollmentsTable extends DataTableComponent
             $success ? 'success' : 'error',
             addslashes($message)
         ));
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage registrations';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'registration';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return $row->name.' ('.$row->reference.')';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The registration and its payment record go for good. The student account and its student ID are kept — those belong to the person, not to one registration.';
+    }
+
+    /**
+     * The account this registration issued is deliberately left standing: it is
+     * the person's login across every course they take. Only the enrolment row
+     * goes.
+     */
+    protected function beforeDelete(Model $row): void
+    {
+        $row->update(['user_id' => null]);
     }
 }

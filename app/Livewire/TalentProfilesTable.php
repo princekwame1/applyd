@@ -6,12 +6,15 @@ use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\JobOpening;
 use App\Models\TalentProfile;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class TalentProfilesTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = TalentProfile::class;
@@ -23,7 +26,6 @@ class TalentProfilesTable extends DataTableComponent
         $this->setDefaultSort('created_at', 'desc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
 
         // `sectors` sits behind a label column, and rappasoft only selects
         // fields behind real columns.
@@ -80,5 +82,32 @@ class TalentProfilesTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.talent-pool.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'candidate';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return $row->full_name;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Their CV is deleted from the server too. Companies that already unlocked them keep what they were shown.';
+    }
+
+    protected function beforeDelete(Model $row): void
+    {
+        if ($row->cv_path) {
+            Storage::disk('local')->delete($row->cv_path);
+        }
     }
 }

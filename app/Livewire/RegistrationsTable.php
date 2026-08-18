@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Http\Controllers\Dashboard\BulkEmailController;
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Registration;
 use App\Models\SmsLog;
 use App\Models\Tool;
@@ -14,7 +15,7 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\MultiSelectFilter;
 
 class RegistrationsTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use WithSkeletonLoader;
 
     protected $model = Registration::class;
 

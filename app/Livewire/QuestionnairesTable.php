@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Questionnaire;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class QuestionnairesTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = Questionnaire::class;
@@ -20,7 +22,6 @@ class QuestionnairesTable extends DataTableComponent
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
         $this->setDefaultReorderSort('sort_order', 'asc');
         $this->setReorderEnabled();
 
@@ -84,5 +85,40 @@ class QuestionnairesTable extends DataTableComponent
         }
 
         return '<span class="badge badge-yes">Open</span>';
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'form';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return $row->title;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Its questions go too. Only possible while it has no responses.';
+    }
+
+    /** Mirrors Dashboard\QuestionnaireController::destroy. */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        $count = $row->responses()->count();
+
+        return $count
+            ? $row->title.' has '.$count.' response(s) — unpublish it instead'
+            : null;
+    }
+
+    protected function beforeDelete(Model $row): void
+    {
+        $row->questions()->delete();
     }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\BlogCategory;
 use App\Models\Post;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -12,7 +14,8 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class PostsTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = Post::class;
 
@@ -29,26 +32,6 @@ class PostsTable extends DataTableComponent
     public function builder(): Builder
     {
         return Post::query()->with('category');
-    }
-
-    public function bulkActions(): array
-    {
-        return ['deleteSelected' => 'Delete'];
-    }
-
-    public function deleteSelected(): void
-    {
-        Post::whereIn('id', $this->getSelected())->get()->each(function (Post $post) {
-            if ($post->cover_image) {
-                Storage::disk('public')->delete($post->cover_image);
-            }
-            $post->delete();
-        });
-
-        $count = count($this->getSelected());
-        $this->clearSelected();
-
-        $this->js("Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:2500,icon:'success',title:'".$count." post(s) deleted'})");
     }
 
     public function filters(): array
@@ -93,5 +76,27 @@ class PostsTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.blog.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'post';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The post and its cover image go for good, and any link to it starts 404ing.';
+    }
+
+    protected function beforeDelete(Model $row): void
+    {
+        if ($row->cover_image) {
+            Storage::disk('public')->delete($row->cover_image);
+        }
     }
 }

@@ -41,7 +41,14 @@ return [
     | credentials this app issues have to link to it.
     */
     'portal' => [
-        'url' => env('PORTAL_URL'),
+        /*
+        | Defaulted rather than left null on purpose. With no value, every
+        | student link fell back to this site's /login — a door a `student`
+        | role cannot open — and nothing said so until someone clicked it.
+        | The portal address is known, so it belongs here; PORTAL_URL is for
+        | pointing a staging build somewhere else.
+        */
+        'url' => env('PORTAL_URL', 'https://sts.applydacademy.com'),
     ],
 
     'paystack' => [

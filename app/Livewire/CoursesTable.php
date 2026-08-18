@@ -2,8 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Course;
+use App\Models\CourseEnrollment;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -11,7 +14,8 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class CoursesTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = Course::class;
 
@@ -32,28 +36,6 @@ class CoursesTable extends DataTableComponent
         foreach ($rows as $row) {
             Course::where('id', $row['id'])->update(['sort_order' => (int) $row['sort_order']]);
         }
-    }
-
-    public function bulkActions(): array
-    {
-        return [
-            'deleteSelected' => 'Delete',
-        ];
-    }
-
-    public function deleteSelected(): void
-    {
-        Course::whereIn('id', $this->getSelected())->get()->each(function (Course $course) {
-            if ($course->image) {
-                Storage::disk('public')->delete($course->image);
-            }
-            $course->delete();
-        });
-
-        $count = count($this->getSelected());
-        $this->clearSelected();
-
-        $this->js("Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:2500,icon:'success',title:'".$count." course(s) deleted'})");
     }
 
     public function filters(): array
@@ -89,5 +71,46 @@ class CoursesTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.courses.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage courses';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'course';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Only possible while nothing is registered on it.';
+    }
+
+    /**
+     * Registrations are money and people. `course_enrollments.course_id` is
+     * nullOnDelete, so the rows would survive — but orphaned, with no way to
+     * tell what anybody paid for.
+     */
+    protected function deleteBlockedReason(Model $row): ?string
+    {
+        $count = CourseEnrollment::where('course_id', $row->id)->count();
+
+        return $count
+            ? $row->title.' has '.$count.' registration(s) — archive it instead'
+            : null;
+    }
+
+    protected function beforeDelete(Model $row): void
+    {
+        if ($row->image) {
+            Storage::disk('public')->delete($row->image);
+        }
     }
 }

@@ -7,4 +7,5 @@
         <span wire:loading.remove wire:target="resend({{ $id }})">Resend</span>
         <span wire:loading wire:target="resend({{ $id }})">Sending…</span>
     </button>
+    @include('dashboard.partials.row-delete', ['id' => $id])
 </div>

@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\SurveyQuestion;
 use App\Models\SurveyResponse;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
@@ -17,6 +18,7 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
  */
 class SurveyResponsesTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = SurveyResponse::class;
@@ -31,7 +33,6 @@ class SurveyResponsesTable extends DataTableComponent
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(10);
         $this->setSearchDisabled();
-        $this->setBulkActionsDisabled();
 
         // The answer columns are label columns, and rappasoft only SELECTs the
         // fields behind real columns — without this the model arrives with no
@@ -86,5 +87,25 @@ class SurveyResponsesTable extends DataTableComponent
         }
 
         return e($question->labelFor($value));
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'response';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return 'the response from '.$row->created_at->format('M j, Y g:ia');
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'It comes out of the totals on this page as well.';
     }
 }

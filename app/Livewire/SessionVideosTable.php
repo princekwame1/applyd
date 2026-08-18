@@ -2,15 +2,19 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\SessionVideo;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class SessionVideosTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = SessionVideo::class;
 
@@ -72,5 +76,27 @@ class SessionVideosTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.videos.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'video';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Only the listing goes — the recording itself lives on YouTube and is untouched.';
+    }
+
+    protected function beforeDelete(Model $row): void
+    {
+        if ($row->thumbnail) {
+            Storage::disk('public')->delete($row->thumbnail);
+        }
     }
 }

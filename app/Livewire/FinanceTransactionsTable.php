@@ -7,6 +7,8 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Support\Finance;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -14,6 +16,7 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class FinanceTransactionsTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = FinanceTransaction::class;
@@ -30,7 +33,6 @@ class FinanceTransactionsTable extends DataTableComponent
         $this->setDefaultSort('occurred_on', 'desc');
         $this->setPerPageAccepted([10, 25, 50, 100]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
 
         // `type` decides which column an amount lands in, and it isn't a column
         // of its own — so rappasoft has to be told to select it.
@@ -138,5 +140,38 @@ class FinanceTransactionsTable extends DataTableComponent
 
         return '<span class="fin-docs" title="'.$count.' attached">'
             .'<i class="fa-solid fa-paperclip"></i> '.$count.'</span>';
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteAbility(): ?string
+    {
+        return 'manage finance';
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'entry';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return $row->reference;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The entry and any invoice or receipt attached to it go for good, and the totals move.';
+    }
+
+    /** The rows cascade; the files on the private disk do not. */
+    protected function beforeDelete(Model $row): void
+    {
+        foreach ($row->documents as $document) {
+            Storage::disk('local')->delete($document->path);
+        }
     }
 }

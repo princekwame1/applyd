@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\EmailLog;
 use App\Services\EmailNotificationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -12,7 +14,8 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class EmailLogsTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = EmailLog::class;
 
@@ -101,5 +104,25 @@ class EmailLogsTable extends DataTableComponent
             $success ? 'success' : 'error',
             $success ? 'Email resent successfully' : 'Failed to resend email'
         ));
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'log entry';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return 'the email to '.$row->email;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The record of what was sent goes with it. The email itself has already been delivered and is unaffected.';
     }
 }

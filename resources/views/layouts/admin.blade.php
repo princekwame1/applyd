@@ -422,6 +422,8 @@
             });
         })();
     </script>
+    @include('partials.impersonation-banner')
+
     @stack('scripts')
 </body>
 </html>

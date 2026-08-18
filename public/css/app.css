@@ -3186,3 +3186,26 @@ details[open] > summary .sv-chevron { transform: rotate(90deg); color: var(--bra
 .plan-fee-note { font-size: .78rem; color: var(--ink-soft); margin: -4px 0 4px; }
 .plan-fee-note strong { color: var(--ink); }
 .tuition-total-sub { font-size: .87rem; color: var(--ink-soft); font-weight: 500; }
+
+/* Impersonation banner — visible on every layout while an admin is viewing as
+   somebody else. Charcoal rather than red: it is a state, not an error, and it
+   must not read as something having gone wrong. */
+.imp-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 250;
+  display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
+  padding: 10px 18px;
+  background: var(--ink); color: #fff;
+  font-size: .88rem; font-weight: 600;
+  box-shadow: 0 -6px 20px rgba(39, 40, 39, .28);
+}
+.imp-bar form { margin: 0; }
+.imp-bar-text strong { color: #fff; }
+.imp-bar-stop {
+  background: #fff; color: var(--ink); border: 0; cursor: pointer;
+  padding: 7px 14px; border-radius: 999px;
+  font-family: inherit; font-size: .82rem; font-weight: 700;
+}
+.imp-bar-stop:hover { background: var(--accent); color: #fff; }
+/* Keep the WhatsApp button clear of the bar while it is up. */
+.imp-bar ~ .wa-float, body:has(.imp-bar) .wa-float { bottom: 68px; }
+@media print { .imp-bar { display: none; } }

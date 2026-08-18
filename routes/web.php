@@ -29,6 +29,7 @@ use App\Http\Controllers\Dashboard\SurveyQuestionsController;
 use App\Http\Controllers\Dashboard\SurveysController;
 use App\Http\Controllers\Dashboard\TalentPoolController as DashboardTalentPoolController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
@@ -125,6 +126,12 @@ Route::get('/thank-you', [RegistrationController::class, 'thanks'])->name('regis
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Impersonation. Starting is admin-only and lives in the dashboard group
+// below; stopping is here, because the person pressing it is the account
+// being impersonated and may have no permissions at all.
+Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])
+    ->middleware('auth')->name('impersonate.stop');
 
 // Profile (any authenticated user)
 Route::middleware('auth')->group(function () {
@@ -289,6 +296,7 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
 
     Route::middleware('permission:manage users')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('dashboard.users');
+        Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'start'])->name('dashboard.users.impersonate');
         Route::post('/users', [UserController::class, 'store'])->name('dashboard.users.store');
         Route::get('/users/export', [UserController::class, 'export'])->name('dashboard.users.export');
         Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('dashboard.users.edit');

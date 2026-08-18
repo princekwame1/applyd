@@ -60,12 +60,12 @@
             <button type="button" class="btn btn-sm btn-brand" id="portalCopy">Copy sign-in link</button>
             <a class="btn btn-sm btn-outline" href="{{ App\Support\Portal::loginUrl() }}" target="_blank" rel="noopener">Open the portal</a>
         </div>
-        @unless (App\Support\Portal::configured())
+        @if (App\Support\Portal::pointsAtThisSite())
             <p class="error-box" style="margin-top:14px;">
-                <strong>PORTAL_URL isn't set</strong>, so links point at this site instead of the learning
-                portal — and a student can't sign in here. Set it in <code>.env</code> before sending.
+                <strong>PORTAL_URL points at this site</strong>, so students would be sent somewhere they
+                can't sign in. Point it at the learning portal in <code>.env</code> before sending.
             </p>
-        @endunless
+        @endif
     </div>
 </details>
 

@@ -17,4 +17,6 @@
             <i class="fa-solid fa-id-card"></i>
         </span>
     @endif
+
+    @include('dashboard.partials.row-delete', ['id' => $enrollment->id])
 </div>

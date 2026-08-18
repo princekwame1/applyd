@@ -9,6 +9,7 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class RecruiterPlansTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = RecruiterPlan::class;
@@ -20,7 +21,6 @@ class RecruiterPlansTable extends DataTableComponent
         $this->setDefaultSort('sort_order', 'asc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
         $this->setDefaultReorderSort('sort_order', 'asc');
         $this->setReorderEnabled();
     }
@@ -59,5 +59,20 @@ class RecruiterPlansTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.recruiter-plans.partials.actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'plan';
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Purchases already made keep their own copy of the name and credits, so they are unaffected.';
     }
 }

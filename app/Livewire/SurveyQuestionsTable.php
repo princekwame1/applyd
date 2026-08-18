@@ -6,12 +6,15 @@ use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Survey;
 use App\Models\SurveyQuestion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class SurveyQuestionsTable extends DataTableComponent
 {
+    use Concerns\WithRowDelete;
     use WithSkeletonLoader;
 
     protected $model = SurveyQuestion::class;
@@ -23,7 +26,6 @@ class SurveyQuestionsTable extends DataTableComponent
         $this->setDefaultSort('survey_id', 'asc');
         $this->setPerPageAccepted([25, 50]);
         $this->setPerPage(25);
-        $this->setBulkActionsDisabled();
     }
 
     public function builder(): Builder
@@ -90,5 +92,25 @@ class SurveyQuestionsTable extends DataTableComponent
                 ->format(fn ($value) => view('dashboard.surveys.partials.question-actions', ['id' => $value]))
                 ->html(),
         ];
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'question';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return Str::limit($row->prompt, 40);
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'Answers already collected for it are kept — they simply stop being shown.';
     }
 }

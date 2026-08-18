@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\SmsLog;
 use App\Services\SmsNotificationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
@@ -12,7 +14,8 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class SmsLogsTable extends DataTableComponent
 {
-    use \App\Livewire\Concerns\WithSkeletonLoader;
+    use Concerns\WithRowDelete;
+    use WithSkeletonLoader;
 
     protected $model = SmsLog::class;
 
@@ -83,7 +86,7 @@ class SmsLogsTable extends DataTableComponent
             return;
         }
 
-        $success = (new SmsNotificationService())->send(
+        $success = (new SmsNotificationService)->send(
             $log->phone_number,
             $log->message,
             $log->registration_id
@@ -101,5 +104,25 @@ class SmsLogsTable extends DataTableComponent
             $success ? 'success' : 'error',
             $success ? 'SMS retry sent successfully' : 'Failed to retry SMS'
         ));
+    }
+
+    public function bulkActions(): array
+    {
+        return ['deleteSelected' => 'Delete selected'];
+    }
+
+    protected function deleteNoun(): string
+    {
+        return 'log entry';
+    }
+
+    protected function deleteLabel(Model $row): string
+    {
+        return 'the SMS to '.$row->phone_number;
+    }
+
+    protected function deleteWarning(): string
+    {
+        return 'The record of what was sent goes with it. The message itself has already been delivered and is unaffected.';
     }
 }
