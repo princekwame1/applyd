@@ -115,4 +115,44 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Outgoing Rate Limit (cPanel)
+    |--------------------------------------------------------------------------
+    |
+    | Shared cPanel hosting caps how many messages an account may relay in an
+    | hour; go over it and the host rejects everything until the window moves.
+    | So mail is handed to the queue and released at this rate instead of being
+    | pushed out inline. Set it BELOW the allowance cPanel shows under "Email
+    | Deliverability" / your host's limits — the cost of being under is that a
+    | broadcast takes longer, the cost of being over is bounced mail.
+    |
+    | 0 disables the throttle entirely (still queued, just never held back).
+    |
+    */
+
+    'hourly_limit' => (int) env('MAIL_HOURLY_LIMIT', 100),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mail Queues
+    |--------------------------------------------------------------------------
+    |
+    | Transactional mail (a confirmation, a student's login) rides the first
+    | queue and a bulk broadcast the second, so a 500-recipient blast can never
+    | park itself in front of someone waiting to be let into the portal. The
+    | worker must be given both, in this order — see .env.example.
+    |
+    | 'retry_hours' bounds how long a message may sit being retried before it
+    | is written off as failed.
+    |
+    */
+
+    'queues' => [
+        'priority' => env('MAIL_QUEUE', 'emails'),
+        'bulk' => env('MAIL_QUEUE_BULK', 'emails-bulk'),
+    ],
+
+    'retry_hours' => (int) env('MAIL_RETRY_HOURS', 24),
+
 ];

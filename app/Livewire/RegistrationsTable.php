@@ -249,7 +249,9 @@ class RegistrationsTable extends DataTableComponent
 
         $this->toast(
             $success,
-            $success ? 'Email sent to '.$registration->email : 'Failed to send email — see Email Delivery'
+            $success
+                ? 'Email '.EmailNotificationService::verb().' — '.$registration->email
+                : 'Failed to send email — see Email Delivery'
         );
     }
 
@@ -262,7 +264,8 @@ class RegistrationsTable extends DataTableComponent
         $sent = 0;
 
         foreach ($registrations as $registration) {
-            if ($emails->sendRegistrationConfirmation($registration)) {
+            // Bulk queue — a batch of resends waits behind live transactional mail.
+            if ($emails->sendRegistrationConfirmation($registration, EmailNotificationService::BULK)) {
                 $sent++;
             }
         }
@@ -272,8 +275,8 @@ class RegistrationsTable extends DataTableComponent
         $this->toast(
             $failed === 0 && $sent > 0,
             $failed === 0
-                ? $sent.' email'.($sent === 1 ? '' : 's').' sent'
-                : $sent.' sent, '.$failed.' failed — see Email Delivery'
+                ? $sent.' email'.($sent === 1 ? '' : 's').' '.EmailNotificationService::verb()
+                : $sent.' '.EmailNotificationService::verb().', '.$failed.' failed — see Email Delivery'
         );
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\DeliverEmail;
 use App\Mail\TemplatedMail;
 use App\Models\EmailLog;
 use App\Models\EmailTemplate;
@@ -12,9 +13,16 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailNotificationService
 {
+    /** Queue name for a broadcast, so it can't hold up transactional mail. */
+    public const BULK = 'bulk';
+
     /**
-     * Send one email and log it. $payload keys: subject, body, heading,
-     * cta_label, cta_url — all already rendered.
+     * Log one email and hand it to the queue. $payload keys: subject, body,
+     * heading, cta_label, cta_url — all already rendered.
+     *
+     * True means "accepted for delivery", not "in their inbox" — the host's
+     * hourly limit decides when it actually leaves. Email Delivery is where
+     * the outcome shows up.
      *
      * @param  array{subject:string, body:string, heading?:?string, cta_label?:?string, cta_url?:?string}  $payload
      */
@@ -24,6 +32,7 @@ class EmailNotificationService
         ?int $registrationId = null,
         ?string $name = null,
         ?string $templateKey = null,
+        ?string $queue = null,
     ): bool {
         // Every email is logged, whether or not it is tied to a registration.
         $emailLog = EmailLog::create([
@@ -39,14 +48,57 @@ class EmailNotificationService
             'status' => 'pending',
         ]);
 
-        return $this->deliver($emailLog);
+        return $this->queue($emailLog, $queue);
+    }
+
+    /**
+     * Hand a logged email to the queue, where the throttle paces it out.
+     *
+     * With no queue configured (QUEUE_CONNECTION=sync, and every test) this
+     * sends inline exactly as it always did — a site without a worker must
+     * keep delivering mail rather than silently filling a table.
+     */
+    public function queue(EmailLog $emailLog, ?string $queue = null): bool
+    {
+        if (! static::isQueued()) {
+            return $this->deliver($emailLog);
+        }
+
+        $emailLog->update(['status' => 'queued', 'response' => null]);
+
+        DeliverEmail::dispatch($emailLog->id)->onQueue($this->queueName($queue));
+
+        return true;
+    }
+
+    /** Whether mail is being queued at all, or still going out inline. */
+    public static function isQueued(): bool
+    {
+        return config('queue.default') !== 'sync';
+    }
+
+    /**
+     * The word a flash message should use — mail that has been handed to the
+     * queue has not been sent yet, and saying so is the difference between an
+     * admin waiting and an admin sending it all over again.
+     */
+    public static function verb(): string
+    {
+        return static::isQueued() ? 'queued for delivery' : 'sent';
+    }
+
+    protected function queueName(?string $queue): string
+    {
+        return $queue === self::BULK
+            ? (string) config('mail.queues.bulk', 'emails-bulk')
+            : (string) config('mail.queues.priority', 'emails');
     }
 
     /**
      * Push an already-logged email out through the mailer and record the
      * outcome on the log row. Shared by first sends and resends.
      */
-    public function deliver(EmailLog $emailLog): bool
+    public function deliver(EmailLog $emailLog, bool $rethrow = false): bool
     {
         if (! config('mail.from.address')) {
             Log::warning('Email skipped: MAIL_FROM_ADDRESS not configured');
@@ -91,6 +143,12 @@ class EmailNotificationService
                 'response' => $e->getMessage(),
             ]);
 
+            // The queue wants the throw so it can retry with backoff; a web
+            // request wants it swallowed so a mail outage can't break the page.
+            if ($rethrow) {
+                throw $e;
+            }
+
             return false;
         }
     }
@@ -104,6 +162,7 @@ class EmailNotificationService
         array $variables,
         ?int $registrationId = null,
         ?string $name = null,
+        ?string $queue = null,
     ): bool {
         $template = EmailTemplate::resolve($key);
 
@@ -125,13 +184,14 @@ class EmailNotificationService
             $registrationId,
             $name,
             $key,
+            $queue,
         );
     }
 
     /**
      * Welcome/confirmation email that goes out right after a bootcamp signup.
      */
-    public function sendRegistrationConfirmation(Registration $registration): bool
+    public function sendRegistrationConfirmation(Registration $registration, ?string $queue = null): bool
     {
         return $this->sendTemplate(
             'registration_confirmation',
@@ -139,6 +199,7 @@ class EmailNotificationService
             $this->variablesFor($registration),
             $registration->id,
             $registration->full_name,
+            $queue,
         );
     }
 
@@ -148,14 +209,12 @@ class EmailNotificationService
      */
     public function resend(EmailLog $emailLog): bool
     {
-        $success = $this->deliver($emailLog);
-
         $emailLog->update([
             'retry_count' => $emailLog->retry_count + 1,
             'last_retry_at' => now(),
         ]);
 
-        return $success;
+        return $this->queue($emailLog);
     }
 
     /**

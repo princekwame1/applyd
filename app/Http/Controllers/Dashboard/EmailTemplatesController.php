@@ -127,7 +127,7 @@ class EmailTemplatesController extends Controller
         return back()->with(
             $success ? 'status' : 'error',
             $success
-                ? 'Test email sent to '.$validated['test_email'].'.'
+                ? 'Test email '.EmailNotificationService::verb().' — '.$validated['test_email'].'.'
                 : 'Test email failed — check Email Delivery for the error.'
         );
     }

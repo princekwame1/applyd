@@ -7,6 +7,7 @@ use App\Models\EmailTemplate;
 use App\Models\Registration;
 use App\Services\EmailNotificationService;
 use App\Support\Html;
+use App\Support\MailThrottle;
 use Illuminate\Http\Request;
 
 class BulkEmailController extends Controller
@@ -93,7 +94,17 @@ class BulkEmailController extends Controller
         foreach ($registrations as $registration) {
             $payload = $emails->renderTemplate($validated, $emails->variablesFor($registration));
 
-            if ($emails->send($registration->email, $payload, $registration->id, $registration->full_name, 'bulk_broadcast')) {
+            // Onto the bulk queue: a 500-recipient broadcast is paced out over
+            // hours by the host's limit and must not sit in front of a
+            // confirmation or a student's login.
+            if ($emails->send(
+                $registration->email,
+                $payload,
+                $registration->id,
+                $registration->full_name,
+                'bulk_broadcast',
+                EmailNotificationService::BULK,
+            )) {
                 $sent++;
             }
         }
@@ -102,9 +113,16 @@ class BulkEmailController extends Controller
 
         $request->session()->forget(self::SESSION_KEY);
 
+        // "Queued", not "sent": the host only accepts so many an hour, so a big
+        // broadcast leaves over the next few hours. Saying "sent" here is how
+        // an admin ends up sending the whole thing twice.
         $message = $failed === 0
-            ? $sent.' email'.($sent === 1 ? '' : 's').' sent.'
-            : $sent.' sent, '.$failed.' failed — check Email Delivery for the errors.';
+            ? $sent.' email'.($sent === 1 ? '' : 's').' '.EmailNotificationService::verb().'.'
+            : $sent.' '.EmailNotificationService::verb().', '.$failed.' failed — check Email Delivery for the errors.';
+
+        if ($failed === 0 && EmailNotificationService::isQueued() && MailThrottle::enabled()) {
+            $message .= ' They go out at up to '.MailThrottle::limit().' an hour — watch Email Delivery for progress.';
+        }
 
         // Always say so out loud: a silent drop looks like a delivery failure.
         if ($skipped > 0) {

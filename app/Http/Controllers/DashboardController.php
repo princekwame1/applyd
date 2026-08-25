@@ -10,6 +10,7 @@ use App\Models\Tool;
 use App\Models\User;
 use App\Services\EmailNotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
@@ -57,7 +58,7 @@ class DashboardController extends Controller
      * registrations from each. Grouped in SQL — `country` is a real column,
      * unlike `tools`. Keyed by country, biggest first.
      */
-    private function registrationsByCountry(): \Illuminate\Support\Collection
+    private function registrationsByCountry(): Collection
     {
         return Registration::query()
             ->selectRaw('country, count(*) as registrations')
@@ -88,7 +89,7 @@ class DashboardController extends Controller
         return back()->with(
             $success ? 'success' : 'error',
             $success
-                ? 'Confirmation email resent to '.$registration->email.'.'
+                ? 'Confirmation email '.EmailNotificationService::verb().' — '.$registration->email.'.'
                 : 'Could not send the email — check Email Delivery for the error.'
         );
     }

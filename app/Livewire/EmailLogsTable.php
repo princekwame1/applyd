@@ -79,6 +79,7 @@ class EmailLogsTable extends DataTableComponent
                     '' => 'All',
                     'sent' => 'Sent',
                     'failed' => 'Failed',
+                    'queued' => 'Queued',
                     'pending' => 'Pending',
                 ])
                 ->filter(fn (Builder $builder, string $value) => $builder->where('status', $value)),
@@ -102,7 +103,7 @@ class EmailLogsTable extends DataTableComponent
         $this->js(sprintf(
             "Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true,icon:'%s',title:'%s'})",
             $success ? 'success' : 'error',
-            $success ? 'Email resent successfully' : 'Failed to resend email'
+            $success ? 'Email '.EmailNotificationService::verb() : 'Failed to resend email'
         ));
     }
 
@@ -123,6 +124,6 @@ class EmailLogsTable extends DataTableComponent
 
     protected function deleteWarning(): string
     {
-        return 'The record of what was sent goes with it. The email itself has already been delivered and is unaffected.';
+        return 'The record of what was sent goes with it. Already delivered mail is unaffected — but deleting a Queued row cancels it before it leaves.';
     }
 }
