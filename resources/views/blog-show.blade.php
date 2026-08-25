@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
 @section('title', $post->title.' — Applyd Academy')
+@section('og_title', $post->title ?? '')
+@section('og_description', $post->display_excerpt ?? '')
+@section('og_image', $post->cover_image_url ?? '')
+@section('og_type', 'article')
+@push('social-meta')
+    <meta property="article:published_time" content="{{ ($post->published_at ?? $post->created_at)->toIso8601String() }}">
+    <meta property="article:author" content="{{ $post->author ?? 'Applyd Academy' }}">
+    @if ($post->category)
+        <meta property="article:section" content="{{ $post->category->name }}">
+    @endif
+@endpush
 
 @section('content')
 <article class="post">

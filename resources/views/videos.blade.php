@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('title', cms('videos', 'hero_title').' — Applyd Academy')
+@section('og_title', cms('videos', 'hero_title') ?? '')
+@section('og_description', strip_tags((string) cms_html('videos', 'hero_sub')))
 
 @section('content')
 <section class="page-hero">

@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('title', $course->title.' — Applyd Academy')
+@section('og_title', $course->title)
+@section('og_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) $course->description)), 160) ?: '')
+@section('og_image', $course->image_url ?? '')
 
 @section('content')
 <section class="page-hero course-hero">

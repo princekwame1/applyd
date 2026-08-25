@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('title', $opening->title.' at '.$opening->company->name.' — Applyd Academy')
+@section('og_title', $opening->title.' at '.$opening->company->name)
+@section('og_description', \Illuminate\Support\Str::limit(trim(strip_tags((string) $opening->description)), 160) ?: '')
+@section('og_image', $opening->company->logo_url ?? '')
 
 @section('content')
 <section class="alt job-detail-hero">

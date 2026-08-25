@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
@@ -18,9 +19,12 @@ class CourseEnrollment extends Model
         'amount_fee',
         'tuition_fee',
         'reference',
+        'pay_token',
         'student_id',
         'user_id',
         'credentials_sent_at',
+        'form_reminder_sent_at',
+        'tuition_reminder_sent_at',
         'serial_no',
         'pin',
         'status',
@@ -49,6 +53,8 @@ class CourseEnrollment extends Model
         'tuition_amount' => 'decimal:2',
         'tuition_paid_at' => 'datetime',
         'credentials_sent_at' => 'datetime',
+        'form_reminder_sent_at' => 'datetime',
+        'tuition_reminder_sent_at' => 'datetime',
     ];
 
     public function course(): BelongsTo
@@ -131,5 +137,80 @@ class CourseEnrollment extends Model
     public static function generatePin(): string
     {
         return (string) random_int(1000000000, 9999999999);
+    }
+
+    /**
+     * The handle the payment link is built from, minted on demand so a row
+     * created before this feature (or by a seeder) still gets a working link
+     * the first time someone reminds them.
+     */
+    public function payToken(): string
+    {
+        if (! $this->pay_token) {
+            // 12 lowercase alphanumerics: 36^12 combinations is far past
+            // guessable, and every character spent here is a character the
+            // 160-character reminder SMS does not get to use.
+            do {
+                $token = Str::lower(Str::random(12));
+            } while (static::where('pay_token', $token)->exists());
+
+            $this->forceFill(['pay_token' => $token])->save();
+        }
+
+        return $this->pay_token;
+    }
+
+    public function payUrl(): string
+    {
+        return route('enroll.pay', $this->payToken());
+    }
+
+    /** Money still owed on the application form itself. */
+    public function owesFormFee(): bool
+    {
+        return $this->status !== 'paid';
+    }
+
+    /**
+     * Money still owed on tuition. A course with no tuition is never owed, and
+     * neither is someone who has not paid the form fee yet — they get the form
+     * reminder instead, and reminding for both at once is just noise.
+     */
+    public function owesTuition(): bool
+    {
+        if ($this->owesFormFee()) {
+            return false;
+        }
+
+        if (! $this->course || ! $this->course->requiresTuition()) {
+            return false;
+        }
+
+        return $this->tuitionBalance() > 0;
+    }
+
+    public function scopeFormPaid(Builder $query): Builder
+    {
+        return $query->where('status', 'paid');
+    }
+
+    public function scopeFormUnpaid(Builder $query): Builder
+    {
+        return $query->where('status', '!=', 'paid');
+    }
+
+    public function scopeTuitionPaid(Builder $query): Builder
+    {
+        return $query->where('tuition_status', 'paid');
+    }
+
+    /**
+     * Everyone who has paid the form fee but still owes tuition. The balance
+     * itself depends on the course price, which is not a column here, so this
+     * narrows in SQL and the caller confirms with owesTuition().
+     */
+    public function scopeTuitionOutstanding(Builder $query): Builder
+    {
+        return $query->where('status', 'paid')->where('tuition_status', '!=', 'paid');
     }
 }

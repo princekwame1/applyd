@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Courses at Applyd Academy')
+@section('og_description', cms('courses', 'hero_sub') ?? '')
 
 @section('content')
 <section class="page-hero">

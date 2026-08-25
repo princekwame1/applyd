@@ -18,6 +18,31 @@
         </span>
     @endif
 
+    {{-- Payment chasers. Each is shown only when that money is actually owed:
+         a button you can press on someone who has already paid is a button
+         that eventually gets pressed. --}}
+    @if ($enrollment->owesFormFee())
+        <form method="POST" action="{{ route('dashboard.course-registrations.remind-form', $enrollment) }}"
+              data-confirm="Text {{ $enrollment->name }} on {{ $enrollment->phone }} a reminder to pay the {{ $enrollment->amount_label }} form fee? The message carries a link that re-opens their payment.">
+            @csrf
+            <button type="submit" title="Remind: form fee unpaid" aria-label="Send form-fee reminder by SMS">
+                <i class="fa-solid fa-comment-dollar"></i>
+            </button>
+        </form>
+    @elseif ($enrollment->owesTuition())
+        <form method="POST" action="{{ route('dashboard.course-registrations.remind-tuition', $enrollment) }}"
+              data-confirm="Text {{ $enrollment->name }} on {{ $enrollment->phone }} a reminder to pay their outstanding tuition of {{ App\Models\Course::money($enrollment->tuitionBalance()) }}?">
+            @csrf
+            <button type="submit" title="Remind: tuition outstanding" aria-label="Send tuition reminder by SMS">
+                <i class="fa-solid fa-comment-dollar"></i>
+            </button>
+        </form>
+    @else
+        <span title="Nothing outstanding" style="color:var(--ink-soft);">
+            <i class="fa-solid fa-comment-dollar"></i>
+        </span>
+    @endif
+
     @include('dashboard.partials.row-delete', [
         'id' => $enrollment->id,
         'title' => 'Delete '.$enrollment->name.'?',

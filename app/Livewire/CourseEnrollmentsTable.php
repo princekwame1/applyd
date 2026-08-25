@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\WithSkeletonLoader;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
+use App\Services\PaymentReminderService;
 use App\Services\StudentAccountService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,14 @@ class CourseEnrollmentsTable extends DataTableComponent
         $this->setDefaultSort('created_at', 'desc');
         $this->setPerPageAccepted([10, 25, 50]);
         $this->setPerPage(25);
+        // The "Reminded" column reads tuition_reminder_sent_at, which has no
+        // column of its own — without this it renders blank on every row.
+        $this->setAdditionalSelects([
+            'course_enrollments.tuition_reminder_sent_at',
+            'course_enrollments.tuition_status',
+            'course_enrollments.attendance_type',
+            'course_enrollments.pay_token',
+        ]);
     }
 
     public function builder(): Builder
@@ -36,9 +45,53 @@ class CourseEnrollmentsTable extends DataTableComponent
     public function filters(): array
     {
         return [
-            SelectFilter::make('Status')
-                ->options(['' => 'All', 'paid' => 'Paid', 'pending' => 'Pending', 'failed' => 'Failed'])
-                ->filter(fn (Builder $b, string $v) => $b->where('status', $v)),
+            // Named for the money it refers to, not 'Status': this screen now
+            // tracks two separate payments and 'Status' said nothing about which.
+            SelectFilter::make('Form fee', 'form_fee')
+                ->options([
+                    '' => 'All',
+                    'paid' => 'Paid',
+                    'unpaid' => 'Not paid (pending or failed)',
+                    'pending' => 'Pending',
+                    'failed' => 'Failed',
+                ])
+                ->filter(fn (Builder $b, string $v) => match ($v) {
+                    'paid' => $b->formPaid(),
+                    'unpaid' => $b->formUnpaid(),
+                    default => $b->where('status', $v),
+                }),
+
+            SelectFilter::make('Tuition', 'tuition')
+                ->options([
+                    '' => 'All',
+                    'paid' => 'Paid in full',
+                    'partial' => 'Part payment',
+                    'outstanding' => 'Form paid, tuition outstanding',
+                    'unpaid' => 'Nothing paid',
+                ])
+                ->filter(fn (Builder $b, string $v) => match ($v) {
+                    'paid' => $b->tuitionPaid(),
+                    'outstanding' => $b->tuitionOutstanding(),
+                    default => $b->where('tuition_status', $v),
+                }),
+
+            // "Who have we already chased?" — the question you ask before
+            // sending a second reminder to the same person.
+            SelectFilter::make('Reminders', 'reminders')
+                ->options([
+                    '' => 'All',
+                    'form_sent' => 'Form-fee reminder sent',
+                    'form_none' => 'Owes form fee, never reminded',
+                    'tuition_sent' => 'Tuition reminder sent',
+                    'tuition_none' => 'Owes tuition, never reminded',
+                ])
+                ->filter(fn (Builder $b, string $v) => match ($v) {
+                    'form_sent' => $b->whereNotNull('form_reminder_sent_at'),
+                    'form_none' => $b->formUnpaid()->whereNull('form_reminder_sent_at'),
+                    'tuition_sent' => $b->whereNotNull('tuition_reminder_sent_at'),
+                    'tuition_none' => $b->tuitionOutstanding()->whereNull('tuition_reminder_sent_at'),
+                    default => $b,
+                }),
 
             // The "who still needs their login?" question, which is the whole
             // reason someone opens this screen to resend.
@@ -74,7 +127,7 @@ class CourseEnrollmentsTable extends DataTableComponent
             Column::make('Amount', 'amount')
                 ->sortable()
                 ->format(fn ($value, $row) => e($row->amount_label)),
-            Column::make('Status', 'status')
+            Column::make('Form fee', 'status')
                 ->sortable()
                 ->format(fn ($value) => match ($value) {
                     'paid' => '<span class="badge badge-yes">Paid</span>',
@@ -115,6 +168,22 @@ class CourseEnrollmentsTable extends DataTableComponent
                     ? '<span title="'.e($value->format('M j, Y g:ia')).'">'.e($value->diffForHumans()).'</span>'
                     : '<span style="color:var(--ink-soft);">—</span>')
                 ->html(),
+            Column::make('Reminded', 'form_reminder_sent_at')
+                ->sortable()
+                ->format(function ($value, $row) {
+                    $bits = [];
+                    if ($value) {
+                        $bits[] = '<span title="Form fee reminded '.e($value->format('M j, Y g:ia')).'">Form: '.e($value->diffForHumans()).'</span>';
+                    }
+                    if ($row->tuition_reminder_sent_at) {
+                        $bits[] = '<span title="Tuition reminded '.e($row->tuition_reminder_sent_at->format('M j, Y g:ia')).'">Tuition: '.e($row->tuition_reminder_sent_at->diffForHumans()).'</span>';
+                    }
+
+                    return $bits
+                        ? '<span style="font-size:.78rem;line-height:1.4;display:block;">'.implode('<br>', $bits).'</span>'
+                        : '<span style="color:var(--ink-soft);">—</span>';
+                })
+                ->html(),
             Column::make('Reference', 'reference')->searchable(),
             Column::make('Actions', 'id')
                 ->format(fn ($value, $row) => view('dashboard.partials.enrollment-actions', ['enrollment' => $row]))
@@ -126,6 +195,8 @@ class CourseEnrollmentsTable extends DataTableComponent
     {
         return [
             'sendCredentialsSelected' => 'Send login details to selected',
+            'remindFormFeeSelected' => 'Send form-fee reminder to selected',
+            'remindTuitionSelected' => 'Send tuition reminder to selected',
             'deleteSelected' => 'Delete selected',
         ];
     }
@@ -195,6 +266,104 @@ class CourseEnrollmentsTable extends DataTableComponent
         }
 
         $this->toast($sent > 0, $sent > 0 ? $message : 'Nothing sent — '.$skipped.' skipped (registration not complete)');
+    }
+
+    public function remindFormFeeSelected(): void
+    {
+        $this->confirmReminder('form');
+    }
+
+    public function remindTuitionSelected(): void
+    {
+        $this->confirmReminder('tuition');
+    }
+
+    public function performRemindFormFeeSelected(): void
+    {
+        $this->performReminder('form');
+    }
+
+    public function performRemindTuitionSelected(): void
+    {
+        $this->performReminder('tuition');
+    }
+
+    protected function confirmReminder(string $kind): void
+    {
+        $count = count($this->getSelected());
+
+        if (! $count) {
+            $this->toast(false, 'Tick at least one student first');
+
+            return;
+        }
+
+        $noun = $kind === 'form' ? 'form-fee' : 'tuition';
+
+        $this->confirm(
+            'Send a '.$noun.' reminder to '.$count.' '.($count === 1 ? 'student' : 'students').'?',
+            'Anyone who does not owe this payment is skipped, so nobody who has already paid gets chased.',
+            $kind === 'form' ? 'performRemindFormFeeSelected' : 'performRemindTuitionSelected',
+        );
+    }
+
+    /**
+     * Send one kind of reminder to the ticked rows.
+     *
+     * Skipping is the important half: a reminder to someone who has already
+     * paid reads as "we lost your money", so the service refuses those and the
+     * count is reported back rather than quietly folded into the total.
+     */
+    protected function performReminder(string $kind): void
+    {
+        // Livewire methods are reachable over HTTP by anyone who can reach the
+        // component, so the admin-only route group is not the guard.
+        abort_unless($this->canManage(), 403);
+
+        $ids = array_map('intval', $this->getSelected());
+        $this->clearSelected();
+
+        if (! $ids) {
+            return;
+        }
+
+        $reminders = app(PaymentReminderService::class);
+        $sent = 0;
+        $skipped = 0;
+        $failed = 0;
+
+        foreach (CourseEnrollment::with('course')->whereIn('id', $ids)->get() as $enrollment) {
+            $owes = $kind === 'form' ? $enrollment->owesFormFee() : $enrollment->owesTuition();
+
+            if (! $owes) {
+                $skipped++;
+
+                continue;
+            }
+
+            try {
+                $ok = $kind === 'form'
+                    ? $reminders->sendFormFeeReminder($enrollment)
+                    : $reminders->sendTuitionReminder($enrollment);
+
+                $ok ? $sent++ : $failed++;
+            } catch (\Throwable $e) {
+                report($e);
+                $failed++;
+            }
+        }
+
+        $noun = $kind === 'form' ? 'Form-fee' : 'Tuition';
+        $parts = [$noun.' reminder sent to '.$sent.' '.($sent === 1 ? 'student' : 'students')];
+
+        if ($skipped) {
+            $parts[] = $skipped.' skipped (nothing owed)';
+        }
+        if ($failed) {
+            $parts[] = $failed.' failed to send';
+        }
+
+        $this->toast($sent > 0, implode(' · ', $parts));
     }
 
     protected function canManage(): bool

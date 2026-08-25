@@ -50,6 +50,10 @@ Route::get('/', [RegistrationController::class, 'landing'])->name('landing');
 Route::view('/about', 'about')->name('about');
 Route::get('/courses', [PageController::class, 'courses'])->name('courses');
 Route::get('/enroll/callback', [CourseEnrollmentController::class, 'callback'])->name('courses.enroll.callback');
+// Where every payment-reminder SMS points. Public and short on purpose:
+// it has to survive a 160-character message, and the token is the
+// credential — the same footing the Serial No and PIN are already on.
+Route::get('/pay/{token}', [CourseEnrollmentController::class, 'pay'])->name('enroll.pay');
 Route::post('/courses/{course}/register', [CourseEnrollmentController::class, 'store'])->name('courses.enroll.store');
 
 // Applicant portal (login with Serial No + PIN, then complete the application)
@@ -132,6 +136,16 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // being impersonated and may have no permissions at all.
 Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])
     ->middleware('auth')->name('impersonate.stop');
+
+// The escape hatch, on GET so it can be TYPED INTO THE ADDRESS BAR. The banner
+// carries the button, but a banner only exists on a page that renders a layout
+// — walk into a 403 or a 404 while impersonating (easy to do: an impersonated
+// student cannot enter /dashboard) and the button is nowhere on screen. This
+// URL works from anywhere, including an error page, and is the documented way
+// back. GET changing state is a deliberate trade: the worst a forged request
+// can do is hand an admin back their own account.
+Route::get('/impersonate/stop', [ImpersonationController::class, 'stop'])
+    ->middleware('auth')->name('impersonate.stop.get');
 
 // Profile (any authenticated user)
 Route::middleware('auth')->group(function () {
@@ -284,6 +298,8 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/course-registrations', [CourseEnrollmentController::class, 'adminIndex'])->name('dashboard.course-registrations');
     Route::get('/course-registrations/export', [CourseEnrollmentController::class, 'export'])->name('dashboard.course-registrations.export');
     Route::post('/course-registrations/{enrollment}/credentials', [CourseEnrollmentController::class, 'resendCredentials'])->name('dashboard.course-registrations.credentials');
+    Route::post('/course-registrations/{enrollment}/remind-form', [CourseEnrollmentController::class, 'remindFormFee'])->name('dashboard.course-registrations.remind-form');
+    Route::post('/course-registrations/{enrollment}/remind-tuition', [CourseEnrollmentController::class, 'remindTuition'])->name('dashboard.course-registrations.remind-tuition');
 
     Route::get('/blog', [PostController::class, 'index'])->name('dashboard.blog');
     Route::post('/blog', [PostController::class, 'store'])->name('dashboard.blog.store');

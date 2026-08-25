@@ -3209,3 +3209,59 @@ details[open] > summary .sv-chevron { transform: rotate(90deg); color: var(--bra
 /* Keep the WhatsApp button clear of the bar while it is up. */
 .imp-bar ~ .wa-float, body:has(.imp-bar) .wa-float { bottom: 68px; }
 @media print { .imp-bar { display: none; } }
+
+/* ---- Error pages -------------------------------------------------------- */
+/* Standalone: an error renders no layout, so these carry their own shell. */
+.err-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--bg-soft);
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+}
+.err-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 48px 40px;
+  text-align: center;
+}
+.err-code {
+  display: inline-block;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 14px;
+}
+.err-title { font-size: 1.7rem; font-weight: 800; line-height: 1.2; }
+.err-lead { margin-top: 12px; color: var(--ink-soft); line-height: 1.6; }
+.err-actions { margin-top: 28px; }
+
+/* The impersonation escape. Charcoal so it reads as a system message rather
+   than as part of the error itself. */
+.err-imp {
+  margin-top: 28px;
+  padding: 22px 20px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: #fff;
+}
+.err-imp-text { font-size: .9rem; line-height: 1.6; margin-bottom: 16px; }
+.err-imp-text strong { color: #fff; }
+
+@media (max-width: 560px) {
+  .err-card { padding: 34px 22px; }
+  .err-title { font-size: 1.35rem; }
+}
+/* The typed-address fallback, spelled out on the banner so it is learnable
+   before the moment it is needed. */
+.imp-bar-hint { font-size: .74rem; opacity: .72; white-space: nowrap; }
+.imp-bar-hint code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+@media (max-width: 700px) { .imp-bar-hint { display: none; } }

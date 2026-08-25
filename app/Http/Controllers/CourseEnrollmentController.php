@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\CourseEnrollmentsExport;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
+use App\Services\PaymentReminderService;
 use App\Services\SmsNotificationService;
 use App\Services\StudentAccountService;
 use App\Support\Paystack;
@@ -25,6 +26,12 @@ class CourseEnrollmentController extends Controller
                 'completed' => CourseEnrollment::whereNotNull('completed_at')->count(),
                 'form_revenue' => CourseEnrollment::where('status', 'paid')->sum('amount'),
                 'tuition_revenue' => CourseEnrollment::sum('tuition_amount'),
+                // The two payments this screen chases, counted separately —
+                // "paid" on its own never said which money was meant.
+                'form_paid' => CourseEnrollment::formPaid()->count(),
+                'form_unpaid' => CourseEnrollment::formUnpaid()->count(),
+                'tuition_paid' => CourseEnrollment::tuitionPaid()->count(),
+                'tuition_outstanding' => CourseEnrollment::tuitionOutstanding()->count(),
                 'credentials_sent' => CourseEnrollment::whereNotNull('credentials_sent_at')->count(),
                 // Finished registering but never got their login — the set the
                 // resend action exists for.
@@ -58,6 +65,131 @@ class CourseEnrollmentController extends Controller
         return back()->with('status', $result['reset']
             ? 'Sent — student ID '.$result['student_id'].' with a new temporary password. Any password issued before now no longer works.'
             : 'Sent — student ID '.$result['student_id'].'. They have already set their own password, so it was left alone.');
+    }
+
+    /**
+     * The destination of every payment-reminder SMS: one link per student that
+     * always lands them on whatever they still owe.
+     *
+     * Deliberately one route rather than two. A reminder is sent days before it
+     * is opened, and by then the student may have paid the form fee from the
+     * original tab — so what the link should do is decided when it is FOLLOWED,
+     * not when it was written.
+     *
+     * The token is the credential, the same way the Serial No and PIN are: both
+     * travel to the same phone by the same SMS and open the same application.
+     */
+    public function pay(Request $request, string $token)
+    {
+        $enrollment = CourseEnrollment::with('course')->where('pay_token', $token)->first();
+
+        abort_unless($enrollment, 404);
+
+        // Form fee outstanding: straight back to checkout for THIS row, so the
+        // registration they already started is the one that gets paid rather
+        // than a duplicate created by filling the form in again.
+        if ($enrollment->owesFormFee()) {
+            return $this->reopenFormFeeCheckout($enrollment);
+        }
+
+        // Form fee settled — sign them into their own application and let the
+        // page decide what is left: details to finish, or tuition to pay.
+        $request->session()->put('applicant_id', $enrollment->id);
+
+        return redirect()->route('application.complete');
+    }
+
+    /**
+     * Re-open Paystack for a form fee that was never paid.
+     *
+     * A fresh reference every time on purpose: Paystack ties a reference to one
+     * transaction attempt, and reusing the abandoned one is refused. `pay_token`
+     * is what keeps the texted link stable while the reference moves underneath.
+     */
+    protected function reopenFormFeeCheckout(CourseEnrollment $enrollment)
+    {
+        $course = $enrollment->course;
+
+        if (! $course) {
+            abort(404);
+        }
+
+        if (! Paystack::configured()) {
+            return redirect()->route('courses.show', $course)
+                ->with('enroll_error', 'Online payment is not available right now. Please contact us to complete your registration.');
+        }
+
+        // What they were quoted when they registered, not today's price — the
+        // fee may have been changed since, and this is a bill already issued.
+        $amount = (float) $enrollment->amount;
+        $charged = PaystackFees::gross($amount);
+        $reference = 'CRS-'.$course->id.'-'.strtoupper(Str::random(10));
+
+        $init = Paystack::initialize([
+            'email' => $enrollment->email,
+            'amount' => PaystackFees::pesewas($charged),
+            'currency' => config('services.paystack.currency', 'GHS'),
+            'reference' => $reference,
+            'callback_url' => route('courses.enroll.callback'),
+            'metadata' => [
+                'course_id' => $course->id,
+                'course_title' => $course->title,
+                'name' => $enrollment->name,
+                'phone' => $enrollment->phone,
+                'base_amount' => $amount,
+            ],
+        ]);
+
+        if (empty($init['status']) || empty($init['data']['authorization_url'])) {
+            return redirect()->route('courses.show', $course)
+                ->with('enroll_error', 'We could not re-open the payment. Please try again in a moment.');
+        }
+
+        // Only now that checkout is open: the callback finds the row by
+        // reference, so moving it before a failed init would strand the row.
+        $enrollment->update([
+            'reference' => $reference,
+            'amount_fee' => PaystackFees::fee($amount),
+            'status' => 'pending',
+        ]);
+
+        return redirect()->away($init['data']['authorization_url']);
+    }
+
+    /** Text one student a reminder to pay their application form fee. */
+    public function remindFormFee(Request $request, CourseEnrollment $enrollment, PaymentReminderService $reminders)
+    {
+        if (! $enrollment->owesFormFee()) {
+            return back()->with('error', $enrollment->name.' has already paid the form fee — nothing sent.');
+        }
+
+        $sent = $reminders->sendFormFeeReminder($enrollment);
+
+        return back()->with(
+            $sent ? 'status' : 'error',
+            $sent
+                ? 'Form-fee reminder sent to '.$enrollment->name.' on '.$enrollment->phone.'.'
+                : 'Could not send the reminder to '.$enrollment->name.'. Check SMS Delivery for the reason.'
+        );
+    }
+
+    /** Text one student a reminder to pay their outstanding tuition. */
+    public function remindTuition(Request $request, CourseEnrollment $enrollment, PaymentReminderService $reminders)
+    {
+        $enrollment->loadMissing('course');
+
+        if (! $enrollment->owesTuition()) {
+            return back()->with('error', $enrollment->name.' has no tuition outstanding — nothing sent.');
+        }
+
+        $sent = $reminders->sendTuitionReminder($enrollment);
+
+        return back()->with(
+            $sent ? 'status' : 'error',
+            $sent
+                ? 'Tuition reminder sent to '.$enrollment->name.' on '.$enrollment->phone.'.'
+                : 'Could not send the reminder to '.$enrollment->name.'. Check SMS Delivery for the reason.'
+        );
     }
 
     public function store(Request $request, Course $course)

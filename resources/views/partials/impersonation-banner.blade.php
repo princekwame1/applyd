@@ -15,5 +15,10 @@
             @csrf
             <button type="submit" class="imp-bar-stop">Stop impersonating</button>
         </form>
+
+        {{-- The typeable way back, for when the button is not on screen: an
+             error page renders no layout, so this banner is not there. Same
+             address on any page of the site. --}}
+        <span class="imp-bar-hint">or go to <code>{{ parse_url(route('impersonate.stop.get'), PHP_URL_PATH) }}</code></span>
     </div>
 @endif

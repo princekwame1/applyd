@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('title', ($activeCategory ? $activeCategory->name.' — ' : '').'Blog — Applyd Academy')
+@section('og_title', 'The Applyd Blog')
+@section('og_description', 'Practical marketing insights, tool guides, and career advice from our team.')
 
 @section('content')
 <section class="page-hero">
