@@ -67,8 +67,9 @@
                         @endif
                     </div>
 
-                    @if ($profile->headline)
-                        <p class="talent-headline">{{ $profile->headline }}</p>
+                    @php($headline = $unlocked ? $profile->headline : $profile->public_headline)
+                    @if ($headline)
+                        <p class="talent-headline">{{ $headline }}</p>
                     @endif
 
                     <div class="talent-tags">
@@ -77,8 +78,11 @@
                         @endforeach
                     </div>
 
-                    @if ($profile->summary)
-                        <p class="talent-summary">{{ Str::limit($profile->summary, 160) }}</p>
+                    {{-- Scrubbed BEFORE the trim, so a number cut off at 160 characters
+                         cannot survive as a half-visible run. --}}
+                    @php($summary = $unlocked ? $profile->summary : $profile->public_summary)
+                    @if ($summary)
+                        <p class="talent-summary">{{ Str::limit($summary, 160) }}</p>
                     @endif
 
                     <div class="talent-contact">

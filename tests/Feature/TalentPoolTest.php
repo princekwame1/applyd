@@ -211,6 +211,59 @@ class TalentPoolTest extends TestCase
             ->assertDontSee('+233241234567');
     }
 
+    /**
+     * The headline and summary are the only candidate-authored text on a locked
+     * card, which makes them the one route contact details have around the
+     * paywall — and the candidate is exactly who is motivated to use it.
+     */
+    public function test_a_locked_card_strips_contact_details_out_of_the_candidates_own_text(): void
+    {
+        $company = $this->company();
+        $this->job($company);
+
+        $this->candidate(['Information Technology'], [
+            'headline' => 'Backend dev, 4 years — reach me on 0244 123 456',
+            'summary' => 'Portfolio at kwame.dev, mail kwame@gmail.com or find me @kwamecodes.',
+        ]);
+
+        $response = $this->actingAs($company->user)->get(route('company.talent'))->assertOk();
+
+        $response->assertDontSee('0244 123 456')
+            ->assertDontSee('kwame@gmail.com')
+            ->assertDontSee('kwame.dev')
+            ->assertDontSee('@kwamecodes');
+
+        // What is left still describes the person — this hides a contact route,
+        // it does not blank the pitch.
+        $response->assertSee('Backend dev, 4 years')->assertSee('Portfolio at');
+    }
+
+    public function test_paying_reveals_the_text_exactly_as_the_candidate_wrote_it(): void
+    {
+        $company = $this->company();
+        $this->job($company);
+        $profile = $this->candidate(['Information Technology'], [
+            'headline' => 'Backend dev — 0244 123 456',
+        ]);
+        $this->giveCredits($company, 1);
+
+        $this->actingAs($company->user)->post(route('company.talent.unlock', $profile));
+
+        $this->actingAs($company->user)
+            ->get(route('company.talent'))
+            ->assertOk()
+            ->assertSee('0244 123 456');
+    }
+
+    public function test_masking_leaves_ordinary_numbers_alone(): void
+    {
+        // Years of experience and dates are the point of a headline; a rule
+        // that ate them would be worse than the leak it closes.
+        $this->assertSame('4 years, graduated 2019, top 100 of 2400', \App\Support\ContactMask::scrub('4 years, graduated 2019, top 100 of 2400'));
+        $this->assertFalse(\App\Support\ContactMask::carriesContact('Backend developer, 4 years'));
+        $this->assertTrue(\App\Support\ContactMask::carriesContact('Call 0244123456'));
+    }
+
     public function test_unlocking_the_same_candidate_twice_costs_one_credit(): void
     {
         $company = $this->company();

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ContactMask;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -81,5 +82,24 @@ class TalentProfile extends Model
         $initial = isset($parts[1]) ? ' '.Str::upper(Str::substr($parts[1], 0, 1)).'.' : '';
 
         return $first.$initial;
+    }
+
+    /**
+     * The headline and summary as a company that has NOT paid may see them.
+     *
+     * These two are the only candidate-authored text on a locked card, which
+     * makes them the one way contact details can cross the paywall — a phone
+     * number in the headline is worth exactly as much as the phone column, and
+     * costs nothing. `ContactMask` takes it back out. The raw attribute is what
+     * an unlocked card and the dashboard render; nothing is lost, only hidden.
+     */
+    public function getPublicHeadlineAttribute(): string
+    {
+        return ContactMask::scrub($this->headline);
+    }
+
+    public function getPublicSummaryAttribute(): string
+    {
+        return ContactMask::scrub($this->summary);
     }
 }
