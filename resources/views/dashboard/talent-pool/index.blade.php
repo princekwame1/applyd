@@ -21,10 +21,10 @@
     <div class="stat-card"><div class="num">{{ number_format($unlocks) }}</div><div class="lbl">Credits spent by recruiters</div></div>
 </div>
 
-<p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:660px;">
+{{-- <p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:660px;">
     CVs dropped at <a href="{{ route('talent.create') }}" target="_blank" rel="noopener">/talent-pool</a> without applying to a
     specific job. Recruiters see a candidate once they publish a job in a matching sector, and spend a credit to open the CV.
-</p>
+</p> --}}
 
 <div class="card">
     <livewire:talent-profiles-table />

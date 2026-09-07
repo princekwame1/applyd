@@ -7,10 +7,10 @@
     <div class="container center">
         <span class="page-eyebrow">Talent Pool</span>
         <h1 class="section-title">Nothing open that fits? Leave your CV anyway.</h1>
-        <p class="section-lead">
+        {{-- <p class="section-lead">
             Tell us the kind of work you're after and we'll keep your CV on file. When an employer posts a job
             in one of your sectors, you're already in the room.
-        </p>
+        </p> --}}
     </div>
 </section>
 

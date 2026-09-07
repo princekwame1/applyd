@@ -15,12 +15,12 @@
 @if (session('status'))
     <div class="success-box">{{ session('status') }}</div>
 @endif
-
+{{-- 
 <p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:660px;">
     What recruiters buy to open CVs from the talent pool. One credit opens one candidate, permanently.
     Credits never expire — a recruiter “expands their plan” by buying again, which simply adds more.
     Drag rows to set the order on the company pricing page.
-</p>
+</p> --}}
 
 <div class="card">
     <livewire:recruiter-plans-table />

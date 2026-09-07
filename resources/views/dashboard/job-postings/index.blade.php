@@ -6,7 +6,7 @@
 <div class="page-head">
     <div>
         <h1 class="section-title">Job Postings</h1>
-        <p style="color:var(--ink-soft);">Every advert employers have submitted, and whether it is on the public board.</p>
+        {{-- <p style="color:var(--ink-soft);">Every advert employers have submitted, and whether it is on the public board.</p> --}}
     </div>
     <a class="btn btn-sm btn-outline" href="{{ route('dashboard.job-postings.export') }}">Export Excel</a>
 </div>

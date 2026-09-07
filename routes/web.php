@@ -37,6 +37,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\JobBoardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionnaireFormController;
@@ -152,6 +153,14 @@ Route::get('/thank-you', [RegistrationController::class, 'thanks'])->name('regis
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Forgotten passwords. The `password_reset_tokens` table is shared with the
+// learning portal, so a link issued on either site resets the same account —
+// it is one account, and only the sign-in door differs.
+Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
+Route::post('/forgot-password', [PasswordResetController::class, 'email'])->name('password.email');
+Route::get('/reset-password/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
+Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 
 // Impersonation. Starting is admin-only and lives in the dashboard group
 // below; stopping is here, because the person pressing it is the account

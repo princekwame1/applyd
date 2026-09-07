@@ -17,8 +17,7 @@
 
 <p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:620px;">
     Recordings from past sessions, shown on the public
-    <a href="{{ route('videos') }}" target="_blank" rel="noopener">Session Videos</a> page and the home page.
-    Drag rows to change the order they appear in.
+    <a href="{{ route('videos') }}" target="_blank" rel="noopener">Session Videos</a> 
 </p>
 
 <div class="card">

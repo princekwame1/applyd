@@ -21,12 +21,12 @@
     <div class="stat-card"><div class="num">{{ number_format($creditsBought) }}</div><div class="lbl">Credits bought all time</div></div>
 </div>
 
-<p style="color:var(--ink-soft); margin:-6px 0 20px; max-width:640px;">
+{{-- <p style="color:var(--ink-soft); margin:-6px 0 20px; max-width:640px;">
     A plan opens the applicants who apply to your own job posts — reviewing them, and downloading their CVs,
     costs no credits however many you receive. Credits are for the talent pool: one credit opens one candidate's
     CV and contact details, for good. Credits never expire, and buying again simply adds to what you have —
     that's how you expand a plan.
-</p>
+</p> --}}
 
 @if (! $paymentsEnabled)
     <div class="error-box">Online payment isn't switched on yet. Contact us and we'll add credits to your account manually.</div>

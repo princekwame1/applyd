@@ -24,11 +24,11 @@
     <div class="stat-card"><div class="num">{{ number_format($rejected) }}</div><div class="lbl">Rejected</div></div>
 </div>
 
-<p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:680px;">
+{{-- <p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:680px;">
     We check the Ghana Card of every job poster before their adverts reach the public board. They can use their
     portal and write postings while they wait — verification gates what the public sees, not their account.
     Open a company to see the card, then verify or reject with a reason. Either way they get an email.
-</p>
+</p> --}}
 
 <livewire:companies-table />
 @endsection

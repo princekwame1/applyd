@@ -21,8 +21,7 @@
 
 <p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:660px;">
     Templates, guides and workbooks sold on the public
-    <a href="{{ route('shop') }}" target="_blank" rel="noopener">Shop</a> page. Uploaded files are private —
-    a buyer only reaches one through the order that paid for it. Drag rows to change the order they appear in.
+    <a href="{{ route('shop') }}" target="_blank" rel="noopener">Shop</a>
 </p>
 
 <div class="card">
