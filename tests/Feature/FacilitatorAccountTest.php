@@ -158,6 +158,27 @@ class FacilitatorAccountTest extends TestCase
         $this->assertNotNull($two->fresh()->credentials_sent_at);
     }
 
+    /** A send that failed must say so, not read as a delivery. */
+    public function test_a_failed_send_is_reported_rather_than_reading_as_sent(): void
+    {
+        $facilitator = $this->facilitator();
+
+        // No from address is what a half-configured mail block looks like, and
+        // EmailNotificationService records exactly that on the log row.
+        config(['mail.from.address' => null]);
+
+        $this->actingAs($this->admin())
+            ->from(route('dashboard.facilitators'))
+            ->post('/dashboard/facilitators/'.$facilitator->id.'/credentials')
+            ->assertRedirect(route('dashboard.facilitators'))
+            ->assertSessionHas('error');
+
+        $this->assertSame('failed', EmailLog::where('template_key', 'facilitator_credentials')->firstOrFail()->status);
+        // Still stamped: the question it answers is "have we tried?", and the
+        // outcome lives on the log.
+        $this->assertNotNull($facilitator->fresh()->credentials_sent_at);
+    }
+
     /* ---------------------------------------------------------------- SMS */
 
     /**

@@ -40,12 +40,10 @@ class FacilitatorController extends Controller
 
         $result = $this->accounts->create($data);
         $user = $result['user'];
+        $wanted = $request->boolean('send_credentials', true);
+        $sent = $wanted ? $this->accounts->notify($user, $result['password']) : null;
 
-        if ($request->boolean('send_credentials', true)) {
-            $this->accounts->notify($user, $result['password']);
-        }
-
-        return $this->modalOk($request, 'dashboard.facilitators', $this->createdMessage($result, $request->boolean('send_credentials', true)));
+        return $this->modalOk($request, 'dashboard.facilitators', $this->createdMessage($result, $sent));
     }
 
     public function edit(Request $request, User $facilitator)
@@ -88,6 +86,11 @@ class FacilitatorController extends Controller
         abort_unless($facilitator->isFacilitator(), 404);
 
         $result = $this->accounts->resendCredentials($facilitator);
+
+        if (! $result['sent']) {
+            return back()->with('error', $this->failureNote($facilitator, $result['reset']));
+        }
+
         $verb = EmailNotificationService::verb();
 
         return back()->with('status', $result['reset']
@@ -120,9 +123,25 @@ class FacilitatorController extends Controller
         return Excel::download(new FacilitatorsExport, 'facilitators-'.now()->format('Y-m-d').'.xlsx');
     }
 
-    private function createdMessage(array $result, bool $notified): string
+    /**
+     * A send that did not leave must never read as one that did — that is the
+     * difference between an admin who fixes it and an admin who waits.
+     */
+    private function failureNote(User $facilitator, bool $reset): string
+    {
+        return 'We could not email '.$facilitator->email.'. See Email Delivery for the reason.'
+            .($reset ? ' Their password was still reset, so send it again once that is fixed.' : '');
+    }
+
+    /** @param  bool|null  $notified  null when nothing was meant to go out. */
+    private function createdMessage(array $result, ?bool $notified): string
     {
         $name = $result['user']->name;
+
+        if ($notified === false) {
+            return $name.' was added, but we could not email '.$result['user']->email
+                .'. See Email Delivery for the reason, then use the paper-plane button to try again.';
+        }
 
         if (! $notified) {
             return $result['created']

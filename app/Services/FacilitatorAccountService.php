@@ -94,19 +94,24 @@ class FacilitatorAccountService
             ])->save();
         }
 
-        $this->notify($user, $password);
-
-        return ['sent' => true, 'reset' => $password !== null];
+        return ['sent' => $this->notify($user, $password), 'reset' => $password !== null];
     }
 
     /**
      * Email and SMS, each guarded so one failing cannot stop the other, and
      * neither can break the request that created the account.
+     *
+     * Returns whether the *email* was accepted for delivery, because that is
+     * the one the screen has to be honest about: an admin told "sent" when
+     * nothing left goes away and waits, and the facilitator never gets in.
+     * A false here means look at Email Delivery, where the reason is written.
      */
-    public function notify(User $user, ?string $password): void
+    public function notify(User $user, ?string $password): bool
     {
+        $emailed = false;
+
         try {
-            $this->email->sendTemplate(
+            $emailed = $this->email->sendTemplate(
                 'facilitator_credentials',
                 $user->email,
                 $this->variablesFor($user, $password),
@@ -125,7 +130,12 @@ class FacilitatorAccountService
             }
         }
 
+        // Stamped on the attempt, not on success: the question this column
+        // answers is "have we already tried this person?", and whether it
+        // landed lives on the email log.
         $user->forceFill(['credentials_sent_at' => now()])->save();
+
+        return $emailed;
     }
 
     /**

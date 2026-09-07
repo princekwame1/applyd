@@ -69,6 +69,9 @@
 @endsection
 
 @push('scripts')
+{{-- ApplydQr lives in this file, not the layout — without it the copy button
+     throws on click. Same include the course-registrations panel carries. --}}
+<script src="{{ asset('js/qr-share.js') }}"></script>
 <script>
 (function () {
     var copy = document.getElementById('portalCopy');
