@@ -23,9 +23,9 @@
     <p style="color: var(--ink-soft); font-size:.92rem; margin:0;">
         Mailer: <strong>{{ $mailer }}</strong> ·
         From: <strong>{{ $fromAddress ?: 'not configured' }}</strong>
-        @if ($mailer === 'log' || ! $fromAddress)
+        @if ($notLive)
             <span class="status-chip status-pending" style="margin-left:8px;">Not live</span>
-            <br><span style="font-size:.88rem;">Set the cPanel SMTP values (<code>MAIL_MAILER=smtp</code>, <code>MAIL_HOST</code>, <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code>) in <code>.env</code> to start delivering real email.</span>
+            <br><span style="font-size:.88rem;">{{ $notLive }}</span>
         @else
             <span class="status-chip status-sent" style="margin-left:8px;">Live</span>
         @endif

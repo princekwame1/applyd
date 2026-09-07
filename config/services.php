@@ -14,6 +14,21 @@ return [
     |
     */
 
+    /*
+    | Mailgun — the transactional mail relay. 'domain' is the *sending* domain
+    | as Mailgun spells it (the one whose DNS is verified), and 'secret' is the
+    | API key's secret, which Mailgun shows once when the key is created — the
+    | dashboard lists only the key id afterwards, so a lost secret is replaced,
+    | never recovered. EU accounts must set MAILGUN_ENDPOINT to the EU host:
+    | a key issued in one region is not valid in the other.
+    */
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

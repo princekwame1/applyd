@@ -22,11 +22,11 @@ class ContactController extends Controller
             . "Message:\n{$validated['message']}";
 
         Mail::raw($emailBody, function ($mail) use ($validated) {
-            // From has to stay on our own domain: the cPanel relay only accepts
-            // mail claiming to be from the mailbox it authenticated as, and
-            // answers anything else with 550 "domain … is not allowed in header
-            // From". The visitor goes in Reply-To instead, so hitting reply in
-            // the inbox still lands back on them.
+            // From has to stay on our own domain: Mailgun will only send as
+            // a domain it has verified, and a visitor's gmail.com in the From
+            // header is either refused outright or delivered as a forgery the
+            // receiving side distrusts. The visitor goes in Reply-To instead,
+            // so hitting reply in the inbox still lands back on them.
             $mail->to(config('mail.from.address'))
                 ->replyTo($validated['email'], $validated['name'])
                 ->subject("Contact Form: {$validated['subject']}");

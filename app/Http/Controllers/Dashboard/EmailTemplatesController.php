@@ -22,7 +22,39 @@ class EmailTemplatesController extends Controller
             'templates' => $templates,
             'mailer' => config('mail.default'),
             'fromAddress' => config('mail.from.address'),
+            // Why mail isn't going anywhere, or null if it is. A half-filled
+            // Mailgun block looks exactly like a working one from the outside
+            // — the mailer reads "mailgun" and nothing is sent — so name the
+            // missing piece rather than leaving an admin to guess.
+            'notLive' => $this->notLiveReason(),
         ]);
+    }
+
+    /**
+     * The one thing standing between this install and real delivery, in the
+     * order an admin would fix them.
+     */
+    protected function notLiveReason(): ?string
+    {
+        $mailer = config('mail.default');
+
+        if ($mailer === 'log' || $mailer === 'array') {
+            return 'Mail is only being written to the log. Set MAIL_MAILER=mailgun in .env.';
+        }
+
+        if (! config('mail.from.address')) {
+            return 'No sender address. Set MAIL_FROM_ADDRESS in .env.';
+        }
+
+        if ($mailer === 'mailgun' && ! config('services.mailgun.secret')) {
+            return 'Mailgun has no API key. Set MAILGUN_SECRET in .env (the key\'s secret, shown once when it was created).';
+        }
+
+        if ($mailer === 'mailgun' && ! config('services.mailgun.domain')) {
+            return 'Mailgun has no sending domain. Set MAILGUN_DOMAIN in .env to the verified domain.';
+        }
+
+        return null;
     }
 
     public function edit(string $key)
@@ -102,7 +134,7 @@ class EmailTemplatesController extends Controller
 
     /**
      * Fire a one-off copy at an address so the admin can eyeball it in a real
-     * inbox (and confirm the cPanel SMTP credentials work).
+     * inbox (and confirm the Mailgun credentials work).
      */
     public function test(Request $request, string $key)
     {

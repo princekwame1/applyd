@@ -12,9 +12,9 @@ class ContactFormTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * The cPanel relay answers 550 to anything whose From header isn't on the
-     * domain it authenticated as ("your domain gmail.com is not allowed in
-     * header From"), so a visitor's own address can only ever be Reply-To.
+     * Mailgun only sends as a domain it has verified, so a visitor's own
+     * address can only ever be Reply-To — putting it in From gets the message
+     * refused, or delivered as something the receiving side treats as forged.
      * Read off the array transport rather than Mail::fake(), which doesn't
      * record raw sends.
      */

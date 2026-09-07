@@ -71,6 +71,20 @@ class Company extends Model
         return max(0, $this->creditsBought() - $this->creditsUsed());
     }
 
+    /**
+     * Whether this company is on a plan — i.e. has ever settled a purchase.
+     *
+     * Deliberately "has bought", not "has credits left": reviewing the people
+     * who applied to your own job costs nothing, so a recruiter who spent
+     * every credit on the talent pool must not lose sight of their own
+     * applicants. An offline purchase entered by an admin counts the same as a
+     * Paystack one — it is the same settled row.
+     */
+    public function hasPlan(): bool
+    {
+        return $this->purchases()->paid()->exists();
+    }
+
     // ---------------------------------------------------------- talent access
 
     /**

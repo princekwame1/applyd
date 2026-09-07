@@ -100,7 +100,17 @@
                                 <span class="badge badge-no">Closed</span>
                             @endif
                         </td>
-                        <td><a href="{{ route('company.applications', $opening) }}">{{ $opening->applications_count }} {{ Str::plural('application', $opening->applications_count) }}</a></td>
+                        {{-- Always a link, plan or no plan: the count is what tells a
+                             recruiter there is something worth paying for, and the
+                             page itself sends them to the plans screen. --}}
+                        <td>
+                            <a class="app-count @if (! $hasPlan) is-locked @endif"
+                               href="{{ route('company.applications', $opening) }}"
+                               @if (! $hasPlan) title="Reviewing applicants needs a plan" @endif>
+                                {{ $opening->applications_count }} {{ Str::plural('application', $opening->applications_count) }}
+                                @if (! $hasPlan)<i class="fa-solid fa-lock" aria-hidden="true"></i>@endif
+                            </a>
+                        </td>
                         <td>
                             <div class="row-actions">
                                 <a href="{{ route('jobs.show', $opening) }}" target="_blank" title="View" aria-label="View"><i class="fa-solid fa-eye"></i></a>

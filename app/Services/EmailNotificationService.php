@@ -17,12 +17,13 @@ class EmailNotificationService
     public const BULK = 'bulk';
 
     /**
-     * Log one email and hand it to the queue. $payload keys: subject, body,
-     * heading, cta_label, cta_url — all already rendered.
+     * Log one email and send it. $payload keys: subject, body, heading,
+     * cta_label, cta_url — all already rendered.
      *
-     * True means "accepted for delivery", not "in their inbox" — the host's
-     * hourly limit decides when it actually leaves. Email Delivery is where
-     * the outcome shows up.
+     * True means "accepted for delivery", not "in their inbox": Mailgun took
+     * it, what happened next is on Email Delivery and in Mailgun's own logs.
+     * With mail.queue_enabled on it means only "queued", and nothing has left
+     * yet — which is why callers word flash messages with verb().
      *
      * @param  array{subject:string, body:string, heading?:?string, cta_label?:?string, cta_url?:?string}  $payload
      */
@@ -52,11 +53,12 @@ class EmailNotificationService
     }
 
     /**
-     * Hand a logged email to the queue, where the throttle paces it out.
+     * Send a logged email, or hand it to the queue if queueing is on.
      *
-     * With no queue configured (QUEUE_CONNECTION=sync, and every test) this
-     * sends inline exactly as it always did — a site without a worker must
-     * keep delivering mail rather than silently filling a table.
+     * Inline is the default (see mail.queue_enabled). Sending inline is also
+     * the fallback whenever the queue can't actually defer anything — a site
+     * with no worker must keep delivering rather than silently filling a
+     * table.
      */
     public function queue(EmailLog $emailLog, ?string $queue = null): bool
     {
@@ -71,10 +73,20 @@ class EmailNotificationService
         return true;
     }
 
-    /** Whether mail is being queued at all, or still going out inline. */
+    /**
+     * Whether mail is being queued at all, or going out inline.
+     *
+     * Two conditions, and both have to hold. `mail.queue_enabled` is the
+     * intent — off by default, because Mailgun has no hourly cap worth pacing
+     * and the queue was costing a worker and a delay for nothing. The
+     * `queue.default` check is the safety net: on 'sync' a dispatch runs the
+     * job inline anyway, so claiming mail was "queued for delivery" would be a
+     * lie told to an admin who then waits for something that already happened.
+     */
     public static function isQueued(): bool
     {
-        return config('queue.default') !== 'sync';
+        return config('mail.queue_enabled', false)
+            && config('queue.default') !== 'sync';
     }
 
     /**

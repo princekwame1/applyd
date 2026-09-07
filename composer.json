@@ -16,7 +16,9 @@
         "livewire/livewire": "^3.8",
         "maatwebsite/excel": "^3.1",
         "rappasoft/laravel-livewire-tables": "^3.8",
-        "spatie/laravel-permission": "^6.25"
+        "spatie/laravel-permission": "^6.25",
+        "symfony/http-client": "^7.0",
+        "symfony/mailgun-mailer": "^7.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

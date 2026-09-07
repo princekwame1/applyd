@@ -22,9 +22,10 @@
 </div>
 
 <p style="color:var(--ink-soft); margin:-6px 0 20px; max-width:640px;">
-    One credit opens one candidate's CV and contact details, for good. Credits never expire, and buying again
-    simply adds to what you have — that's how you expand a plan. Applications sent to your own job posts are
-    always free and don't touch your credits.
+    A plan opens the applicants who apply to your own job posts — reviewing them, and downloading their CVs,
+    costs no credits however many you receive. Credits are for the talent pool: one credit opens one candidate's
+    CV and contact details, for good. Credits never expire, and buying again simply adds to what you have —
+    that's how you expand a plan.
 </p>
 
 @if (! $paymentsEnabled)

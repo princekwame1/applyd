@@ -1382,6 +1382,15 @@ table.nice { width: 100%; border-collapse: collapse; background: #fff; min-width
 table.nice th, table.nice td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e2e8f0; }
 table.nice th { background: var(--ink); color: #fff; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; }
 table.nice tr:last-child td { border-bottom: none; }
+/* The applications count on /company. A bare inherited <a> in a table cell
+   reads as text, so it gets an explicit affordance — and a padlock when the
+   company is not on a plan, rather than looking dead when clicking is exactly
+   what should happen. */
+.app-count { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; color: var(--brand); text-decoration: none; border-bottom: 1.5px solid rgba(199, 58, 65, .3); padding-bottom: 1px; transition: all .15s ease; }
+.app-count:hover { border-bottom-color: var(--brand); }
+.app-count.is-locked { color: var(--ink-soft); border-bottom-color: transparent; }
+.app-count.is-locked:hover { color: var(--brand); }
+.app-count .fa-lock { font-size: .72em; opacity: .75; }
 
 /* ---------- Checklist ---------- */
 .check-list { list-style: none; display: grid; gap: 12px; }
@@ -2541,14 +2550,19 @@ footer a:hover { color: var(--accent); }
 .badge-yes { background: #d1fae5; color: var(--success); }
 .badge-no { background: var(--bg-soft); color: var(--ink-soft); }
 
-.pagination { display: flex; gap: 6px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+/* Pairs with resources/views/vendor/pagination/applyd.blade.php — flat
+   children, no nesting, so the state classes sit on the element itself. */
+.pagination { display: flex; gap: 6px; margin-top: 20px; flex-wrap: wrap; justify-content: center; align-items: center; }
 .pagination a, .pagination span {
-  padding: 10px 14px; border-radius: 8px; text-decoration: none;
-  background: #fff; border: 1.5px solid #e2e8f0; color: var(--ink); font-size: .9rem; font-weight: 500; transition: all .15s ease;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 42px; padding: 10px 14px; border-radius: 8px; text-decoration: none;
+  background: #fff; border: 1.5px solid #e2e8f0; color: var(--ink); font-size: .9rem; font-weight: 500; line-height: 1; transition: all .15s ease;
 }
-.pagination a:hover { border-color: var(--brand); color: var(--brand); }
-.pagination .active span { background: var(--brand); color: #fff; border-color: var(--brand); }
-.pagination .disabled span { opacity: .4; cursor: not-allowed; }
+.pagination a:hover { border-color: var(--brand); color: var(--brand); box-shadow: 0 2px 10px rgba(199, 58, 65, .15); }
+.pagination a:focus-visible { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px rgba(199, 58, 65, .25); }
+.pagination .is-active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.pagination .is-disabled { opacity: .4; cursor: not-allowed; }
+.pagination .is-gap { min-width: 0; padding: 10px 4px; background: transparent; border-color: transparent; color: var(--ink-soft); }
 .jobs-pagination { text-align: center; }
 
 .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }

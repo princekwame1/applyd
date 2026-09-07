@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ApplicationDocument;
 use App\Models\JobApplication;
 use App\Models\JobOpening;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -48,9 +49,31 @@ class CompanyApplicationController extends Controller
         return Storage::disk('local')->download($document->path, $document->original_name);
     }
 
+    /**
+     * Two gates, and every action in this controller goes through here —
+     * including the two download routes, which is the point: a paywall that
+     * only covers the list is decoration when the CV sits one guessable id
+     * away at /company/applications/{id}/cv.
+     */
     private function authorizeOpening(Request $request, JobOpening $opening): void
     {
-        abort_unless($opening->company_id === $request->user()->company->id, 403);
+        $company = $request->user()->company;
+
+        // Whose job it is. Wrong company is a 403, not a redirect — there is
+        // nothing to buy that would make it theirs.
+        abort_unless($opening->company_id === $company->id, 403);
+
+        // Whether they are on a plan. Posting a job is free and stays free;
+        // reviewing who applied is what a plan buys. Sent to the plans page
+        // rather than refused, because buying one is the way out.
+        if (! $company->hasPlan()) {
+            throw new HttpResponseException(
+                redirect()->route('company.plans')->with(
+                    'error',
+                    'Reviewing applicants needs a plan. Choose one below to open the people who applied to your jobs.',
+                )
+            );
+        }
     }
 
     private function authorizeApplication(Request $request, JobApplication $application): void

@@ -91,7 +91,7 @@ class RegistrationController extends Controller
 
         app(SmsNotificationService::class)->sendRegistrationConfirmation($fullPhone, $firstName, $registration->id);
 
-        // Confirmation email (cPanel SMTP). The service logs and swallows its own
+        // Confirmation email (Mailgun). The service logs and swallows its own
         // failures, so a mail outage can never break a registration.
         app(EmailNotificationService::class)->sendRegistrationConfirmation($registration);
 

@@ -25,10 +25,14 @@ class MailQueueTest extends TestCase
         MailThrottle::reset();
     }
 
-    /** Pretend a real queue connection is configured (the suite runs on sync). */
+    /**
+     * Turn queued mail on for one test: the flag that opts into it, plus a
+     * real queue connection (the suite runs on sync). Both are required —
+     * see EmailNotificationService::isQueued().
+     */
     protected function withQueue(): void
     {
-        config(['queue.default' => 'database']);
+        config(['mail.queue_enabled' => true, 'queue.default' => 'database']);
     }
 
     protected function registration(array $overrides = []): Registration

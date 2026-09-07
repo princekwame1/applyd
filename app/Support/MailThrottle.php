@@ -5,9 +5,9 @@ namespace App\Support;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * How many emails the host will still accept this hour.
+ * How many emails Mailgun will still accept this hour.
  *
- * cPanel counts messages over a *rolling* sixty minutes, so this keeps the
+ * A provider's limit is measured over a *rolling* window, so this keeps the
  * timestamp of every send in the last hour rather than a counter in a fixed
  * bucket: a fixed hourly bucket lets 2x the limit through across a boundary
  * (a full allowance at :59 and another at :01), which is exactly the burst

@@ -32,9 +32,17 @@
         @else
             <div class="mailq-note">
                 Email is queued and released at up to {{ $queue['limit'] > 0 ? number_format($queue['limit']).' an hour' : 'full speed' }},
-                so a large send can't trip the host's sending limit. Statuses move Queued → Sent on their own.
+                so a large send can't trip Mailgun's sending limit. Statuses move Queued → Sent on their own.
             </div>
         @endif
+    </div>
+@else
+    <div class="mailq">
+        <div class="mailq-note">
+            Email is sent as soon as the action that triggers it happens — a row here
+            reads Sent or Failed straight away, with no worker in between. Resend any
+            that failed.
+        </div>
     </div>
 @endif
 

@@ -15,6 +15,9 @@ class CompanyController extends Controller
         return view('company.index', [
             'company' => $company,
             'openings' => $company->openings()->withCount('applications')->latest()->get(),
+            // Drives the padlock on the applications count. The count itself
+            // stays visible either way — hiding it would hide the reason to buy.
+            'hasPlan' => $company->hasPlan(),
         ]);
     }
 

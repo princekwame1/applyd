@@ -37,6 +37,19 @@ return [
 
     'mailers' => [
 
+        /*
+         * Mailgun's HTTP API, not SMTP: one HTTPS request per message, so a
+         * blocked outbound port 465/587 (common on shared hosting) can't stop
+         * mail, and a rejection comes back as a readable error instead of an
+         * SMTP code. Credentials live in config/services.php ('mailgun').
+         */
+        'mailgun' => [
+            'transport' => 'mailgun',
+            // 'client' => [
+            //     'timeout' => 5,
+            // ],
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
@@ -82,7 +95,7 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
-                'smtp',
+                'mailgun',
                 'log',
             ],
             'retry_after' => 60,
@@ -117,15 +130,41 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Outgoing Rate Limit (cPanel)
+    | Queue Mail Instead of Sending Inline
     |--------------------------------------------------------------------------
     |
-    | Shared cPanel hosting caps how many messages an account may relay in an
-    | hour; go over it and the host rejects everything until the window moves.
-    | So mail is handed to the queue and released at this rate instead of being
-    | pushed out inline. Set it BELOW the allowance cPanel shows under "Email
-    | Deliverability" / your host's limits — the cost of being under is that a
-    | broadcast takes longer, the cost of being over is bounced mail.
+    | Off: an email is handed to Mailgun during the request that caused it, and
+    | the log row is 'sent' or 'failed' by the time the page renders. This is
+    | the setting the site runs on — the queue existed to pace the old cPanel
+    | relay's hourly cap, and Mailgun's API has no cap worth pacing at this
+    | volume, so the queue was buying a worker, a cron line and a delay for
+    | nothing.
+    |
+    | On (with QUEUE_CONNECTION not 'sync'): back to queued delivery, throttled
+    | by 'hourly_limit' below and drained by the worker in routes/console.php.
+    | Turn it on if a broadcast ever gets big enough that sending it inside one
+    | HTTP request would hit the server's max_execution_time — a few hundred
+    | recipients is where that starts to matter.
+    |
+    */
+
+    'queue_enabled' => filter_var(env('MAIL_QUEUE_ENABLED', false), FILTER_VALIDATE_BOOL),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Outgoing Rate Limit
+    |--------------------------------------------------------------------------
+    |
+    | Only consulted while 'queue_enabled' is on — inline sends never touch it.
+    |
+    | Mailgun rate-limits by plan and answers anything past it with 429, so
+    | mail is handed to the queue and released at this rate instead of being
+    | pushed out inline. Mailgun's ceiling is far higher than the cPanel relay
+    | this replaced, but a trial account is capped hard (a few hundred a day)
+    | and a new sending domain should be warmed up rather than opened with a
+    | 500-recipient blast — so the throttle stays, set BELOW the plan's limit.
+    | The cost of being under is that a broadcast takes longer; the cost of
+    | being over is throttled, then bounced, mail.
     |
     | 0 disables the throttle entirely (still queued, just never held back).
     |
