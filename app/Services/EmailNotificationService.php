@@ -307,6 +307,19 @@ class EmailNotificationService
             ];
         }
 
+        if ($key === 'facilitator_credentials') {
+            return [
+                'first_name' => 'Kwame',
+                'full_name' => 'Kwame Boateng',
+                'email' => 'kwame.boateng@example.com',
+                'temp_password' => 'R4KQ7MTXVP',
+                'password_line' => 'Temporary password: R4KQ7MTXVP',
+                'login_url' => Portal::loginUrl(),
+                'site_name' => (string) config('app.name'),
+                'site_url' => (string) config('app.url'),
+            ];
+        }
+
         if ($key === 'product_delivery') {
             return [
                 'first_name' => 'Ama',

@@ -75,6 +75,38 @@ return [
             ],
         ],
 
+        'facilitator_credentials' => [
+            'label' => 'Facilitator portal login',
+            'description' => 'Sent when a facilitator account is created on /dashboard/facilitators, and again by the "Resend login details" button. It carries the temporary password for the learning portal, where their classes, registers and marking live.',
+            'audience' => 'Facilitators / instructors',
+            'subject' => 'Your facilitator login for {{ site_name }}',
+            'heading' => "Welcome aboard, {{ first_name }}",
+            'body' => <<<'HTML'
+                <p>Hi {{ first_name }},</p>
+                <p>You have been set up as a facilitator on {{ site_name }}. Everything you need for teaching lives in the learning portal: your classes, the timetable, attendance registers, course materials, assignments and marking.</p>
+                <ul>
+                    <li>Sign in with: {{ email }}</li>
+                    <li>{{ password_line }}</li>
+                </ul>
+                <p>Please set your own password as soon as you sign in. You will be asked for one before you go any further.</p>
+                <p>If a class you expect to see is missing, tell the academy office and they will add you to it.</p>
+                HTML,
+            'cta_label' => 'Sign in to the portal',
+            'cta_url' => '{{ login_url }}',
+            // Its own list: a facilitator has no student ID and no course
+            // registration, so the student tokens would only mislead.
+            'placeholders' => [
+                'first_name' => "Facilitator's first name",
+                'full_name' => 'Full name as recorded',
+                'email' => 'Email address, which is also their username',
+                'temp_password' => 'The temporary password (blank if they already had an account)',
+                'password_line' => 'A ready-made line: the temporary password, or a note to use their existing one',
+                'login_url' => 'Learning portal sign-in URL',
+                'site_name' => 'Site name (APP_NAME)',
+                'site_url' => 'Site URL (APP_URL)',
+            ],
+        ],
+
         // ------------------------------------------------ job board: companies
 
         'company_registered' => [

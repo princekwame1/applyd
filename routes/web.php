@@ -20,6 +20,7 @@ use App\Http\Controllers\Dashboard\FinanceController;
 use App\Http\Controllers\Dashboard\FinanceDocumentController;
 use App\Http\Controllers\Dashboard\CompanyReviewController;
 use App\Http\Controllers\Dashboard\DigitalProductController;
+use App\Http\Controllers\Dashboard\FacilitatorController;
 use App\Http\Controllers\Dashboard\JobPostingReviewController;
 use App\Http\Controllers\Dashboard\PlanPurchaseController;
 use App\Http\Controllers\Dashboard\ProductOrderController;
@@ -309,6 +310,16 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/courses/{course}/edit', [CourseController::class, 'edit'])->name('dashboard.courses.edit');
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('dashboard.courses.destroy');
+
+    // Facilitators. Accounts and portal access only — what they teach (classes,
+    // registers, marking) belongs to the learning portal and is set up there.
+    Route::get('/facilitators', [FacilitatorController::class, 'index'])->name('dashboard.facilitators');
+    Route::post('/facilitators', [FacilitatorController::class, 'store'])->name('dashboard.facilitators.store');
+    Route::get('/facilitators/export', [FacilitatorController::class, 'export'])->name('dashboard.facilitators.export');
+    Route::get('/facilitators/{facilitator}/edit', [FacilitatorController::class, 'edit'])->name('dashboard.facilitators.edit');
+    Route::put('/facilitators/{facilitator}', [FacilitatorController::class, 'update'])->name('dashboard.facilitators.update');
+    Route::post('/facilitators/{facilitator}/credentials', [FacilitatorController::class, 'resendCredentials'])->name('dashboard.facilitators.credentials');
+    Route::delete('/facilitators/{facilitator}', [FacilitatorController::class, 'revoke'])->name('dashboard.facilitators.revoke');
 
     Route::get('/recruiter-plans', [RecruiterPlanController::class, 'index'])->name('dashboard.recruiter-plans');
     Route::post('/recruiter-plans', [RecruiterPlanController::class, 'store'])->name('dashboard.recruiter-plans.store');
