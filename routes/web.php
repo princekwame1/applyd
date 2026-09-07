@@ -18,7 +18,11 @@ use App\Http\Controllers\Dashboard\EmailTemplatesController;
 use App\Http\Controllers\Dashboard\FinanceCategoryController;
 use App\Http\Controllers\Dashboard\FinanceController;
 use App\Http\Controllers\Dashboard\FinanceDocumentController;
+use App\Http\Controllers\Dashboard\CompanyReviewController;
+use App\Http\Controllers\Dashboard\DigitalProductController;
+use App\Http\Controllers\Dashboard\JobPostingReviewController;
 use App\Http\Controllers\Dashboard\PlanPurchaseController;
+use App\Http\Controllers\Dashboard\ProductOrderController;
 use App\Http\Controllers\Dashboard\QuestionnaireController;
 use App\Http\Controllers\Dashboard\QuestionnaireQuestionController;
 use App\Http\Controllers\Dashboard\QuestionnaireResponseController;
@@ -39,6 +43,7 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SessionVideoController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\TalentPoolController;
 use App\Http\Controllers\ToolController;
@@ -89,6 +94,22 @@ Route::get('/forms/{questionnaire}/thanks', [QuestionnaireFormController::class,
 Route::get('/jobs', [JobBoardController::class, 'index'])->name('jobs');
 Route::get('/jobs/{opening}', [JobBoardController::class, 'show'])->name('jobs.show');
 Route::post('/jobs/{opening}/apply', [JobBoardController::class, 'apply'])->name('jobs.apply');
+
+// Shop — digital products, bought without an account.
+//
+// `callback` is declared before the {product:slug} wildcard so no product can
+// ever shadow it, and like every other Paystack return it sits outside auth:
+// verifying a payment must not depend on a session still being alive.
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/shop/callback', [ShopController::class, 'callback'])->name('shop.callback');
+Route::get('/shop/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
+Route::post('/shop/{product:slug}/buy', [ShopController::class, 'checkout'])->name('shop.checkout');
+
+// The buyer's download. Public on purpose: there is no account behind a
+// purchase, so the token in the link IS the credential — the same footing the
+// payment-reminder link and the applicant's Serial No are already on.
+Route::get('/downloads/{token}', [ShopController::class, 'download'])->name('shop.download');
+Route::get('/downloads/{token}/file', [ShopController::class, 'file'])->name('shop.download.file');
 
 // Talent pool — drop a CV without applying to a specific job
 Route::get('/talent-pool', [TalentPoolController::class, 'create'])->name('talent.create');
@@ -267,6 +288,21 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::put('/videos/{video}', [SessionVideoController::class, 'update'])->name('dashboard.videos.update');
     Route::delete('/videos/{video}', [SessionVideoController::class, 'destroy'])->name('dashboard.videos.destroy');
 
+    // Digital products + what they have sold. `export` is declared before the
+    // {product} wildcard so the word can't be read as a slug.
+    Route::get('/products', [DigitalProductController::class, 'index'])->name('dashboard.products');
+    Route::post('/products', [DigitalProductController::class, 'store'])->name('dashboard.products.store');
+    Route::get('/products/export', [DigitalProductController::class, 'export'])->name('dashboard.products.export');
+    Route::get('/products/{product}/edit', [DigitalProductController::class, 'edit'])->name('dashboard.products.edit');
+    Route::put('/products/{product}', [DigitalProductController::class, 'update'])->name('dashboard.products.update');
+    Route::delete('/products/{product}', [DigitalProductController::class, 'destroy'])->name('dashboard.products.destroy');
+
+    Route::get('/product-orders', [ProductOrderController::class, 'index'])->name('dashboard.product-orders');
+    Route::get('/product-orders/export', [ProductOrderController::class, 'export'])->name('dashboard.product-orders.export');
+    Route::get('/product-orders/{order}', [ProductOrderController::class, 'show'])->name('dashboard.product-orders.show');
+    Route::post('/product-orders/{order}/resend', [ProductOrderController::class, 'resend'])->name('dashboard.product-orders.resend');
+    Route::post('/product-orders/{order}/mark-paid', [ProductOrderController::class, 'markPaid'])->name('dashboard.product-orders.mark-paid');
+
     Route::get('/courses', [CourseController::class, 'index'])->name('dashboard.courses');
     Route::post('/courses', [CourseController::class, 'store'])->name('dashboard.courses.store');
     Route::get('/courses/export', [CourseController::class, 'export'])->name('dashboard.courses.export');
@@ -284,6 +320,22 @@ Route::middleware(['auth', 'role:admin|super'])->prefix('dashboard')->group(func
     Route::get('/plan-purchases', [PlanPurchaseController::class, 'index'])->name('dashboard.plan-purchases');
     Route::get('/plan-purchases/export', [PlanPurchaseController::class, 'export'])->name('dashboard.plan-purchases.export');
     Route::post('/plan-purchases/grant', [PlanPurchaseController::class, 'grant'])->name('dashboard.plan-purchases.grant');
+
+    // Job poster identification + posting approval. Two queues, deliberately
+    // separate: a verified employer can still post something that shouldn't
+    // run, and a good posting may just be waiting on the other queue.
+    Route::get('/companies', [CompanyReviewController::class, 'index'])->name('dashboard.companies');
+    Route::get('/companies/export', [CompanyReviewController::class, 'export'])->name('dashboard.companies.export');
+    Route::get('/companies/{company}', [CompanyReviewController::class, 'show'])->name('dashboard.companies.show');
+    Route::post('/companies/{company}/approve', [CompanyReviewController::class, 'approve'])->name('dashboard.companies.approve');
+    Route::post('/companies/{company}/reject', [CompanyReviewController::class, 'reject'])->name('dashboard.companies.reject');
+    Route::post('/companies/{company}/resend', [CompanyReviewController::class, 'resendRegistration'])->name('dashboard.companies.resend');
+
+    Route::get('/job-postings', [JobPostingReviewController::class, 'index'])->name('dashboard.job-postings');
+    Route::get('/job-postings/export', [JobPostingReviewController::class, 'export'])->name('dashboard.job-postings.export');
+    Route::get('/job-postings/{opening}', [JobPostingReviewController::class, 'show'])->name('dashboard.job-postings.show');
+    Route::post('/job-postings/{opening}/approve', [JobPostingReviewController::class, 'approve'])->name('dashboard.job-postings.approve');
+    Route::post('/job-postings/{opening}/reject', [JobPostingReviewController::class, 'reject'])->name('dashboard.job-postings.reject');
 
     Route::get('/talent-pool', [DashboardTalentPoolController::class, 'index'])->name('dashboard.talent-pool');
     Route::get('/talent-pool/export', [DashboardTalentPoolController::class, 'export'])->name('dashboard.talent-pool.export');

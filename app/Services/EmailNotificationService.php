@@ -307,6 +307,21 @@ class EmailNotificationService
             ];
         }
 
+        if ($key === 'product_delivery') {
+            return [
+                'first_name' => 'Ama',
+                'full_name' => 'Ama Mensah',
+                'email' => 'ama.mensah@example.com',
+                'product_title' => 'Social Media Content Calendar (Excel)',
+                'amount' => 'GHS 50.00',
+                'reference' => 'DP-8F2QK7XM4RTC',
+                'download_url' => url('/downloads/'.str_repeat('x', 12)),
+                'purchased_at' => now()->format('F j, Y'),
+                'site_name' => (string) config('app.name'),
+                'site_url' => (string) config('app.url'),
+            ];
+        }
+
         return [
             'first_name' => 'Ama',
             'full_name' => 'Ama Mensah',

@@ -50,16 +50,26 @@ class JobBoardController extends Controller
         ]);
     }
 
+    /**
+     * A posting nobody has approved is not public, and neither is one from a
+     * company we have not identified — the index scope already knows that, so
+     * the detail page has to as well or the advert is one guessed id away.
+     * 404, not 403: to the outside world it simply isn't there.
+     */
     public function show(JobOpening $opening)
     {
         $opening->load('company');
+
+        abort_unless($opening->isApproved() && $opening->company?->isApproved(), 404);
 
         return view('jobs.show', compact('opening'));
     }
 
     public function apply(Request $request, JobOpening $opening)
     {
-        abort_unless($opening->is_accepting, 404);
+        // is_live, not is_accepting: both approvals as well as the recruiter's
+        // own switch and deadline. An unapproved advert must not collect CVs.
+        abort_unless($opening->is_live, 404);
 
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],

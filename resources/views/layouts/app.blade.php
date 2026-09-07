@@ -26,6 +26,7 @@
                 <li><a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About Us</a></li>
                 <li><a href="{{ route('jobs') }}" class="{{ request()->routeIs('jobs') ? 'active' : '' }}">Jobs</a></li>
                 <li><a href="{{ route('courses') }}" class="{{ request()->routeIs('courses') ? 'active' : '' }}">Courses</a></li>
+                <li><a href="{{ route('shop') }}" class="{{ request()->routeIs('shop*') ? 'active' : '' }}">Shop</a></li>
                 <li><a href="{{ route('videos') }}" class="{{ request()->routeIs('videos') ? 'active' : '' }}">Videos</a></li>
                 <li><a href="{{ route('blog') }}" class="{{ request()->routeIs('blog*') ? 'active' : '' }}">Blog</a></li>
                 <li><a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">Contact Us</a></li>
@@ -83,6 +84,7 @@
                     <li><a href="{{ route('jobs') }}">Jobs</a></li>
                     <li><a href="{{ route('talent.create') }}">Drop your CV</a></li>
                     <li><a href="{{ route('courses') }}">Courses</a></li>
+                    <li><a href="{{ route('shop') }}">Shop</a></li>
                     <li><a href="{{ route('videos') }}">Videos</a></li>
                     <li><a href="{{ route('blog') }}">Blog</a></li>
                     <li><a href="{{ route('landing') }}#register">Register</a></li>

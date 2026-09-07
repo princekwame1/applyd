@@ -28,6 +28,17 @@
                     <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}" required>
                     @error('company_name') <div class="field-error">{{ $message }}</div> @enderror
                 </div>
+                <div>
+                    <label class="field-label" for="ghana_card">Ghana Card Number <span class="req">*</span></label>
+                    <input type="text" id="ghana_card" name="ghana_card" value="{{ old('ghana_card') }}"
+                           placeholder="GHA-123456789-0" autocomplete="off" required
+                           inputmode="text" maxlength="30">
+                    <p class="field-hint" style="color:var(--ink-soft); font-size:.85rem; margin:6px 0 0;">
+                        The card of the person posting the jobs. We check it before your adverts reach the public
+                        board — it is what keeps fake employers off the site. It is never shown to candidates.
+                    </p>
+                    @error('ghana_card') <div class="field-error">{{ $message }}</div> @enderror
+                </div>
                 <div class="form-grid">
                     <div>
                         <label class="field-label" for="website">Website</label>

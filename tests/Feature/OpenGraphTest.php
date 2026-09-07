@@ -95,9 +95,12 @@ class OpenGraphTest extends TestCase
 
     public function test_job_without_a_company_logo_does_not_leak_a_buffer(): void
     {
+        // Verified poster, approved posting: anything less is a 404 on the
+        // public side now, and this test is about the share card, not the gate.
         $company = Company::create([
             'user_id' => User::factory()->create()->id,
             'name' => 'Acme Ltd',
+            'status' => Company::APPROVED,
         ]);
 
         $opening = JobOpening::create([
@@ -106,6 +109,7 @@ class OpenGraphTest extends TestCase
             'description' => 'Own the funnel.',
             'sector' => JobOpening::SECTORS[0],
             'is_open' => true,
+            'status' => JobOpening::APPROVED,
         ]);
 
         $buffers = ob_get_level();

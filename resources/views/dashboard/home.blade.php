@@ -97,6 +97,10 @@
                     <span><strong>Roles &amp; Permissions</strong><small>Access control</small></span>
                 </a>
             @endcan
+            <a class="quick-link" href="{{ route('dashboard.products') }}">
+                <span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8H3l1.5-4.5A2 2 0 0 1 6.4 2h11.2a2 2 0 0 1 1.9 1.5z"/><rect x="3" y="8" width="18" height="13" rx="2"/><line x1="10" y1="13" x2="14" y2="13"/></svg></span>
+                <span><strong>Digital Products</strong><small>What's on sale, and what sold</small></span>
+            </a>
             <a class="quick-link" href="{{ route('dashboard.surveys') }}">
                 <span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1a10 10 0 0 1 0-14.2"/><path d="M7.8 16.2a6 6 0 0 1 0-8.4"/><circle cx="12" cy="12" r="1.6"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4"/><path d="M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></span>
                 <span><strong>Pulse Check</strong><small>Session check-in results</small></span>

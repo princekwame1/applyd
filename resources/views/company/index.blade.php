@@ -11,6 +11,26 @@
     <div class="success-box">{{ session('status') }}</div>
 @endif
 
+{{-- Where they stand, said plainly. A recruiter whose adverts aren't showing
+     and who is told nothing assumes the site is broken. --}}
+@if ($company->isPending())
+    <div class="verify-note verify-pending">
+        <strong>We are checking your details.</strong>
+        We confirm the Ghana Card of every job poster before their adverts reach the public board — it is what keeps
+        fake employers off the site. Nothing is on hold for you here: post your jobs now and each one goes live as
+        soon as both checks are done. We will email {{ $company->user?->email }} the moment you are verified.
+    </div>
+@elseif ($company->isRejected())
+    <div class="verify-note verify-rejected">
+        <strong>We could not verify this account yet.</strong>
+        @if ($company->review_note)
+            <blockquote style="margin:10px 0; padding:10px 14px; background:#fff; border-left:3px solid var(--brand); border-radius:6px;">{{ $company->review_note }}</blockquote>
+        @endif
+        Your postings stay off the public board until this is settled, but nothing you have written has been deleted.
+        Reply to the email we sent with what is needed and we will take another look.
+    </div>
+@endif
+
 <div class="stat-cards">
     <div class="stat-card"><div class="num">{{ $openings->count() }}</div><div class="lbl">Job Postings</div></div>
     <div class="stat-card"><div class="num">{{ $openings->where('is_open', true)->count() }}</div><div class="lbl">Open Positions</div></div>
@@ -94,10 +114,18 @@
                         <td>{{ $opening->type }}</td>
                         <td>{{ $opening->deadline?->format('M j, Y') ?? '—' }}</td>
                         <td>
-                            @if ($opening->is_accepting)
-                                <span class="badge badge-yes">Open</span>
-                            @else
+                            @if ($opening->is_live)
+                                <span class="badge badge-yes">Live</span>
+                            @elseif ($opening->isRejected())
+                                <span class="badge badge-no" title="{{ $opening->review_note }}">Rejected</span>
+                            @elseif (! $opening->isApproved())
+                                <span class="status-chip status-pending">In review</span>
+                            @elseif (! $company->isApproved())
+                                <span class="status-chip status-pending">Awaiting verification</span>
+                            @elseif (! $opening->is_accepting)
                                 <span class="badge badge-no">Closed</span>
+                            @else
+                                <span class="badge badge-no">Not live</span>
                             @endif
                         </td>
                         {{-- Always a link, plan or no plan: the count is what tells a

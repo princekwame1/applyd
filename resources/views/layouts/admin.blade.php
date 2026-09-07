@@ -38,9 +38,11 @@
                 </div>
             </div>
 
-            <div class="side-group {{ request()->routeIs('dashboard.recruiter-plans*', 'dashboard.plan-purchases*', 'dashboard.talent-pool*') ? 'open' : '' }}" data-side-group>
+            <div class="side-group {{ request()->routeIs('dashboard.recruiter-plans*', 'dashboard.plan-purchases*', 'dashboard.talent-pool*', 'dashboard.companies*', 'dashboard.job-postings*') ? 'open' : '' }}" data-side-group>
                 <button type="button" class="side-group-toggle" data-side-toggle><span>Job Board</span>{!! $caret !!}</button>
                 <div class="side-group-items">
+                    <a href="{{ route('dashboard.companies') }}" class="{{ request()->routeIs('dashboard.companies*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/></svg> Companies</a>
+                    <a href="{{ route('dashboard.job-postings') }}" class="{{ request()->routeIs('dashboard.job-postings*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg> Job Postings</a>
                     <a href="{{ route('dashboard.talent-pool') }}" class="{{ request()->routeIs('dashboard.talent-pool*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg> Talent Pool</a>
                     <a href="{{ route('dashboard.recruiter-plans') }}" class="{{ request()->routeIs('dashboard.recruiter-plans*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Recruiter Plans</a>
                     <a href="{{ route('dashboard.plan-purchases') }}" class="{{ request()->routeIs('dashboard.plan-purchases*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Plan Purchases</a>
@@ -52,6 +54,14 @@
                 <div class="side-group-items">
                     <a href="{{ route('dashboard.courses') }}" class="{{ request()->routeIs('dashboard.courses*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg> Courses</a>
                     <a href="{{ route('dashboard.course-registrations') }}" class="{{ request()->routeIs('dashboard.course-registrations') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg> Course Registrations</a>
+                </div>
+            </div>
+
+            <div class="side-group {{ request()->routeIs('dashboard.products*', 'dashboard.product-orders*') ? 'open' : '' }}" data-side-group>
+                <button type="button" class="side-group-toggle" data-side-toggle><span>Store</span>{!! $caret !!}</button>
+                <div class="side-group-items">
+                    <a href="{{ route('dashboard.products') }}" class="{{ request()->routeIs('dashboard.products*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8H3l1.5-4.5A2 2 0 0 1 6.4 2h11.2a2 2 0 0 1 1.9 1.5z"/><rect x="3" y="8" width="18" height="13" rx="2"/><line x1="10" y1="13" x2="14" y2="13"/></svg> Digital Products</a>
+                    <a href="{{ route('dashboard.product-orders') }}" class="{{ request()->routeIs('dashboard.product-orders*') ? 'active' : '' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Product Orders</a>
                 </div>
             </div>
 
@@ -244,6 +254,20 @@
             if (file && preview && file.type.indexOf('image/') === 0) {
                 preview.innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="">';
             }
+        });
+
+        // Digital product delivery switch: a product is a file OR a link, never
+        // both, so the two panels are mutually exclusive. Delegated, so it works
+        // inside an AJAX-loaded modal form; the initial state is rendered by
+        // Blade, which is what makes the form usable with no JS at all.
+        document.addEventListener('change', function (e) {
+            var radio = e.target.closest('input[name="delivery"]');
+            if (!radio) return;
+            var form = radio.closest('form');
+            if (!form) return;
+            form.querySelectorAll('[data-delivery-panel]').forEach(function (panel) {
+                panel.hidden = panel.getAttribute('data-delivery-panel') !== radio.value;
+            });
         });
 
         // Dynamic attendance-type repeater (works inside AJAX-loaded modal forms)

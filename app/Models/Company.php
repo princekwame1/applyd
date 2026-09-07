@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Reviewable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class Company extends Model
 {
+    use Reviewable;
+
     /** Outcomes of an unlock attempt, mapped to flash messages by the controller. */
     public const UNLOCK_OK = 'ok';
 
@@ -22,11 +25,33 @@ class Company extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'ghana_card',
         'website',
         'location',
         'logo',
         'description',
+        // See JobOpening: creation only, never from request input.
+        'status',
     ];
+
+    protected function casts(): array
+    {
+        return ['reviewed_at' => 'datetime'];
+    }
+
+    /**
+     * Other companies registered on the same Ghana Card. Not a constraint —
+     * one person can run two businesses — but an admin reviewing an identity
+     * document needs to know the number is already on file somewhere else.
+     */
+    public function cardDuplicates()
+    {
+        if (! $this->ghana_card) {
+            return static::whereRaw('1 = 0');
+        }
+
+        return static::where('ghana_card', $this->ghana_card)->whereKeyNot($this->getKey());
+    }
 
     public function user(): BelongsTo
     {

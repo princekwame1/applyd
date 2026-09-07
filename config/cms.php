@@ -185,6 +185,30 @@ return [
             ],
         ],
 
+        'shop' => [
+            'label' => 'Shop (digital products)',
+            'route' => 'shop',
+            'sections' => [
+                'Hero' => ['fields' => [
+                    'hero_eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'Digital products'],
+                    'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Templates and guides you can use today'],
+                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'The same worksheets, calendars and playbooks we teach with — buy one, download it straight away, keep it for good.'],
+                ]],
+                'When nothing is on sale' => ['fields' => [
+                    'empty_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Nothing here just yet'],
+                    'empty_text' => ['type' => 'text', 'label' => 'Message', 'default' => "We're putting the first downloads together. Check back shortly."],
+                ]],
+                'Checkout' => ['fields' => [
+                    'buy_note' => ['type' => 'text', 'label' => 'Note above the buy form', 'default' => 'Your download link is emailed to you the moment payment goes through.'],
+                ]],
+                'Bottom CTA' => ['fields' => [
+                    'cta_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'A template helps. Being taught helps more.'],
+                    'cta_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'Our next cohort is live, hands-on and free to join.'],
+                    'cta_button' => ['type' => 'text', 'label' => 'Button text', 'default' => 'Join the next one →'],
+                ]],
+            ],
+        ],
+
         /*
         | Not a page — the bits that sit on every public page. No `route`, so
         | the editor simply doesn't offer a "View live" link for it.
