@@ -51,6 +51,18 @@ class SmsLogsTable extends DataTableComponent
                 ->sortable()
                 ->format(fn ($value) => '<span class="status-chip status-'.e($value).'">'.e(ucfirst($value)).'</span>')
                 ->html(),
+            // Same gap as Email Delivery: the gateway's own words were stored
+            // and never shown.
+            Column::make('Reason', 'response')
+                ->format(function ($value, $row) {
+                    if ($row->status === 'sent' || ! filled($value)) {
+                        return '<span style="color:var(--ink-soft);">—</span>';
+                    }
+
+                    return '<span title="'.e($value).'" style="font-size:.82rem; color:var(--danger);">'
+                        .e(Str::limit($value, 70)).'</span>';
+                })
+                ->html(),
             Column::make('Retries', 'retry_count')
                 ->sortable()
                 ->format(fn ($value) => '<span style="display:block; text-align:center;">'.(int) $value.'</span>')

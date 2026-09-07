@@ -54,6 +54,21 @@ class EmailLogsTable extends DataTableComponent
                 ->sortable()
                 ->format(fn ($value) => '<span class="status-chip status-'.e($value).'">'.e(ucfirst($value)).'</span>')
                 ->html(),
+            // Why a send failed. It was only ever written to the row and to
+            // laravel.log before, so the one question this screen exists to
+            // answer — "what went wrong?" — could not be answered on it.
+            // Quiet for a successful send: "Accepted by mailgun mailer" on
+            // every row is noise that hides the one line that matters.
+            Column::make('Reason', 'response')
+                ->format(function ($value, $row) {
+                    if ($row->status === 'sent' || ! filled($value)) {
+                        return '<span style="color:var(--ink-soft);">—</span>';
+                    }
+
+                    return '<span title="'.e($value).'" style="font-size:.82rem; color:var(--danger);">'
+                        .e(Str::limit($value, 70)).'</span>';
+                })
+                ->html(),
             Column::make('Retries', 'retry_count')
                 ->sortable()
                 ->format(fn ($value) => '<span style="display:block; text-align:center;">'.(int) $value.'</span>')
