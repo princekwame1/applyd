@@ -44,6 +44,13 @@
                     Thanks for reaching out! We'll get back to you soon.
                 </div>
             @endif
+            {{-- Mail can be down; saying "thanks, we have it" when the message
+                 never left is the one thing this page must not do. --}}
+            @if (session('contact_error'))
+                <div class="error-box" style="margin-bottom: 20px;">
+                    {{ session('contact_error') }}
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('contact.submit') }}" class="contact-form">
                 @csrf

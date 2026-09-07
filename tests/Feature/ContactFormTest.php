@@ -39,6 +39,29 @@ class ContactFormTest extends TestCase
         $this->assertStringContainsString('ama@gmail.com', $email->getTextBody());
     }
 
+    /**
+     * A broken mailer must not 500 a visitor, and must not tell them their
+     * message arrived. A missing transport bridge on the server throws an
+     * Error rather than an Exception, which is exactly the case that used to
+     * get through unguarded.
+     */
+    public function test_a_broken_mailer_is_reported_not_thrown(): void
+    {
+        Mail::shouldReceive('raw')->once()->andThrow(new \Error(
+            'Class "Symfony\\Component\\Mailer\\Bridge\\Mailgun\\Transport\\MailgunTransportFactory" not found'
+        ));
+
+        $this->post(route('contact.submit'), [
+            'name' => 'Ama Serwaa',
+            'email' => 'ama@gmail.com',
+            'subject' => 'Bootcamp dates',
+            'message' => 'When does the next cohort start?',
+        ])
+            ->assertRedirect()
+            ->assertSessionHas('contact_error')
+            ->assertSessionMissing('contact_success');
+    }
+
     /** @param  array<int, Address>  $addresses */
     protected function addresses(array $addresses): array
     {
