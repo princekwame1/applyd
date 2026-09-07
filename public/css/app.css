@@ -1826,7 +1826,9 @@ textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3p
 .modal-overlay[hidden] { display: none; }
 .modal-panel {
   width: 100%;
-  max-width: 640px;
+  /* Shared by every admin create/edit form. The two-column grid inside was
+     cramped at 640, especially the forms carrying a rich-text editor. */
+  max-width: 860px;
   margin: auto;
   max-height: calc(100vh - 64px);
   display: flex;

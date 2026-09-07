@@ -39,7 +39,7 @@
                         @if ($product->file_size_label)
                             <div class="shop-buy-row"><i class="fa-solid fa-download"></i> {{ $product->file_size_label }}</div>
                         @endif
-                        <div class="shop-buy-row"><i class="fa-solid fa-infinity"></i> Yours to keep — download it whenever</div>
+                        <div class="shop-buy-row"><i class="fa-solid fa-infinity"></i> Yours to keep, download it any time</div>
                     </div>
 
                     @unless ($product->isFree())
@@ -65,7 +65,7 @@
                         <div>
                             <label class="field-label" for="b_email">Email <span class="req">*</span></label>
                             <input type="email" id="b_email" name="buyer_email" value="{{ old('buyer_email') }}" required>
-                            <div class="upload-hint">This is where the download link goes — check it before you pay.</div>
+                            <div class="upload-hint">This is where the download link goes, so check it before you pay.</div>
                             @error('buyer_email') <div class="field-error">{{ $message }}</div> @enderror
                         </div>
                         <div>

@@ -7,7 +7,7 @@
     <div class="container">
         <div class="card shop-done">
             <div class="qform-done-mark"><i class="fa-solid fa-check"></i></div>
-            <h1 class="section-title" style="margin-bottom:8px;">Thanks, {{ $order->first_name }} — it's yours</h1>
+            <h1 class="section-title" style="margin-bottom:8px;">Thanks, {{ $order->first_name }}. It's all yours</h1>
             <p class="section-lead" style="margin-bottom:26px;">
                 <strong>{{ $order->product_title }}</strong> is ready. We've also emailed this page to
                 {{ $order->buyer_email }}, so you can come back to it any time.
@@ -34,7 +34,7 @@
                 @if ($order->paid_at) · {{ $order->paid_at->format('M j, Y') }} @endif
             </p>
             <p class="shop-done-note">
-                Keep this link to yourself — anyone who has it can download the file.
+                Keep this link to yourself. Anyone who has it can download the file.
             </p>
 
             <a class="shop-back" style="margin-top:18px; display:inline-block;" href="{{ route('shop') }}">← Browse other downloads</a>

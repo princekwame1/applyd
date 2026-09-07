@@ -242,10 +242,10 @@ return [
 
         'product_delivery' => [
             'label' => 'Digital product — download link',
-            'description' => 'Sent the moment a purchase is settled (or straight away for a free download). It carries the buyer\'s own download link, which is the only way to the file — this is the email the "Resend download" button on an order re-sends.',
+            'description' => 'Sent the moment a purchase is settled (or straight away for a free download). It carries the buyer\'s own download link, which is the only way to the file. This is the email the "Resend download" button on an order re-sends.',
             'audience' => 'Buyers of a digital product',
-            'subject' => 'Your download — {{ product_title }}',
-            'heading' => 'Thanks, {{ first_name }} — here is your download',
+            'subject' => 'Your download is ready: {{ product_title }}',
+            'heading' => "Thanks, {{ first_name }}. Here's your download",
             'body' => <<<'HTML'
                 <p>Hi {{ first_name }},</p>
                 <p>Your purchase of <strong>{{ product_title }}</strong> is complete. The button below opens your download page, where the file is waiting for you.</p>
@@ -254,7 +254,7 @@ return [
                     <li>Paid: {{ amount }}</li>
                     <li>Reference: {{ reference }}</li>
                 </ul>
-                <p>That link is yours — keep this email and you can come back to the download whenever you need it. Please don't forward it on; anyone who has the link has the file.</p>
+                <p>That link is yours. Keep this email and you can come back to the download whenever you need it. Please don't forward it on, because anyone who has the link has the file.</p>
                 <p>If the download doesn't work, just reply to this email and we'll sort it out.</p>
                 HTML,
             'cta_label' => 'Open your download',
@@ -268,7 +268,7 @@ return [
                 'product_title' => 'What they bought',
                 'amount' => 'What they paid, e.g. GHS 50.00 (or "Free")',
                 'reference' => 'Order reference',
-                'download_url' => 'The buyer\'s private download link — the whole point of this email',
+                'download_url' => 'The buyer\'s private download link, which is the whole point of this email',
                 'purchased_at' => 'Date the payment settled',
                 'site_name' => 'Site name (APP_NAME)',
                 'site_url' => 'Site URL (APP_URL)',

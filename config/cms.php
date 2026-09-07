@@ -192,7 +192,7 @@ return [
                 'Hero' => ['fields' => [
                     'hero_eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'Digital products'],
                     'hero_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Templates and guides you can use today'],
-                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'The same worksheets, calendars and playbooks we teach with — buy one, download it straight away, keep it for good.'],
+                    'hero_sub' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'The same worksheets, calendars and playbooks we teach with. Buy one, download it straight away, and keep it for good.'],
                 ]],
                 'When nothing is on sale' => ['fields' => [
                     'empty_heading' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Nothing here just yet'],
