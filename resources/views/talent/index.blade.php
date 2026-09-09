@@ -82,6 +82,9 @@
 
                     <div class="form-row">
                         <label class="field-label" for="sectors">Sectors you want to work in <span class="req">*</span> <small>(up to 5)</small></label>
+                        {{-- A native multiple select asks for ctrl-click, which is
+                             no gesture at all on a phone. Select2 turns it into
+                             tags and enforces the same 5 the controller does. --}}
                         <select id="sectors" name="sectors[]" multiple required>
                             @foreach ($sectors as $sector)
                                 <option value="{{ $sector }}" @selected(in_array($sector, (array) old('sectors', [])))>{{ $sector }}</option>
@@ -110,3 +113,22 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+<script>
+    $(function () {
+        $('#sectors').select2({
+            width: '100%',
+            placeholder: 'Choose up to 5 sectors…',
+            // The controller's `max:5` said the same thing only after the
+            // form had been filled in and sent.
+            maximumSelectionLength: 5,
+            language: {
+                maximumSelected: function () {
+                    return 'That is 5 — the closer the match, the better the results.';
+                },
+            },
+        });
+    });
+</script>
+@endpush

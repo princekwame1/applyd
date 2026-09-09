@@ -17,11 +17,7 @@
     <div class="error-box">{{ session('error') }}</div>
 @endif
 
-<p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:720px;">
-    Build a form, add its questions — checkboxes, radio buttons, short answers, paragraphs, dropdowns,
-    dates, file uploads — then share the link. Anyone with the link can fill it in; no account needed.
-    Drag rows to reorder the list.
-</p>
+
 
 <div class="card">
     <livewire:questionnaires-table />

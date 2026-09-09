@@ -28,9 +28,7 @@
      as a settled purchase, so a balance is always one table's sum. --}}
 <div class="card" style="margin-bottom:22px;">
     <h3 style="margin-bottom:6px;">Add credits by hand</h3>
-    <p style="color:var(--ink-soft); font-size:.9rem; margin-bottom:14px; max-width:600px;">
-        For recruiters who paid offline or agreed a deal with you. It lands in the list below like any other purchase.
-    </p>
+  
     <form method="POST" action="{{ route('dashboard.plan-purchases.grant') }}" class="form-grid" style="gap:14px 16px; align-items:end;">
         @csrf
         <div>

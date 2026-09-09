@@ -36,10 +36,6 @@
             </div>
         @endif
     </div>
-@else
-    <div class="mailq">
-       
-    </div>
 @endif
 
 @if (session('success'))

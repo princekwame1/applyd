@@ -32,23 +32,28 @@
     </p>
 </div>
 
-<div class="cms-page-grid">
+{{-- Its own card, not the CMS one: those carry a single line of text, so
+     sitting the Edit link beside the copy costs them nothing. Here the
+     description is the useful part — when this email actually fires — and a
+     column stolen from it squeezed every card into a tall ribbon. --}}
+<div class="mail-tpl-grid">
     @foreach ($templates as $key => $template)
-        <a class="card cms-page-card" href="{{ route('dashboard.email-templates.edit', $key) }}">
-            <div class="cms-page-body">
-                <h3>{{ $template['label'] }}</h3>
-                <p>{{ $template['description'] }}</p>
-                <p style="margin-top:10px;">
-                    @if (! $template['enabled'])
-                        <span class="badge badge-no">Disabled</span>
-                    @elseif ($template['customised'])
-                        <span class="badge badge-yes">Customised</span>
-                    @else
-                        <span class="badge badge-no">Default copy</span>
-                    @endif
-                </p>
+        <a class="card mail-tpl-card @if (! $template['enabled']) is-off @endif"
+           href="{{ route('dashboard.email-templates.edit', $key) }}">
+            <h3 class="mail-tpl-title">{{ $template['label'] }}</h3>
+            <p class="mail-tpl-desc">{{ $template['description'] }}</p>
+            <div class="mail-tpl-foot">
+                {{-- Off, edited and untouched are three different states and
+                     used to wear two badges between them. --}}
+                @if (! $template['enabled'])
+                    <span class="badge badge-off">Disabled</span>
+                @elseif ($template['customised'])
+                    <span class="badge badge-yes">Customised</span>
+                @else
+                    <span class="badge badge-no">Default copy</span>
+                @endif
+                <span class="mail-tpl-edit">Edit →</span>
             </div>
-            <span class="cms-page-edit">Edit →</span>
         </a>
     @endforeach
 </div>

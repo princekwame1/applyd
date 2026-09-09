@@ -707,6 +707,38 @@ a { color: var(--brand); }
 .cms-page-body h3 { font-size: 1.02rem; font-weight: 800; }
 .cms-page-body p { color: var(--ink-soft); font-size: .82rem; }
 .cms-page-edit { color: var(--brand); font-weight: 700; font-size: .85rem; white-space: nowrap; }
+
+/* Email template cards. Vertical, because the description is the point of
+   the card and a side column for "Edit" was taking half the width from it. */
+.mail-tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.mail-tpl-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px !important;
+  text-decoration: none;
+  color: var(--ink);
+}
+/* Admin cards are deliberately flat, so clickability is said with the border
+   rather than with a lift. */
+.admin-page .mail-tpl-card:hover { border-color: #eec6c8; }
+.mail-tpl-title { font-size: 1rem; font-weight: 800; line-height: 1.35; margin: 0; }
+.mail-tpl-desc { color: var(--ink-soft); font-size: .84rem; line-height: 1.6; margin: 0; }
+/* Pinned, so every card in a row ends on the same line. */
+.mail-tpl-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+.mail-tpl-edit { color: var(--brand); font-weight: 700; font-size: .85rem; white-space: nowrap; }
+.mail-tpl-card:hover .mail-tpl-edit { color: var(--brand-dark); }
+/* A disabled template sends nothing, which "Default copy" grey never said. */
+.badge-off { background: #fef2f2; color: var(--danger); }
+.mail-tpl-card.is-off .mail-tpl-title, .mail-tpl-card.is-off .mail-tpl-desc { opacity: .6; }
+
 .cms-section { margin-bottom: 18px; }
 .cms-fields { display: flex; flex-direction: column; gap: 18px; }
 .cms-field { min-width: 0; }
@@ -2484,6 +2516,45 @@ textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3p
 }
 .select2-container--default .select2-results__option--highlighted[aria-selected] { background: var(--brand); }
 .phone-row .select2 { flex: 0 0 46%; min-width: 0; }
+
+/* Multi-select. Only the single variant was ever styled, so a `multiple`
+   select fell back to Select2's own grey tags — and before that, to a native
+   list box nobody can ctrl-click on a phone. */
+.select2-container--default .select2-selection--multiple {
+  min-height: 50px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 0;
+  background: #fff;
+  padding: 4px 6px;
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+  border-color: var(--brand);
+  outline: none;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+  margin: 4px 4px 0 0;
+  padding: 4px 10px 4px 6px;
+  background: #faeaeb;
+  border: 1px solid #eec6c8;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  font-size: .88rem;
+  font-weight: 600;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+  color: var(--brand);
+  margin-right: 6px;
+  font-weight: 800;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover { color: var(--brand-dark); }
+.select2-container--default .select2-selection--multiple .select2-search__field {
+  margin-top: 8px;
+  font-size: .95rem;
+  font-family: inherit;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__clear { margin-top: 8px; }
+
 
 /* ---------- Final CTA ---------- */
 .final-cta {
