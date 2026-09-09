@@ -7,6 +7,7 @@ use App\Http\Controllers\CompanyApplicationController;
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyPlanController;
+use App\Http\Controllers\CompanyScreeningController;
 use App\Http\Controllers\CompanyTalentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CourseController;
@@ -137,6 +138,18 @@ Route::middleware(['auth', 'role:company'])->prefix('company')->name('company.')
     Route::patch('/applications/{application}/status', [CompanyApplicationController::class, 'updateStatus'])->name('applications.status');
     Route::get('/applications/{application}/cv', [CompanyApplicationController::class, 'downloadCv'])->name('applications.cv');
     Route::get('/documents/{document}', [CompanyApplicationController::class, 'downloadDocument'])->name('applications.document');
+
+    // The in-app viewer. Same files, same two gates as the downloads above —
+    // it renders them in place instead of sending them to a disk.
+    Route::get('/applications/{application}/cv/view', [CompanyApplicationController::class, 'previewCv'])->name('applications.cv.view');
+    Route::get('/documents/{document}/view', [CompanyApplicationController::class, 'previewDocument'])->name('applications.document.view');
+
+    // Pre-screening: what the role asks for, and what each thing is worth.
+    // Free, like posting the job — the plan gates reading the applicants.
+    Route::get('/jobs/{opening}/screening', [CompanyScreeningController::class, 'index'])->name('screening');
+    Route::post('/jobs/{opening}/screening', [CompanyScreeningController::class, 'store'])->name('screening.store');
+    Route::put('/jobs/{opening}/screening/{criterion}', [CompanyScreeningController::class, 'update'])->name('screening.update');
+    Route::delete('/jobs/{opening}/screening/{criterion}', [CompanyScreeningController::class, 'destroy'])->name('screening.destroy');
 
     // Talent pool + the credits that open it
     Route::get('/talent', [CompanyTalentController::class, 'index'])->name('talent');

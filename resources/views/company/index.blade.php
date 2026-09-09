@@ -143,6 +143,8 @@
                             <div class="row-actions">
                                 <a href="{{ route('jobs.show', $opening) }}" target="_blank" title="View" aria-label="View"><i class="fa-solid fa-eye"></i></a>
                                 <a href="{{ route('company.jobs.edit', $opening) }}" title="Edit" aria-label="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                {{-- Setting what the role asks for is free, like posting it. --}}
+                                <a href="{{ route('company.screening', $opening) }}" title="Screening criteria" aria-label="Screening criteria"><i class="fa-solid fa-filter"></i></a>
                                 <form method="POST" action="{{ route('company.jobs.destroy', $opening) }}" data-confirm="Delete this job and all its applications?">
                                     @csrf
                                     @method('DELETE')

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ApplicationDocument;
 use App\Models\JobOpening;
+use App\Support\CvText;
+use App\Support\FitScore;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -58,7 +60,7 @@ class JobBoardController extends Controller
      */
     public function show(JobOpening $opening)
     {
-        $opening->load('company');
+        $opening->load('company', 'screeningQuestions');
 
         abort_unless($opening->isApproved() && $opening->company?->isApproved(), 404);
 
@@ -71,7 +73,12 @@ class JobBoardController extends Controller
         // own switch and deadline. An unapproved advert must not collect CVs.
         abort_unless($opening->is_live, 404);
 
-        $data = $request->validate([
+        // The screening questions this role asks, if any. Rules are built from
+        // the rows, so the form can never accept an answer its recruiter never
+        // offered — and a question added tomorrow needs no code today.
+        $questions = $opening->screeningQuestions()->get();
+
+        $rules = [
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255',
                 Rule::unique('job_applications')->where('job_opening_id', $opening->id)],
@@ -80,21 +87,46 @@ class JobBoardController extends Controller
             'cv' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:4096'],
             'documents' => ['nullable', 'array', 'max:5'],
             'documents.*' => ['file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:4096'],
-        ], [
+        ];
+
+        $names = [];
+
+        foreach ($questions as $question) {
+            $rules['screening.'.$question->key] = $question->rules();
+            $names['screening.'.$question->key] = strtolower($question->label);
+        }
+
+        $data = $request->validate($rules, [
             'email.unique' => 'You have already applied to this job with this email address.',
             'documents.max' => 'You can upload at most 5 supporting documents.',
-        ]);
+        ], $names);
 
         $cv = $request->file('cv');
+        $cvPath = $cv->store('applications/'.$opening->id.'/cv', 'local');
 
         $application = $opening->applications()->create([
             'full_name' => $data['full_name'],
             'email' => $data['email'],
             'phone' => $data['phone'] ?? null,
             'cover_letter' => $data['cover_letter'] ?? null,
-            'cv_path' => $cv->store('applications/'.$opening->id.'/cv', 'local'),
+            // Only the keys that were actually asked: anything else posted
+            // alongside them is dropped rather than filed under a question
+            // this job does not have.
+            'screening_answers' => collect($data['screening'] ?? [])
+                ->only($questions->pluck('key')->all())
+                ->all(),
+            'cv_path' => $cvPath,
             'cv_name' => $cv->getClientOriginalName(),
+            // Best-effort, and null when the file will not give up its text.
+            // Reading it must never cost the candidate their application, so
+            // a parser that throws is caught here and the CV is simply
+            // unscored — see App\Support\CvText.
+            'cv_text' => rescue(fn () => CvText::fromStorage($cvPath), null, false),
         ]);
+
+        // Scored on the way in, so the recruiter's list is ordered the moment
+        // they open it rather than on a job somebody has to remember to run.
+        FitScore::store($application, $opening->screeningCriteria()->get());
 
         foreach ($request->file('documents', []) as $document) {
             $application->documents()->create([

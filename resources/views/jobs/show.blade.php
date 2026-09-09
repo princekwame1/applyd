@@ -95,6 +95,40 @@
                                 <textarea id="cover_letter" name="cover_letter" rows="4" placeholder="Tell {{ $opening->company->name }} why you're a great fit…">{{ old('cover_letter') }}</textarea>
                                 @error('cover_letter') <div class="field-error">{{ $message }}</div> @enderror
                             </div>
+                            {{-- The employer's own screening questions. Only
+                                 questions ever appear here: the keywords they
+                                 score CVs against are their rubric, and a list
+                                 of the words that score is an invitation to
+                                 paste them in. --}}
+                            @foreach ($opening->screeningQuestions as $question)
+                                <div class="screen-q">
+                                    <label class="field-label" for="q-{{ $question->key }}">
+                                        {{ $question->label }} <span class="req">*</span>
+                                    </label>
+                                    @if ($question->answer_type === \App\Models\JobScreeningCriterion::YES_NO)
+                                        <div class="screen-q-choices">
+                                            @foreach (['yes' => 'Yes', 'no' => 'No'] as $value => $text)
+                                                <label class="screen-q-choice">
+                                                    <input type="radio" name="screening[{{ $question->key }}]" value="{{ $value }}"
+                                                           @checked(old('screening.'.$question->key) === $value) required>
+                                                    {{ $text }}
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @elseif ($question->answer_type === \App\Models\JobScreeningCriterion::NUMBER)
+                                        <input type="number" id="q-{{ $question->key }}" name="screening[{{ $question->key }}]"
+                                               min="0" max="99" step="0.5" value="{{ old('screening.'.$question->key) }}" required>
+                                    @else
+                                        <select id="q-{{ $question->key }}" name="screening[{{ $question->key }}]" data-no-select2 required>
+                                            <option value="">Choose one…</option>
+                                            @foreach ($question->options ?: [] as $option)
+                                                <option value="{{ $option }}" @selected(old('screening.'.$question->key) === $option)>{{ $option }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                    @error('screening.'.$question->key) <div class="field-error">{{ $message }}</div> @enderror
+                                </div>
+                            @endforeach
                             <div>
                                 <label class="field-label" for="cv">CV / Résumé <span class="req">*</span> <small>(PDF or Word, max 4 MB)</small></label>
                                 <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required>

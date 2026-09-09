@@ -73,6 +73,18 @@ class JobOpening extends Model
         return $this->hasMany(JobApplication::class);
     }
 
+    /** What the role asks for, in the order the recruiter arranged it. */
+    public function screeningCriteria(): HasMany
+    {
+        return $this->hasMany(JobScreeningCriterion::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** Only these are put to the candidate; keywords stay the recruiter's. */
+    public function screeningQuestions(): HasMany
+    {
+        return $this->screeningCriteria()->where('kind', JobScreeningCriterion::QUESTION);
+    }
+
     /**
      * Everything the public board is allowed to show.
      *
