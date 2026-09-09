@@ -28,13 +28,7 @@
     <div class="error-box">{{ session('error') }}</div>
 @endif
 
-<p style="color:var(--ink-soft); margin:-4px 0 18px; max-width:660px;">
-    Every checkout, paid or abandoned. A buyer's download link never expires, so resending one is always safe —
-    it is the same link they were sent the first time.
-    @if ($productCount === 0)
-        <br><strong>Nothing is on sale yet</strong> — add a product before pointing anyone at the shop.
-    @endif
-</p>
+
 
 <div class="card">
     <livewire:product-orders-table />

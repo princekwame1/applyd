@@ -84,6 +84,8 @@ class DigitalProductController extends Controller
             return $this->modalError($request, 'dashboard.products', $reason);
         }
 
+     
+        $product->purgeUnsettledOrders();
         ProductFiles::purge($product);
         $product->delete();
 

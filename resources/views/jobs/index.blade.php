@@ -67,24 +67,20 @@
             <div class="job-list">
                 @foreach ($openings as $opening)
                     <a class="card job-card" href="{{ route('jobs.show', $opening) }}">
-                        <div class="job-card-header">
-                            <div class="job-card-main">
-                                <h3 class="job-title">{{ $opening->title }}</h3>
-                                <p class="job-company">{{ $opening->company->name }}</p>
-                                <div class="job-meta-tags">
-                                    @if ($opening->location)
-                                        <span class="job-meta-tag">{{ $opening->location }}</span>
-                                    @endif
-                                    @if ($opening->sector)
-                                        <span class="job-meta-tag">{{ $opening->sector }}</span>
-                                    @endif
-                                    <span class="job-type-badge">{{ $opening->type }}</span>
-                                </div>
-                            </div>
+                        <div class="job-card-top">
+                            <span class="job-type-badge">{{ $opening->type }}</span>
                             @if ($opening->salary_range)
-                                <div class="job-card-side">
-                                    <span class="job-salary">{{ $opening->salary_range }}</span>
-                                </div>
+                                <span class="job-salary">{{ $opening->salary_range }}</span>
+                            @endif
+                        </div>
+                        <h3 class="job-title">{{ $opening->title }}</h3>
+                        <p class="job-company">{{ $opening->company->name }}</p>
+                        <div class="job-meta-tags">
+                            @if ($opening->location)
+                                <span class="job-meta-tag">{{ $opening->location }}</span>
+                            @endif
+                            @if ($opening->sector)
+                                <span class="job-meta-tag">{{ $opening->sector }}</span>
                             @endif
                         </div>
                         <p class="job-excerpt">{{ Str::limit(strip_tags($opening->description), 150) }}</p>

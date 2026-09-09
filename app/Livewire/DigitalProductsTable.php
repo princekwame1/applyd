@@ -115,7 +115,7 @@ class DigitalProductsTable extends DataTableComponent
 
     protected function deleteWarning(): string
     {
-        return 'The file goes with it. Anything that has been bought is kept — unpublish those instead.';
+        return 'The file and any unpaid checkouts go with it. Anything that has been bought is kept — unpublish those instead.';
     }
 
     /** The controller's rule, repeated for the path that goes around it. */
@@ -124,9 +124,14 @@ class DigitalProductsTable extends DataTableComponent
         return DigitalProductController::blockedReason($row);
     }
 
-    /** The rows cascade; the file on disk and the cover image do not. */
+    /**
+     * The file on disk and the cover image don't go on their own, and neither
+     * do unsettled checkouts — their foreign key restricts, so the delete
+     * would fail on the constraint. Paid orders never reach here.
+     */
     protected function beforeDelete(Model $row): void
     {
+        $row->purgeUnsettledOrders();
         ProductFiles::purge($row);
     }
 }

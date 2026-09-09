@@ -66,6 +66,18 @@ class DigitalProduct extends Model
         return $this->hasMany(ProductOrder::class);
     }
 
+    /**
+     * Checkouts that were never settled — a row is minted the moment somebody
+     * opens Paystack, so a product nobody bought can still be pointed at by
+     * the people who walked away. They carry no money and their token opens
+     * nothing, so they go with the product; a *paid* order is what stops the
+     * delete happening at all (`DigitalProductController::blockedReason`).
+     */
+    public function purgeUnsettledOrders(): void
+    {
+        $this->orders()->where('status', '!=', 'paid')->delete();
+    }
+
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('id');

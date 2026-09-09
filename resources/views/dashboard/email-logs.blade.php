@@ -38,11 +38,7 @@
     </div>
 @else
     <div class="mailq">
-        <div class="mailq-note">
-            Email is sent as soon as the action that triggers it happens — a row here
-            reads Sent or Failed straight away, with no worker in between. Resend any
-            that failed.
-        </div>
+       
     </div>
 @endif
 
