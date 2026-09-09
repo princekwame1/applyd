@@ -18,10 +18,7 @@
     <div class="error-box">{{ session('error') }}</div>
 @endif
 
-<p style="color:var(--ink-soft); margin:-8px 0 18px; max-width:720px;">
-    The headings entries get filed under. Each one sits on a single side of the books, so an expense
-    heading can never be picked for income. Drag rows to set the order they're offered in.
-</p>
+
 
 <div class="card">
     <livewire:finance-categories-table />
